@@ -26,6 +26,28 @@ async function startServer() {
     }
   });
 
+  app.post("/api/admin/grade-matchup", async (req, res) => {
+    try {
+      const { gameId } = req.body;
+      const { adminDb } = await import("./src/lib/firebase-admin.js");
+      const { gradeMatchups } = await import("./src/services/grader.js");
+
+      if (!adminDb) return res.status(500).json({ success: false, error: "adminDb not initialized" });
+
+      const snap = await adminDb.collection('matchups').where('gameId', '==', gameId).get();
+      if (snap.empty) {
+         return res.status(404).json({ success: false, error: "Matchup not found" });
+      }
+
+      const matchup = snap.docs[0].data();
+      await gradeMatchups([{ ...matchup, status: 'STATUS_FINAL' }]); // Force grade
+      res.json({ success: true });
+    } catch (e: any) {
+      console.error(e);
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
