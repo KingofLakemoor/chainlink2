@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, updateDoc, writeBatch, query, where } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../lib/auth-context';
 import { Navigate, Routes, Route, Link, useLocation } from 'react-router-dom';
@@ -160,8 +160,6 @@ function AdminMatchups() {
     try {
       const leagues = ["MLB", "NBA", "NHL", "PGA"];
 
-      const { writeBatch } = await import('firebase/firestore');
-
       let totalImported = 0;
 
       for (const league of leagues) {
@@ -180,7 +178,6 @@ function AdminMatchups() {
 
              // Client-side mapping
              // Fetch existing matchups for this league to avoid duplicates
-             const { collection, getDocs, doc, query, where } = await import('firebase/firestore');
              const existingSnap = await getDocs(query(collection(db, 'matchups'), where('league', '==', league)));
              const existingMap = new Map<string, any>();
              existingSnap.docs.forEach(d => {
