@@ -295,9 +295,27 @@ export async function scrapeLeagueSchedules(league: League): Promise<LeagueRespo
           const spread = competition.odds?.[0]?.spread || null;
           const network = competition.geoBroadcasts?.[0]?.media?.shortName || "N/A";
 
+          let active = true;
+          const mlHome = competition.odds?.[0]?.moneyline?.home?.close?.odds || competition.odds?.[0]?.moneyline?.home?.open?.odds;
+          const mlAway = competition.odds?.[0]?.moneyline?.away?.close?.odds || competition.odds?.[0]?.moneyline?.away?.open?.odds;
+
+          if (mlHome) {
+            const mlHomeNum = parseInt(mlHome, 10);
+            if (!isNaN(mlHomeNum) && mlHomeNum <= -300) {
+              active = false;
+            }
+          }
+
+          if (mlAway) {
+            const mlAwayNum = parseInt(mlAway, 10);
+            if (!isNaN(mlAwayNum) && mlAwayNum <= -300) {
+              active = false;
+            }
+          }
+
           parsedMatchups.push({
              startTime: gameTime,
-             active: true,
+             active,
              featured: false,
              title: `Who will win? ${away.team.name} @ ${home.team.name}`,
              league,

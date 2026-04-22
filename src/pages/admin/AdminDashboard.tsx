@@ -262,6 +262,19 @@ function AdminMatchups() {
     fetchData();
   };
 
+  const handleToggleActive = async (id: string, currentActive: boolean) => {
+    try {
+      await updateDoc(doc(db, 'matchups', id), {
+        active: !currentActive,
+        updatedAt: Date.now()
+      });
+      setData(prev => prev.map(m => m.id === id ? { ...m, active: !currentActive } : m));
+    } catch (e) {
+      console.error("Error toggling active status", e);
+      alert("Failed to toggle active status");
+    }
+  };
+
   if (loading) return <div className="p-8 text-zinc-500">Loading matchups...</div>;
 
   return (
@@ -296,6 +309,7 @@ function AdminMatchups() {
                 <th className="px-4 py-3 font-medium">League</th>
                 <th className="px-4 py-3 font-medium">Title</th>
                 <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Active</th>
                 <th className="px-4 py-3 font-medium">Start Time</th>
                 <th className="px-4 py-3 font-medium">Cost</th>
                 <th className="px-4 py-3 font-medium text-right">Actions</th>
@@ -310,6 +324,15 @@ function AdminMatchups() {
                     <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${row.status === 'STATUS_SCHEDULED' ? 'bg-zinc-800 text-zinc-300' : 'bg-green-500/10 text-green-400'}`}>
                       {row.status}
                     </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => handleToggleActive(row.id, row.active)}
+                      className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider transition-colors ${row.active ? 'bg-green-500/20 text-green-400 hover:bg-red-500/20 hover:text-red-400' : 'bg-red-500/20 text-red-400 hover:bg-green-500/20 hover:text-green-400'}`}
+                      title={row.active ? "Mark Inactive" : "Mark Active"}
+                    >
+                      {row.active ? 'ACTIVE' : 'INACTIVE'}
+                    </button>
                   </td>
                   <td className="px-4 py-3 text-zinc-500">{new Date(row.startTime).toLocaleString()}</td>
                   <td className="px-4 py-3 text-cyan-400 font-mono">{row.cost} LNK</td>
