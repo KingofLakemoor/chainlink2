@@ -30,6 +30,7 @@ export const initFirebase = async () => {
 };
 
 const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: 'select_account' });
 
 export const loginWithGoogle = async () => {
   try {
