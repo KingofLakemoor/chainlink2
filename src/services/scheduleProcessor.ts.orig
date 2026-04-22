@@ -92,7 +92,6 @@ export async function fetchScheduleData(endpoint: string, league: League) {
 }
 
 import { adminDb } from '../lib/firebase-admin.js';
-import { gradeMatchups } from './grader.js';
 
 export async function syncLeagueSchedules(league: League): Promise<LeagueResponse> {
   const response = await scrapeLeagueSchedules(league);
@@ -113,7 +112,6 @@ export async function syncLeagueSchedules(league: League): Promise<LeagueRespons
       let opCount = 0;
       let newCount = 0;
       let updateCount = 0;
-      const matchupsToGrade: any[] = [];
 
       for (const scrapedMatchup of response.data) {
         const gameId = scrapedMatchup.gameId;
@@ -138,10 +136,6 @@ export async function syncLeagueSchedules(league: League): Promise<LeagueRespons
             });
             opCount++;
             updateCount++;
-
-            if (scrapedMatchup.status === 'STATUS_FINAL') {
-              matchupsToGrade.push(scrapedMatchup);
-            }
           }
         } else {
           const newDocRef = matchupsRef.doc();
@@ -165,10 +159,6 @@ export async function syncLeagueSchedules(league: League): Promise<LeagueRespons
 
       if (opCount > 0) {
         await batch.commit();
-      }
-
-      if (matchupsToGrade.length > 0) {
-        await gradeMatchups(matchupsToGrade);
       }
 
       response.scoreMatchupsCreated = newCount;
