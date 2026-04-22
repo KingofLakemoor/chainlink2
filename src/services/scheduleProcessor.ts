@@ -247,13 +247,13 @@ export async function scrapeLeagueSchedules(league: League): Promise<LeagueRespo
                  homeTeam: {
                    id: String(b.id),
                    name: golferB.displayName || golferB.name || "Golfer B",
-                   image: golferB.flag?.href || "https://chainlink.st/icons/icon-256x256.png",
+                   image: golferB.flag?.href || "/icons/icon-256x256.png",
                    score: scoreB
                  },
                  awayTeam: {
                    id: String(a.id),
                    name: golferA.displayName || golferA.name || "Golfer A",
-                   image: golferA.flag?.href || "https://chainlink.st/icons/icon-256x256.png",
+                   image: golferA.flag?.href || "/icons/icon-256x256.png",
                    score: scoreA
                  },
                  cost: 10,
@@ -297,13 +297,13 @@ export async function scrapeLeagueSchedules(league: League): Promise<LeagueRespo
              homeTeam: {
                id: String(home.id),
                name: home.team.name || "Home Team",
-               image: home.team.logo || "https://chainlink.st/icons/icon-256x256.png",
+               image: home.team.logo || "/icons/icon-256x256.png",
                score: parseFloat(home.score || "0")
              },
              awayTeam: {
                id: String(away.id),
                name: away.team.name || "Away Team",
-               image: away.team.logo || "https://chainlink.st/icons/icon-256x256.png",
+               image: away.team.logo || "/icons/icon-256x256.png",
                score: parseFloat(away.score || "0")
              },
              cost: 10,
