@@ -420,7 +420,7 @@
         "name": { "type": "string" },
         "description": { "type": "string" },
         "league": { "type": "string" },
-        "type: { "type": "string" },
+        "type": { "type": "string" },
         "scoringType": { "type": "string" },
         "startDate": { "type": "number" },
         "endDate": { "type": "number" },
