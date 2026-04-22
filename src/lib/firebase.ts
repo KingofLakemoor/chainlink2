@@ -1,16 +1,33 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
+import { initializeApp, FirebaseApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, Auth } from 'firebase/auth';
+import { getFirestore, doc, getDoc, setDoc, Firestore } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
-const config = {
-  ...firebaseConfig,
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || ''
-};
+export let app: FirebaseApp;
+export let auth: Auth;
+export let db: Firestore;
 
-const app = initializeApp(config);
-export const auth = getAuth(app);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const initFirebase = async () => {
+  let dynamicConfig: any = { ...firebaseConfig };
+  try {
+    const res = await fetch('/__/firebase/init.json');
+    if (res.ok) {
+      const initJson = await res.json();
+      dynamicConfig = { ...dynamicConfig, ...initJson };
+    }
+  } catch (e) {
+    console.warn('Could not fetch dynamic firebase init config, using local environment variables.');
+  }
+
+  const finalConfig = {
+    ...dynamicConfig,
+    apiKey: dynamicConfig.apiKey || import.meta.env.VITE_FIREBASE_API_KEY || ''
+  };
+
+  app = initializeApp(finalConfig);
+  auth = getAuth(app);
+  db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+};
 
 const provider = new GoogleAuthProvider();
 
