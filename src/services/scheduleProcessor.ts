@@ -101,6 +101,15 @@ export async function syncLeagueSchedules(league: League): Promise<LeagueRespons
     console.log(`[Sync] Fetched ${response.data.length} matchups for ${league}. Writing to Firestore...`);
 
     try {
+      const leagueSettingsSnap = await adminDb.collection('leagueSettings').doc(league).get();
+      let defaultActive = true;
+      if (leagueSettingsSnap.exists) {
+        const settings = leagueSettingsSnap.data();
+        if (settings && typeof settings.active === 'boolean') {
+          defaultActive = settings.active;
+        }
+      }
+
       const matchupsRef = adminDb.collection('matchups');
       const existingSnap = await matchupsRef.where('league', '==', league).get();
 
@@ -147,6 +156,7 @@ export async function syncLeagueSchedules(league: League): Promise<LeagueRespons
           const newDocRef = matchupsRef.doc();
           batch.set(newDocRef, {
             ...scrapedMatchup,
+            active: scrapedMatchup.active && defaultActive,
             updatedAt: Date.now(),
             createdAt: Date.now()
           });

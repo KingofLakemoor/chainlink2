@@ -207,5 +207,11 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
+
+    // league settings
+    match /leagueSettings/{leagueId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
   }
 }

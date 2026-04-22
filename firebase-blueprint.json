@@ -493,6 +493,16 @@
         "createdAt": { "type": "number" }
       },
       "required": ["userId", "referredBy", "coins", "createdAt"]
+    },
+    "LeagueSettings": {
+      "title": "LeagueSettings",
+      "description": "Settings for a specific league, keyed by league name (e.g. 'WNBA')",
+      "type": "object",
+      "properties": {
+        "active": { "type": "boolean" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["active", "updatedAt"]
     }
   },
   "firestore": {
@@ -615,6 +625,10 @@
     "/referrals/{referralId}": {
       "schema": { "$ref": "#/entities/Referral" },
       "description": "Referral tracking"
+    },
+    "/leagueSettings/{leagueId}": {
+      "schema": { "$ref": "#/entities/LeagueSettings" },
+      "description": "League specific settings"
     }
   }
 }
