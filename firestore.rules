@@ -51,6 +51,10 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow create, update, delete: if isAdmin(); // Managed primarily via backend or admin
     }
+    match /squadMembers/{memberId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
 
     // matchups
     match /matchups/{matchupId} {
@@ -60,6 +64,12 @@ service cloud.firestore {
       // Wait, the error is inside `PlayDashboard` where they ARE signed in, or maybe they aren't!
       allow read: if true;
       allow create, update, delete: if isAdmin();
+    }
+
+    // pickQueues
+    match /pickQueues/{queueId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     // picks
