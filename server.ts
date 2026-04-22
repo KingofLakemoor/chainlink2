@@ -4,7 +4,7 @@ import { scrapeLeagueSchedules, syncLeagueSchedules } from "./src/services/sched
 import { initializeApp, cert } from 'firebase-admin/app';
 
 // Note: initializeApp for admin requires service account credentials in a production setting.
-// Since we are migrating from Convex, let's export an endpoint or a button to trigger it manually,
+// Since we are using Firebase, let's export an endpoint or a button to trigger it manually,
 // or set up a basic cron. For local/preview, we can sometimes initialize without credentials
 // if it's the default project or we just use client SDK for now if Admin isn't available.
 
