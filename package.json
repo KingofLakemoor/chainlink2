@@ -49,6 +49,7 @@
   "overrides": {
     "@tootallnate/once": "^3.0.1",
     "http-proxy-agent": "^7.0.0",
-    "teeny-request": "^10.1.2"
+    "teeny-request": "^10.1.2",
+    "uuid": "^14.0.0"
   }
 }
