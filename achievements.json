@@ -1,0 +1,112 @@
+[
+  {
+    "name": "First Win",
+    "description": "You won your first game!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 100,
+    "weight": 1,
+    "threshold": 1,
+    "type": "WINS"
+  },
+  {
+    "name": "Winning Streak",
+    "description": "You won 5 games in a row!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 500,
+    "weight": 2,
+    "threshold": 5,
+    "type": "CHAINWIN"
+  },
+  {
+    "name": "Hot Streak",
+    "description": "You won 10 games in a row!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 1000,
+    "weight": 3,
+    "threshold": 10,
+    "type": "CHAINWIN"
+  },
+  {
+    "name": "Monthly Winner",
+    "description": "You won 5 games this month!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 500,
+    "weight": 2,
+    "threshold": 5,
+    "type": "MONTHLYWIN"
+  },
+  {
+    "name": "Monthly Champion",
+    "description": "You won 10 games this month!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 1000,
+    "weight": 3,
+    "threshold": 10,
+    "type": "MONTHLYWIN"
+  },
+  {
+    "name": "Bouncing Back",
+    "description": "You lost 5 games this month. Don't give up!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 100,
+    "weight": 1,
+    "threshold": 5,
+    "type": "MONTHLYLOSS"
+  },
+  {
+    "name": "Tough Month",
+    "description": "You lost 10 games this month. Next month will be better!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 200,
+    "weight": 2,
+    "threshold": 10,
+    "type": "MONTHLYLOSS"
+  },
+  {
+    "name": "Pushing Through",
+    "description": "You pushed 5 games this month.",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 100,
+    "weight": 1,
+    "threshold": 5,
+    "type": "MONTHLYPUSH"
+  },
+  {
+    "name": "Stalemate",
+    "description": "You pushed 10 games this month.",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 200,
+    "weight": 2,
+    "threshold": 10,
+    "type": "MONTHLYPUSH"
+  },
+  {
+    "name": "Campaign Starter",
+    "description": "You started a campaign chain!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 500,
+    "weight": 2,
+    "threshold": 1,
+    "type": "CAMPAIGNCHAIN"
+  },
+  {
+    "name": "Campaign Winner",
+    "description": "You won a campaign game!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 500,
+    "weight": 2,
+    "threshold": 1,
+    "type": "CAMPAIGNWINS"
+  }
+]

@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "init-db": "tsx scripts/init_collections.ts"
+    "init-db": "tsx scripts/init_collections.ts",
+    "seed-achievements": "tsx scripts/seed_achievements.ts"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
