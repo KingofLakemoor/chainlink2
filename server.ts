@@ -14,6 +14,30 @@ async function startServer() {
 
   app.use(express.json());
 
+  // Global middleware to set Cross-Origin-Opener-Policy
+  app.use((req, res, next) => {
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+    next();
+  });
+
+  // Dynamic Firebase config endpoint
+  app.get('/__/firebase/init.json', async (req, res) => {
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const configPath = path.join(process.cwd(), 'firebase-applet-config.json');
+      const configStr = fs.readFileSync(configPath, 'utf-8');
+      const config = JSON.parse(configStr);
+      res.json({
+        ...config,
+        apiKey: process.env.VITE_FIREBASE_API_KEY || ''
+      });
+    } catch (e) {
+      console.error('Error serving init.json:', e);
+      res.json({ apiKey: process.env.VITE_FIREBASE_API_KEY || '' });
+    }
+  });
+
   // API boundaries
   app.post("/api/admin/sync-schedules", async (req, res) => {
     try {
