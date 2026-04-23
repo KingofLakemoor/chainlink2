@@ -21,7 +21,7 @@ export const initFirebase = async () => {
 
   const finalConfig = {
     ...dynamicConfig,
-    apiKey: dynamicConfig.apiKey || import.meta.env.VITE_FIREBASE_API_KEY || ''
+    apiKey: (dynamicConfig.apiKey || import.meta.env.VITE_FIREBASE_API_KEY || '').trim()
   };
 
   app = initializeApp(finalConfig);
