@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from "express";
 import path from "path";
 import { scrapeLeagueSchedules, syncLeagueSchedules } from "./src/services/scheduleProcessor.js";
