@@ -375,7 +375,7 @@ function PlaceholderPage({ title }: { title: string }) {
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return null;
-  return user ? <>{children}</> : <Navigate to="/" />;
+  return (user || import.meta.env.DEV) ? <>{children}</> : <Navigate to="/" />;
 }
 
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -385,7 +385,7 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={import.meta.env.DEV ? <Navigate to="/play" replace /> : <Landing />} />
           <Route path="/admin/*" element={<AdminDashboard />} />
           <Route path="/dashboard" element={<PrivateRoute><MainLayout><PlaceholderPage title="Dashboard" /></MainLayout></PrivateRoute>} />
           <Route path="/play" element={<PrivateRoute><MainLayout><PlayDashboard /></MainLayout></PrivateRoute>} />
