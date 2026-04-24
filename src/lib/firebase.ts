@@ -1,5 +1,5 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, Auth } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, signOut, Auth, User } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, Firestore } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -32,12 +32,57 @@ export const initFirebase = async () => {
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 
+const ensureUserProfile = async (user: User) => {
+  // Check if user exists, if not create default profile
+  const userRef = doc(db, 'users', user.uid);
+  const userSnap = await getDoc(userRef);
+  if (!userSnap.exists()) {
+    await setDoc(userRef, {
+      email: user.email,
+      name: user.displayName || 'Anonymous',
+      image: user.photoURL || '',
+      coins: 100, // starting coins
+      role: 'USER', // Defaulting to USER for security
+      status: 'ACTIVE',
+      stats: { wins: 0, losses: 0, pushes: 0 },
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    // Initialize an empty chain for them
+    const chainRef = doc(db, 'chains', user.uid + '_current');
+    await setDoc(chainRef, {
+      userId: user.uid,
+      active: true,
+      chain: 0,
+      wins: 0,
+      losses: 0,
+      best: 0,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  }
+};
+
 export const loginWithGoogle = async () => {
+  if (import.meta.env.DEV && (!app.options.apiKey || app.options.apiKey === 'MY_FIREBASE_API_KEY')) {
+    console.log('Mock login triggered (no valid API key in dev mode)');
+    window.dispatchEvent(new Event('mock-login'));
+    return;
+  }
   try {
-    await signInWithRedirect(auth, provider);
-  } catch (error) {
-    console.error('Login failed', error);
-    throw error;
+    const userCredential = await signInWithPopup(auth, provider);
+    if (userCredential && userCredential.user) {
+      await ensureUserProfile(userCredential.user);
+    }
+  } catch (error: any) {
+    console.error('Popup login failed, attempting redirect', error);
+    try {
+        await signInWithRedirect(auth, provider);
+    } catch (redirectError) {
+        console.error('Redirect login failed', redirectError);
+        throw redirectError;
+    }
   }
 };
 
@@ -46,36 +91,7 @@ export const handleAuthRedirect = async () => {
     const result = await getRedirectResult(auth);
     if (result && result.user) {
       const user = result.user;
-
-      // Check if user exists, if not create default profile
-      const userRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
-      if (!userSnap.exists()) {
-        await setDoc(userRef, {
-          email: user.email,
-          name: user.displayName || 'Anonymous',
-          image: user.photoURL || '',
-          coins: 100, // starting coins
-          role: 'USER', // Defaulting to USER for security
-          status: 'ACTIVE',
-          stats: { wins: 0, losses: 0, pushes: 0 },
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        });
-
-        // Initialize an empty chain for them
-        const chainRef = doc(db, 'chains', user.uid + '_current');
-        await setDoc(chainRef, {
-          userId: user.uid,
-          active: true,
-          chain: 0,
-          wins: 0,
-          losses: 0,
-          best: 0,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        });
-      }
+      await ensureUserProfile(user);
       return user;
     }
     return null;
@@ -85,4 +101,11 @@ export const handleAuthRedirect = async () => {
   }
 };
 
-export const logout = () => signOut(auth);
+export const logout = () => {
+  if (import.meta.env.DEV && (!app.options.apiKey || app.options.apiKey === 'MY_FIREBASE_API_KEY')) {
+    console.log('Mock logout triggered');
+    window.dispatchEvent(new Event('mock-logout'));
+    return;
+  }
+  return signOut(auth);
+};
