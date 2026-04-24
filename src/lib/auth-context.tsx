@@ -31,6 +31,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(false);
       }
     });
+
+    if (import.meta.env.DEV) {
+      const handleMockLogin = () => {
+        const mockUser = {
+          uid: 'mock-user-123',
+          email: 'mock@example.com',
+          displayName: 'Mock User',
+          photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=mock-user-123',
+        } as User;
+
+        const profileData = {
+          id: mockUser.uid,
+          email: mockUser.email,
+          name: mockUser.displayName,
+          image: mockUser.photoURL,
+          coins: 100,
+          role: 'ADMIN', // Make mock user an ADMIN for testing locally
+          status: 'ACTIVE',
+          stats: { wins: 0, losses: 0, pushes: 0 },
+        };
+
+        const chainData = {
+          id: mockUser.uid + '_current',
+          userId: mockUser.uid,
+          active: true,
+          chain: 0,
+          wins: 0,
+          losses: 0,
+          best: 0,
+        };
+
+        setUser(mockUser);
+        setProfile(profileData);
+        setChain(chainData);
+        setLoading(false);
+      };
+
+      const handleMockLogout = () => {
+        setUser(null);
+        setProfile(null);
+        setChain(null);
+        setLoading(false);
+      };
+
+      window.addEventListener('mock-login', handleMockLogin);
+      window.addEventListener('mock-logout', handleMockLogout);
+
+      return () => {
+        unsubscribe();
+        window.removeEventListener('mock-login', handleMockLogin);
+        window.removeEventListener('mock-logout', handleMockLogout);
+      };
+    }
+
     return unsubscribe;
   }, []);
 

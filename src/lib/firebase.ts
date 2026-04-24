@@ -33,6 +33,11 @@ const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 
 export const loginWithGoogle = async () => {
+  if (import.meta.env.DEV && (!app.options.apiKey || app.options.apiKey === 'MY_FIREBASE_API_KEY')) {
+    console.log('Mock login triggered (no valid API key in dev mode)');
+    window.dispatchEvent(new Event('mock-login'));
+    return;
+  }
   try {
     await signInWithRedirect(auth, provider);
   } catch (error) {
@@ -85,4 +90,11 @@ export const handleAuthRedirect = async () => {
   }
 };
 
-export const logout = () => signOut(auth);
+export const logout = () => {
+  if (import.meta.env.DEV && (!app.options.apiKey || app.options.apiKey === 'MY_FIREBASE_API_KEY')) {
+    console.log('Mock logout triggered');
+    window.dispatchEvent(new Event('mock-logout'));
+    return;
+  }
+  return signOut(auth);
+};
