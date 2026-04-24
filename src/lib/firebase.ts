@@ -1,5 +1,5 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, signOut, Auth, User } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, signOut, Auth, User, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, Firestore } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -61,6 +61,40 @@ const ensureUserProfile = async (user: User) => {
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
+  }
+};
+
+export const loginWithEmail = async (email: string, pass: string) => {
+  if (import.meta.env.DEV && (!app.options.apiKey || app.options.apiKey === 'MY_FIREBASE_API_KEY')) {
+    console.log('Mock login triggered (no valid API key in dev mode)');
+    window.dispatchEvent(new Event('mock-login'));
+    return;
+  }
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+    if (userCredential && userCredential.user) {
+      await ensureUserProfile(userCredential.user);
+    }
+  } catch (error: any) {
+    console.error('Email login failed', error);
+    throw error;
+  }
+};
+
+export const signupWithEmail = async (email: string, pass: string) => {
+  if (import.meta.env.DEV && (!app.options.apiKey || app.options.apiKey === 'MY_FIREBASE_API_KEY')) {
+    console.log('Mock login triggered (no valid API key in dev mode)');
+    window.dispatchEvent(new Event('mock-login'));
+    return;
+  }
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+    if (userCredential && userCredential.user) {
+      await ensureUserProfile(userCredential.user);
+    }
+  } catch (error: any) {
+    console.error('Email signup failed', error);
+    throw error;
   }
 };
 
