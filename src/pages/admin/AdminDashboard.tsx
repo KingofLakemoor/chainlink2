@@ -229,7 +229,8 @@ function AdminMatchups() {
                  }
                } else {
                  // Create new
-                 batch.set(doc(collection(db, 'matchups')), {
+                 const newDocRef = doc(collection(db, 'matchups'));
+                 batch.set(newDocRef, {
                    ...scrapedMatchup,
                    active: scrapedMatchup.active && defaultActive,
                    updatedAt: Date.now(),
@@ -239,7 +240,7 @@ function AdminMatchups() {
                  newCount++;
 
                  // Add to tracking map for this loop
-                 existingMap.set(gameId, { data: () => scrapedMatchup } as any);
+                 existingMap.set(gameId, { id: newDocRef.id, data: () => scrapedMatchup } as any);
                }
 
                if (opCount === 500) {
@@ -264,7 +265,7 @@ function AdminMatchups() {
       alert(`ESPN Sync Complete! Inserted ${totalImported} new matchups.`);
     } catch (e) {
       console.error(e);
-      alert("Sync failed");
+      alert("Sync failed: " + e.message);
     } finally {
       setSyncing(false);
     }
