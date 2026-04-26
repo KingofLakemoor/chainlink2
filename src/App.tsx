@@ -195,6 +195,24 @@ function Landing() {
   );
 }
 
+const formatUpcomingTime = (startTime: number) => {
+  const date = new Date(startTime);
+  const now = new Date();
+
+  const isToday = date.getDate() === now.getDate() &&
+                  date.getMonth() === now.getMonth() &&
+                  date.getFullYear() === now.getFullYear();
+
+  const timeString = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
+  if (isToday) {
+    return timeString;
+  } else {
+    const dayString = date.toLocaleDateString([], { weekday: 'short' });
+    return `${dayString} ${timeString}`;
+  }
+};
+
 function PlayDashboard() {
   const { user, profile, chain } = useAuth();
   const [matchups, setMatchups] = useState<any[]>([]);
@@ -317,7 +335,9 @@ function PlayDashboard() {
               </div>
               <div className="flex flex-col items-end">
                 <span className="text-[10px] text-zinc-500 uppercase">last update:</span>
-                <span className="text-xs text-zinc-300 font-medium">{m.statusDesc || 'Upcoming'}</span>
+                <span className="text-xs text-zinc-300 font-medium">
+                  {m.status === 'STATUS_SCHEDULED' ? formatUpcomingTime(m.startTime) : (m.statusDesc || 'Upcoming')}
+                </span>
               </div>
             </div>
 
