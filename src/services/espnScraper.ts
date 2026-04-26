@@ -124,6 +124,10 @@ export async function scrapeLeagueSchedules(league: League): Promise<LeagueRespo
 
             const numMatchups = Math.min(10, Math.floor(competitors.length / 2));
             const status = competition.status?.type?.name || "STATUS_SCHEDULED";
+            let statusDesc = competition.status?.type?.shortDetail || "Upcoming";
+            if (status === "STATUS_SCHEDULED") {
+              statusDesc = "Upcoming";
+            }
             const gameTime = new Date(game.date).getTime();
 
             for (let i = 0; i < numMatchups; i++) {
@@ -154,6 +158,7 @@ export async function scrapeLeagueSchedules(league: League): Promise<LeagueRespo
                  league,
                  type: "SCORE",
                  status,
+                 statusDesc,
                  gameId: matchupGameId,
                  homeTeam: {
                    id: String(b.id),
@@ -190,6 +195,10 @@ export async function scrapeLeagueSchedules(league: League): Promise<LeagueRespo
           if (!home || !away) continue;
 
           const status = competition.status?.type?.name || "STATUS_SCHEDULED";
+          let statusDesc = competition.status?.type?.shortDetail || "Upcoming";
+          if (status === "STATUS_SCHEDULED") {
+            statusDesc = "Upcoming";
+          }
           const gameTime = new Date(game.date).getTime();
 
           const overUnder = competition.odds?.[0]?.overUnder || null;
@@ -222,6 +231,7 @@ export async function scrapeLeagueSchedules(league: League): Promise<LeagueRespo
              league,
              type: "SCORE",
              status,
+             statusDesc,
              gameId: gameId,
              homeTeam: {
                id: String(home.id),
