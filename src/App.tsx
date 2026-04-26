@@ -208,7 +208,17 @@ function PlayDashboard() {
       if (snap.empty) {
         setMatchups([]);
       } else {
-        setMatchups(snap.docs.map(d => ({id: d.id, ...d.data()})));
+        const now = Date.now();
+        const next24Hours = now + 24 * 60 * 60 * 1000;
+
+        const allMatchups = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        const filteredMatchups = allMatchups.filter((m: any) => {
+          const isLive = m.status !== 'STATUS_SCHEDULED' && m.status !== 'STATUS_FINAL' && m.status !== 'STATUS_POSTPONED' && m.status !== 'STATUS_CANCELED';
+          const isUpcomingWithin24Hours = m.status === 'STATUS_SCHEDULED' && m.startTime <= next24Hours && m.startTime > (now - 24 * 60 * 60 * 1000);
+          return isLive || isUpcomingWithin24Hours;
+        });
+
+        setMatchups(filteredMatchups);
       }
     };
 
@@ -307,7 +317,7 @@ function PlayDashboard() {
               </div>
               <div className="flex flex-col items-end">
                 <span className="text-[10px] text-zinc-500 uppercase">last update:</span>
-                <span className="text-xs text-zinc-300 font-medium">Bottom 3rd</span>
+                <span className="text-xs text-zinc-300 font-medium">{m.statusDesc || 'Upcoming'}</span>
               </div>
             </div>
 
