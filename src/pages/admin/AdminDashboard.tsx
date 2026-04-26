@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs, deleteDoc, doc, setDoc, updateDoc, writeBatch, query, where } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { scrapeLeagueSchedules } from '../../services/espnScraper';
 import { useAuth } from '../../lib/auth-context';
 import { Navigate, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
@@ -164,17 +165,11 @@ function AdminMatchups() {
       let totalImported = 0;
 
       for (const league of leagues) {
-        const response = await fetch("/api/admin/sync-schedules", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ league })
-        });
+        try {
+          const result = await scrapeLeagueSchedules(league);
+          const scrapedMatchups = result.data;
 
-        const json = await response.json();
-        if (json.success && json.result?.data) {
-          const scrapedMatchups = json.result.data;
-
-          if (scrapedMatchups.length > 0) {
+          if (scrapedMatchups && scrapedMatchups.length > 0) {
              console.log(`Fetched ${scrapedMatchups.length} matchups for ${league}. Writing...`);
 
              // Client-side mapping
@@ -255,9 +250,11 @@ function AdminMatchups() {
              }
 
              totalImported += newCount;
+          } else if (result.error) {
+             console.error(`Sync error for ${league}:`, result.error);
           }
-        } else {
-          console.error(`Sync error for ${league}:`, json.error);
+        } catch (err: any) {
+          console.error(`Sync error for ${league}:`, err);
         }
       }
 
