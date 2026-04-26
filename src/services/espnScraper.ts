@@ -150,6 +150,18 @@ export async function scrapeLeagueSchedules(league: League): Promise<LeagueRespo
               const scoreA = getScore(a, currentPeriod);
               const scoreB = getScore(b, currentPeriod);
 
+              let finalStatus = competition.status?.type?.name || "STATUS_SCHEDULED";
+              let finalStatusDesc = competition.status?.type?.shortDetail || "Upcoming";
+
+              if (finalStatusDesc.toLowerCase().includes('final')) {
+                finalStatus = "STATUS_FINAL";
+              } else if (finalStatus === "STATUS_SCHEDULED" && (scoreA > 0 || scoreB > 0)) {
+                finalStatus = "STATUS_IN_PROGRESS";
+                finalStatusDesc = "In Progress";
+              } else if (finalStatus === "STATUS_SCHEDULED") {
+                finalStatusDesc = "Upcoming";
+              }
+
               parsedMatchups.push({
                  startTime: gameTime,
                  active: true,
@@ -157,8 +169,8 @@ export async function scrapeLeagueSchedules(league: League): Promise<LeagueRespo
                  title: `Round ${currentPeriod} Total Score: ${golferA.displayName || golferA.name || 'Golfer A'} vs ${golferB.displayName || golferB.name || 'Golfer B'} (Lower Wins)`,
                  league,
                  type: "SCORE",
-                 status,
-                 statusDesc,
+                 status: finalStatus,
+                 statusDesc: finalStatusDesc,
                  gameId: matchupGameId,
                  homeTeam: {
                    id: String(b.id),
@@ -194,11 +206,6 @@ export async function scrapeLeagueSchedules(league: League): Promise<LeagueRespo
           const away = competitors.find((c: any) => c.homeAway === "away");
           if (!home || !away) continue;
 
-          const status = competition.status?.type?.name || "STATUS_SCHEDULED";
-          let statusDesc = competition.status?.type?.shortDetail || "Upcoming";
-          if (status === "STATUS_SCHEDULED") {
-            statusDesc = "Upcoming";
-          }
           const gameTime = new Date(game.date).getTime();
 
           const overUnder = competition.odds?.[0]?.overUnder || null;
@@ -223,6 +230,21 @@ export async function scrapeLeagueSchedules(league: League): Promise<LeagueRespo
             }
           }
 
+          const homeScore = parseFloat(home.score || "0");
+          const awayScore = parseFloat(away.score || "0");
+
+          let finalStatus = competition.status?.type?.name || "STATUS_SCHEDULED";
+          let finalStatusDesc = competition.status?.type?.shortDetail || "Upcoming";
+
+          if (finalStatusDesc.toLowerCase().includes('final')) {
+              finalStatus = "STATUS_FINAL";
+          } else if (finalStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0)) {
+              finalStatus = "STATUS_IN_PROGRESS";
+              finalStatusDesc = "In Progress";
+          } else if (finalStatus === "STATUS_SCHEDULED") {
+              finalStatusDesc = "Upcoming";
+          }
+
           parsedMatchups.push({
              startTime: gameTime,
              active,
@@ -230,8 +252,8 @@ export async function scrapeLeagueSchedules(league: League): Promise<LeagueRespo
              title: `Who will win? ${away.team.name} @ ${home.team.name}`,
              league,
              type: "SCORE",
-             status,
-             statusDesc,
+             status: finalStatus,
+             statusDesc: finalStatusDesc,
              gameId: gameId,
              homeTeam: {
                id: String(home.id),
