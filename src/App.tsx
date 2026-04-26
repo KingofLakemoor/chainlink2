@@ -231,9 +231,10 @@ function PlayDashboard() {
 
         const allMatchups = snap.docs.map(d => ({id: d.id, ...d.data()}));
         const filteredMatchups = allMatchups.filter((m: any) => {
-          const isLive = m.status !== 'STATUS_SCHEDULED' && m.status !== 'STATUS_FINAL' && m.status !== 'STATUS_POSTPONED' && m.status !== 'STATUS_CANCELED';
+          const isFinal = m.status === 'STATUS_FINAL' || m.statusDesc?.toLowerCase().includes('final');
+          const isLive = m.status !== 'STATUS_SCHEDULED' && !isFinal && m.status !== 'STATUS_POSTPONED' && m.status !== 'STATUS_CANCELED';
           const isUpcomingWithin24Hours = m.status === 'STATUS_SCHEDULED' && m.startTime <= next24Hours && m.startTime > (now - 24 * 60 * 60 * 1000);
-          return isLive || isUpcomingWithin24Hours;
+          return (isLive || isUpcomingWithin24Hours) && !isFinal;
         });
 
         setMatchups(filteredMatchups);
@@ -334,7 +335,7 @@ function PlayDashboard() {
                  <Trophy className="w-3.5 h-3.5" /> {m.league}
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-[10px] text-zinc-500 uppercase">last update:</span>
+                {m.status !== 'STATUS_SCHEDULED' && m.statusDesc !== 'Upcoming' && <span className="text-[10px] text-zinc-500 uppercase">last update:</span>}
                 <span className="text-xs text-zinc-300 font-medium">
                   {m.status === 'STATUS_SCHEDULED' ? formatUpcomingTime(m.startTime) : (m.statusDesc || 'Upcoming')}
                 </span>
