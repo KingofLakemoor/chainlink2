@@ -4,7 +4,6 @@ import { AuthProvider, useAuth } from './lib/auth-context';
 import { loginWithGoogle, loginWithEmail, signupWithEmail, logout, db } from './lib/firebase';
 import { collection, getDocs, doc, setDoc, query, where } from 'firebase/firestore';
 import { Button } from './components/ui/button';
-import { Modal } from './components/ui/modal';
 import { cn } from './lib/utils';
 import {
   Link2, LayoutDashboard, User as UserIcon, PlayCircle, Layers, Trophy,
@@ -220,13 +219,40 @@ function PlayDashboard() {
   const { user, profile, chain } = useAuth();
   const [matchups, setMatchups] = useState<any[]>([]);
   const [userPicks, setUserPicks] = useState<Record<string, any>>({});
-  const [selectedMatchup, setSelectedMatchup] = useState<any | null>(null);
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
 
   const [allFetchedMatchups, setAllFetchedMatchups] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) return;
+
+    if (import.meta.env.DEV) {
+       const mockMatchups = [
+            {
+                id: 'mock-1',
+                title: 'Who will win? Mock Team A @ Mock Team B',
+                league: 'EPL',
+                status: 'STATUS_SCHEDULED',
+                startTime: Date.now() + 1000000,
+                statusDesc: 'Upcoming',
+                cost: 10,
+                awayTeam: { id: 'teamA', name: 'Mock Team A', image: 'https://via.placeholder.com/150', score: 0 },
+                homeTeam: { id: 'teamB', name: 'Mock Team B', image: 'https://via.placeholder.com/150', score: 0 },
+                metadata: {}
+            }
+        ];
+
+       const handleMockMatchups = (e: any) => {
+         if (e.detail && e.detail.matchups) {
+           setAllFetchedMatchups(e.detail.matchups);
+         }
+       };
+       window.addEventListener('mock-matchups', handleMockMatchups);
+
+       setAllFetchedMatchups(mockMatchups);
+       return () => window.removeEventListener('mock-matchups', handleMockMatchups);
+    }
+
     const setupMatchups = async () => {
       const snap = await getDocs(collection(db, 'matchups'));
       if (snap.empty) {
@@ -302,7 +328,6 @@ function PlayDashboard() {
       }, { merge: true });
 
       setUserPicks(prev => ({...prev, [matchup.id]: pickDoc}));
-      setSelectedMatchup(null);
     } catch (e) {
       console.error(e);
       alert("Failed to save pick. Ensure your rules allow this write.");
@@ -378,9 +403,13 @@ function PlayDashboard() {
                  <div className="flex flex-col items-center gap-3 w-[120px]">
                    <span className="text-sm font-semibold text-zinc-200">{m.awayTeam.name}</span>
                    <div className="relative">
-                     <div className={cn("w-20 h-20 rounded-xl border flex items-center justify-center p-2 bg-[#1a1a1a] transition-all", pickData?.pickId === m.awayTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : 'border-[#3f3f46]')}>
+                     <button
+                       disabled={hasPicked}
+                       onClick={() => !hasPicked && handleMakePick(m, m.awayTeam)}
+                       className={cn("w-20 h-20 rounded-xl border flex items-center justify-center p-2 bg-[#1a1a1a] transition-all", pickData?.pickId === m.awayTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!hasPicked ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default'))}
+                     >
                         <img src={m.awayTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.awayTeam.name} />
-                     </div>
+                     </button>
                      {pickData?.pickId === m.awayTeam.id && (
                        <div className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-[#22c55e] flex items-center justify-center shadow-lg">
                          <Link2 className="w-3 h-3 text-zinc-950 stroke-[3]" />
@@ -407,9 +436,13 @@ function PlayDashboard() {
                  <div className="flex flex-col items-center gap-3 w-[120px]">
                    <span className="text-sm font-semibold text-zinc-200">@{m.homeTeam.name}</span>
                    <div className="relative">
-                     <div className={cn("w-20 h-20 rounded-xl border flex items-center justify-center p-2 bg-[#1a1a1a] transition-all", pickData?.pickId === m.homeTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : 'border-[#3f3f46]')}>
+                     <button
+                       disabled={hasPicked}
+                       onClick={() => !hasPicked && handleMakePick(m, m.homeTeam)}
+                       className={cn("w-20 h-20 rounded-xl border flex items-center justify-center p-2 bg-[#1a1a1a] transition-all", pickData?.pickId === m.homeTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!hasPicked ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default'))}
+                     >
                         <img src={m.homeTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.homeTeam.name} />
-                     </div>
+                     </button>
                      {pickData?.pickId === m.homeTeam.id && (
                        <div className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-[#22c55e] flex items-center justify-center shadow-lg">
                          <Link2 className="w-3 h-3 text-zinc-950 stroke-[3]" />
@@ -431,9 +464,7 @@ function PlayDashboard() {
                </span>
 
                {!hasPicked ? (
-                  <button onClick={() => setSelectedMatchup(m)} className="text-[#22c55e] text-xs font-bold px-3 py-1.5 rounded bg-[#22c55e]/10 hover:bg-[#22c55e]/20 transition-colors uppercase tracking-wide">
-                    Make Pick
-                  </button>
+                  <div className="w-[88px]"></div>
                ) : (
                   <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
                )}
@@ -442,32 +473,6 @@ function PlayDashboard() {
         )})}
         </div>
       )}
-
-      <Modal isOpen={!!selectedMatchup} onClose={() => setSelectedMatchup(null)}>
-        {selectedMatchup && (
-          <div className="p-6">
-            <h3 className="text-xl font-bold mb-6 text-center text-zinc-100 border-b border-zinc-800 pb-4">Select your winner</h3>
-            <div className="flex gap-4">
-              <button onClick={() => handleMakePick(selectedMatchup, selectedMatchup.awayTeam)} className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl p-6 flex flex-col items-center hover:border-[#22c55e] hover:bg-[#22c55e]/5 transition-all group">
-                <div className="bg-[#1a1a1a] p-4 rounded-xl border border-zinc-800 group-hover:border-[#22c55e]/50 mb-3 w-20 h-20 flex items-center justify-center">
-                  <img src={selectedMatchup.awayTeam.image} className="max-w-full max-h-full object-contain" />
-                </div>
-                <span className="font-bold text-zinc-200">{selectedMatchup.awayTeam.name}</span>
-              </button>
-
-              <button onClick={() => handleMakePick(selectedMatchup, selectedMatchup.homeTeam)} className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl p-6 flex flex-col items-center hover:border-[#22c55e] hover:bg-[#22c55e]/5 transition-all group">
-                <div className="bg-[#1a1a1a] p-4 rounded-xl border border-zinc-800 group-hover:border-[#22c55e]/50 mb-3 w-20 h-20 flex items-center justify-center">
-                  <img src={selectedMatchup.homeTeam.image} className="max-w-full max-h-full object-contain" />
-                </div>
-                <span className="font-bold text-zinc-200">@{selectedMatchup.homeTeam.name}</span>
-              </button>
-            </div>
-            <div className="mt-6 flex justify-center items-center text-sm font-medium text-zinc-400 bg-zinc-900 rounded-lg py-3 border border-zinc-800">
-              Wager Amount: <Link2 className="w-4 h-4 text-cyan-400 ml-2 mr-1" /> <span className="font-mono text-cyan-400 font-bold tracking-wide">{selectedMatchup.cost}</span>
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }
