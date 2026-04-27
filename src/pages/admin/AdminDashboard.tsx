@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/button';
 import {
   Users, Gamepad2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
-  FileText, Diamond, Target, Bell, Shield, Coins
+  FileText, Diamond, Target, Bell, Shield, Coins, Menu, X
 } from 'lucide-react';
 
 const ADMIN_MENU = [
@@ -62,7 +62,7 @@ const ADMIN_MENU = [
   { id: 'shopItems', label: 'Shop', icon: Coins, path: '/admin/shopItems' },
 ];
 
-function AdminSidebar() {
+function AdminSidebar({ open, setOpen }: { open: boolean; setOpen: (val: boolean) => void }) {
   const location = useLocation();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({ matchups: true });
 
@@ -71,12 +71,24 @@ function AdminSidebar() {
   };
 
   return (
-    <div className="w-64 border-r border-zinc-800 bg-[#121212] flex flex-col h-full flex-shrink-0">
-      <div className="h-[4.5rem] flex items-center px-6 border-b border-zinc-800">
-         <div className="font-display font-extrabold text-xl text-zinc-100 tracking-wide">
-           Admin
-         </div>
-      </div>
+    <>
+      {/* Mobile overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 md:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      <div className={`fixed md:relative top-0 left-0 h-full z-50 w-64 border-r border-zinc-800 bg-[#121212] flex flex-col flex-shrink-0 transition-transform duration-300 ease-in-out ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className="h-[4.5rem] flex items-center justify-between px-6 border-b border-zinc-800">
+           <div className="font-display font-extrabold text-xl text-zinc-100 tracking-wide">
+             Admin
+           </div>
+           <button className="md:hidden text-zinc-400 hover:text-white" onClick={() => setOpen(false)}>
+             <X className="w-6 h-6" />
+           </button>
+        </div>
 
       <div className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1 custom-scrollbar">
         <Link to="/play" className="px-3 py-2 text-sm text-zinc-400 hover:text-white pb-4 border-b border-zinc-800/50 mb-2">← Back to App</Link>
@@ -132,7 +144,8 @@ function AdminSidebar() {
           }
         })}
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -574,6 +587,11 @@ function AdminPlaceholder({ title }: { title: string }) {
 export default function AdminDashboard() {
   const { profile, loading } = useAuth();
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
 
   if (loading) return null;
   if (!profile || profile.role !== "ADMIN") return <Navigate to="/play" replace />;
@@ -588,12 +606,15 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex h-screen bg-[#0a0a0a] text-zinc-50 font-sans overflow-hidden">
-       <AdminSidebar />
+       <AdminSidebar open={sidebarOpen} setOpen={setSidebarOpen} />
 
-       <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
+       <div className="flex-1 flex flex-col h-screen overflow-hidden relative w-full">
           <div className="absolute -z-10 h-full w-full bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5"></div>
 
-          <header className="h-[4.5rem] flex items-center px-8 border-b border-zinc-800/80 bg-[#121212]/80 backdrop-blur-md">
+          <header className="h-[4.5rem] flex items-center gap-4 px-4 md:px-8 border-b border-zinc-800/80 bg-[#121212]/80 backdrop-blur-md">
+            <button className="md:hidden text-zinc-400 hover:text-white" onClick={() => setSidebarOpen(true)}>
+              <Menu className="w-6 h-6" />
+            </button>
             <h2 className="font-display text-xl font-bold tracking-wide capitalize text-zinc-100">{headerTitle.replace('-', ' ')}</h2>
           </header>
 
