@@ -7,13 +7,13 @@ import { Button } from './components/ui/button';
 import { cn } from './lib/utils';
 import {
   Link2, LayoutDashboard, User as UserIcon, PlayCircle, Layers, Trophy,
-  ShoppingCart, Gamepad2, Settings, Users, LogOut, ShieldAlert
+  ShoppingCart, Gamepad2, Settings, Users, LogOut, ShieldAlert, Menu, X
 } from 'lucide-react';
 import {
   MdOutlineSportsSoccer, MdOutlineSportsBasketball, MdOutlineSportsHockey, MdOutlineSportsBaseball
 } from 'react-icons/md';
 
-function Sidebar() {
+function Sidebar({ open, setOpen }: { open: boolean; setOpen: (val: boolean) => void }) {
   const location = useLocation();
   const { profile } = useAuth();
 
@@ -28,14 +28,26 @@ function Sidebar() {
   };
 
   return (
-    <div className="w-64 border-r border-[#27272a] bg-[#121212] flex flex-col h-full flex-shrink-0">
-      <div className="h-16 flex items-center px-6">
-        <div className="font-display font-extrabold text-2xl text-[#22c55e] flex items-center gap-2 tracking-wide">
-          <img src="/logo.png" alt="ChainLink" className="h-8 max-w-[120px] object-contain" onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
-          <Link2 className="w-6 h-6 stroke-[2.5] hidden" />
-          ChainLink
+    <>
+      {/* Mobile overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 md:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
+
+      <div className={`fixed md:relative top-0 left-0 h-full z-50 w-64 border-r border-[#27272a] bg-[#121212] flex flex-col flex-shrink-0 transition-transform duration-300 ease-in-out ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className="h-[4.5rem] flex items-center justify-between px-6 border-b border-[#27272a]">
+          <div className="font-display font-extrabold text-2xl text-[#22c55e] flex items-center gap-2 tracking-wide">
+            <img src="/logo.png" alt="ChainLink" className="h-8 max-w-[120px] object-contain" onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+            <Link2 className="w-6 h-6 stroke-[2.5] hidden" />
+            ChainLink
+          </div>
+          <button className="md:hidden text-zinc-400 hover:text-white" onClick={() => setOpen(false)}>
+            <X className="w-6 h-6" />
+          </button>
         </div>
-      </div>
 
       <div className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1.5 custom-scrollbar">
         <NavItem icon={LayoutDashboard} label="Dashboard" path="/dashboard" />
@@ -65,7 +77,8 @@ function Sidebar() {
           <LogOut className="w-4 h-4 mr-2" /> Log Out
         </Button>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -73,7 +86,7 @@ function TopStats() {
   const { profile, chain } = useAuth();
 
   return (
-    <div className="flex items-center gap-5">
+    <div className="flex items-center gap-2 sm:gap-5">
       <div className="flex items-center gap-1.5 text-sm">
          <Link2 className="w-4 h-4 text-cyan-400" />
          <span className="font-mono text-cyan-400 font-medium tracking-wide">{profile?.coins?.toLocaleString() || 0}</span>
@@ -81,7 +94,7 @@ function TopStats() {
       <div className="w-px h-4 bg-zinc-700"></div>
       <div className="flex items-center gap-3 text-sm">
          <span className="text-[#22c55e] font-bold tracking-tight">W{chain?.chain || 0}</span>
-         <span className="text-zinc-400 font-mono text-xs tracking-wider">
+         <span className="hidden sm:inline text-zinc-400 font-mono text-xs tracking-wider">
            {profile?.stats?.wins || 0} - {profile?.stats?.losses || 0} - {profile?.stats?.pushes || 0}
          </span>
       </div>
@@ -479,6 +492,12 @@ function PlayDashboard() {
 
 function MainLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
   const pageTitle = {
     '/dashboard': 'Dashboard',
     '/play': 'Play',
@@ -490,10 +509,15 @@ function MainLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen bg-[#0a0a0a] text-zinc-50 font-sans overflow-hidden">
-       <Sidebar />
-       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-         <header className="h-[4.5rem] flex items-center justify-between px-8 border-b border-[#27272a] bg-[#0a0a0a]">
-            <div><h2 className="font-display text-2xl font-bold tracking-wide text-zinc-100">{pageTitle}</h2></div>
+       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
+       <div className="flex-1 flex flex-col h-screen overflow-hidden w-full relative">
+         <header className="h-[4.5rem] flex items-center justify-between px-4 md:px-8 border-b border-[#27272a] bg-[#0a0a0a]">
+            <div className="flex items-center gap-4">
+              <button className="md:hidden text-zinc-400 hover:text-white" onClick={() => setSidebarOpen(true)}>
+                <Menu className="w-6 h-6" />
+              </button>
+              <h2 className="font-display text-xl md:text-2xl font-bold tracking-wide text-zinc-100">{pageTitle}</h2>
+            </div>
             <TopStats />
          </header>
          <main className="flex-1 overflow-y-auto bg-[#0a0a0a]">
