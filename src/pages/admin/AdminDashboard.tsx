@@ -3,7 +3,7 @@ import { collection, getDocs, deleteDoc, doc, setDoc, updateDoc, writeBatch, que
 import { db } from '../../lib/firebase';
 import { scrapeLeagueSchedules } from '../../services/espnScraper';
 import { useAuth } from '../../lib/auth-context';
-import { Navigate, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Navigate, Routes, Route, Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 import {
   Users, Gamepad2, ShoppingCart, Layers, Trophy,
@@ -153,12 +153,22 @@ function AdminMatchups() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [leagueFilter, setLeagueFilter] = useState('All');
+  const [pickCounts, setPickCounts] = useState<Record<string, number>>({});
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const snap = await getDocs(collection(db, 'matchups'));
       setData(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+
+      const picksSnap = await getDocs(collection(db, 'picks'));
+      const counts: Record<string, number> = {};
+      picksSnap.docs.forEach(d => {
+        const p = d.data();
+        counts[p.matchupId] = (counts[p.matchupId] || 0) + 1;
+      });
+      setPickCounts(counts);
     } catch (e) {
       console.error(e);
     } finally {
@@ -305,7 +315,7 @@ function AdminMatchups() {
   return (
     <div className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden shadow-xl flex flex-col h-full max-h-[85vh]">
       <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-[#18181A]">
-        <h3 className="font-bold text-lg">Matchups Management ({data.length})</h3>
+        <h3 className="font-bold text-lg">Matchups Management ({data.filter(m => m.status !== 'STATUS_FINAL' && (leagueFilter === 'All' || m.league === leagueFilter)).length})</h3>
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
@@ -316,6 +326,10 @@ function AdminMatchups() {
             <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
             {syncing ? "Syncing..." : "Sync ESPN APIs"}
           </Button>
+          <select value={leagueFilter} onChange={(e) => setLeagueFilter(e.target.value)} className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-zinc-700 text-zinc-300">
+            <option value="All">All Leagues</option>
+            {["MLB", "NBA", "NHL", "PGA", "WNBA", "NFL", "WBB", "MBB", "MLS", "EPL", "NWSL", "COLLEGE-FOOTBALL"].map(l => <option key={l} value={l}>{l}</option>)}
+          </select>
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-500" />
             <input type="text" placeholder="Search Matchups..." className="bg-zinc-900 border border-zinc-800 rounded-lg pl-9 pr-4 py-1.5 text-sm focus:outline-none focus:border-zinc-700 w-64" />
@@ -337,11 +351,12 @@ function AdminMatchups() {
                 <th className="px-4 py-3 font-medium">Active</th>
                 <th className="px-4 py-3 font-medium">Start Time</th>
                 <th className="px-4 py-3 font-medium">Cost</th>
+                <th className="px-4 py-3 font-medium">Picks</th>
                 <th className="px-4 py-3 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800">
-              {data.map(row => (
+              {data.filter(row => row.status !== 'STATUS_FINAL' && (leagueFilter === 'All' || row.league === leagueFilter)).sort((a, b) => (a.startTime || 0) - (b.startTime || 0)).map(row => (
                 <tr key={row.id} className="hover:bg-zinc-800/30 transition-colors">
                   <td className="px-4 py-3 font-bold text-zinc-300">{row.league}</td>
                   <td className="px-4 py-3 text-zinc-200">{row.title}</td>
@@ -361,8 +376,9 @@ function AdminMatchups() {
                   </td>
                   <td className="px-4 py-3 text-zinc-500">{new Date(row.startTime).toLocaleString()}</td>
                   <td className="px-4 py-3 text-cyan-400 font-mono">{row.cost} LNK</td>
+                  <td className="px-4 py-3 text-zinc-300 font-mono">{pickCounts[row.id] || 0}</td>
                   <td className="px-4 py-3 text-right">
-                    <button className="text-zinc-500 hover:text-white mr-3"><Edit className="w-4 h-4" /></button>
+                    <Link to={`/admin/matchups/${row.id}`} className="text-zinc-500 hover:text-white mr-3 inline-block"><Edit className="w-4 h-4" /></Link>
                     <button onClick={() => handleDelete(row.id)} className="text-red-500/70 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
@@ -447,6 +463,300 @@ function GenericTable({ collectionName }: { collectionName: string }) {
           </table>
         </div>
       )}
+    </div>
+  );
+}
+
+
+function AdminEditMatchup() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [matchup, setMatchup] = useState<any>(null);
+  const [picks, setPicks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMatchup = async () => {
+      setLoading(true);
+      try {
+        if (!id) return;
+        const docRef = doc(db, 'matchups', id);
+        const docSnap = await getDocs(query(collection(db, 'matchups'), where('__name__', '==', id)));
+
+        if (!docSnap.empty) {
+            const mData = docSnap.docs[0].data();
+            // Start time formatting for input type="datetime-local"
+            let formattedDate = "";
+            if (mData.startTime) {
+                const date = new Date(mData.startTime);
+                const tzOffset = date.getTimezoneOffset() * 60000;
+                formattedDate = new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+            }
+
+            setMatchup({ ...mData, id: docSnap.docs[0].id, formStartTime: formattedDate });
+        }
+
+        const picksSnap = await getDocs(query(collection(db, 'picks'), where('matchupId', '==', id)));
+
+        const picksData = await Promise.all(picksSnap.docs.map(async (pDoc) => {
+            const p = pDoc.data();
+            let userName = p.userId;
+            let userImage = "";
+            try {
+                const uSnap = await getDocs(query(collection(db, 'users'), where('__name__', '==', p.userId)));
+                if (!uSnap.empty) {
+                    const u = uSnap.docs[0].data();
+                    userName = u.name || p.userId;
+                    userImage = u.image || "";
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            return { id: pDoc.id, ...p, userName, userImage };
+        }));
+
+        setPicks(picksData);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMatchup();
+  }, [id]);
+
+  const handleChange = (field: string, value: any) => {
+    setMatchup((prev: any) => {
+        const newData = { ...prev };
+        const keys = field.split('.');
+        let current = newData;
+        for (let i = 0; i < keys.length - 1; i++) {
+            if (!current[keys[i]]) current[keys[i]] = {};
+            // Need to shallow copy the nested object as well
+            current[keys[i]] = { ...current[keys[i]] };
+            current = current[keys[i]];
+        }
+        current[keys[keys.length - 1]] = value;
+        return newData;
+    });
+  };
+
+  const handleUpdate = async () => {
+    try {
+        if (!id) return;
+        const updateData = { ...matchup };
+        delete updateData.id;
+        delete updateData.formStartTime;
+
+        if (matchup.formStartTime) {
+            updateData.startTime = new Date(matchup.formStartTime).getTime();
+        }
+
+        updateData.cost = Number(updateData.cost);
+        if (updateData.homeTeam) updateData.homeTeam.score = Number(updateData.homeTeam.score || 0);
+        if (updateData.awayTeam) updateData.awayTeam.score = Number(updateData.awayTeam.score || 0);
+
+        updateData.updatedAt = Date.now();
+        await updateDoc(doc(db, 'matchups', id), updateData);
+        alert('Matchup updated successfully!');
+    } catch (e) {
+        console.error(e);
+        alert('Failed to update matchup');
+    }
+  };
+
+  const handleFinalize = async () => {
+      handleChange('status', 'STATUS_FINAL');
+  };
+
+  if (loading) return <div className="p-8 text-zinc-500">Loading matchup details...</div>;
+  if (!matchup) return <div className="p-8 text-zinc-500">Matchup not found</div>;
+
+  return (
+    <div className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden shadow-xl flex flex-col h-full max-h-[85vh] overflow-y-auto custom-scrollbar">
+      <div className="p-6 border-b border-zinc-800 bg-[#18181A] sticky top-0 z-10 flex justify-between items-center">
+        <div>
+            <h2 className="text-2xl font-bold text-white mb-1">Edit Matchup</h2>
+            <p className="text-zinc-400 text-sm">{matchup.title} - {matchup.league}</p>
+        </div>
+        <Button onClick={() => navigate('/admin/matchups')} variant="outline">Back to Matchups</Button>
+      </div>
+
+      <div className="p-6 space-y-6">
+        {/* Basic Info */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Matchup Title</label>
+                <input
+                    type="text"
+                    value={matchup.title || ''}
+                    onChange={(e) => handleChange('title', e.target.value)}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700"
+                />
+            </div>
+            <div className="space-y-2">
+                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">League</label>
+                <select
+                    value={matchup.league || ''}
+                    onChange={(e) => handleChange('league', e.target.value)}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700"
+                >
+                    {["MLB", "NBA", "NHL", "PGA", "WNBA", "NFL", "WBB", "MBB", "MLS", "EPL", "NWSL", "COLLEGE-FOOTBALL", "TUR", "RPL"].map(l => <option key={l} value={l}>{l}</option>)}
+                </select>
+            </div>
+            <div className="space-y-2 md:col-span-2">
+                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Status</label>
+                <select
+                    value={matchup.status || ''}
+                    onChange={(e) => handleChange('status', e.target.value)}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700"
+                >
+                    <option value="STATUS_SCHEDULED">STATUS_SCHEDULED</option>
+                    <option value="STATUS_IN_PROGRESS">STATUS_IN_PROGRESS</option>
+                    <option value="STATUS_FINAL">STATUS_FINAL</option>
+                    <option value="STATUS_POSTPONED">STATUS_POSTPONED</option>
+                    <option value="STATUS_CANCELED">STATUS_CANCELED</option>
+                </select>
+            </div>
+        </div>
+
+        {/* Teams */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-zinc-800/50 pt-6">
+            {/* Away Team */}
+            <div className="space-y-4">
+                <div className="space-y-2">
+                    <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Away Team Name</label>
+                    <input type="text" value={matchup.awayTeam?.name || ''} onChange={(e) => handleChange('awayTeam.name', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+                </div>
+                <div className="flex gap-4 items-center">
+                    {matchup.awayTeam?.image && <img src={matchup.awayTeam.image} alt="Away" className="w-8 h-8 object-contain bg-white rounded p-0.5" />}
+                    <div className="flex-1 space-y-2">
+                        <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Away Team Image URL</label>
+                        <input type="text" value={matchup.awayTeam?.image || ''} onChange={(e) => handleChange('awayTeam.image', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Away Team Score</label>
+                    <input type="number" value={matchup.awayTeam?.score || 0} onChange={(e) => handleChange('awayTeam.score', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+                </div>
+            </div>
+
+            {/* Home Team */}
+            <div className="space-y-4">
+                <div className="space-y-2">
+                    <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Home Team Name</label>
+                    <input type="text" value={matchup.homeTeam?.name || ''} onChange={(e) => handleChange('homeTeam.name', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+                </div>
+                <div className="flex gap-4 items-center">
+                    {matchup.homeTeam?.image && <img src={matchup.homeTeam.image} alt="Home" className="w-8 h-8 object-contain bg-white rounded p-0.5" />}
+                    <div className="flex-1 space-y-2">
+                        <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Home Team Image URL</label>
+                        <input type="text" value={matchup.homeTeam?.image || ''} onChange={(e) => handleChange('homeTeam.image', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Home Team Score</label>
+                    <input type="number" value={matchup.homeTeam?.score || 0} onChange={(e) => handleChange('homeTeam.score', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+                </div>
+            </div>
+        </div>
+
+        {/* Details */}
+        <div className="grid grid-cols-1 gap-6 border-t border-zinc-800/50 pt-6">
+            <div className="space-y-2">
+                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Type</label>
+                <select value={matchup.type || ''} onChange={(e) => handleChange('type', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700">
+                    <option value="SCORE">SCORE</option>
+                    <option value="SPREAD">SPREAD</option>
+                    <option value="OVER_UNDER">OVER_UNDER</option>
+                </select>
+            </div>
+            <div className="space-y-2">
+                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Type Details</label>
+                <input type="text" value={matchup.typeDetails || ''} onChange={(e) => handleChange('typeDetails', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+            </div>
+            <div className="space-y-2">
+                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Cost</label>
+                <input type="number" value={matchup.cost || 0} onChange={(e) => handleChange('cost', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+            </div>
+            <div className="space-y-2">
+                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Start Time</label>
+                <input type="datetime-local" value={matchup.formStartTime || ''} onChange={(e) => handleChange('formStartTime', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700 [color-scheme:dark]" />
+            </div>
+        </div>
+
+        {/* Toggles */}
+        <div className="flex gap-8 border-t border-zinc-800/50 pt-6 pb-2">
+            <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={matchup.active || false} onChange={(e) => handleChange('active', e.target.checked)} className="w-4 h-4 rounded border-zinc-700 bg-zinc-900 text-green-500 focus:ring-green-500/20" />
+                <span className="text-sm font-medium text-zinc-300">Active</span>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={matchup.featured || false} onChange={(e) => handleChange('featured', e.target.checked)} className="w-4 h-4 rounded border-zinc-700 bg-zinc-900 text-green-500 focus:ring-green-500/20" />
+                <span className="text-sm font-medium text-zinc-300">Featured</span>
+            </label>
+        </div>
+
+        {/* Actions */}
+        <div className="border-t border-zinc-800/50 pt-6 space-y-4">
+            <h3 className="font-bold text-lg text-white">In Progress Actions</h3>
+            <div className="flex flex-col gap-3">
+                <button onClick={handleFinalize} className="w-full bg-red-900/40 hover:bg-red-800/60 text-red-100 font-bold py-3 rounded-lg transition-colors border border-red-900/50">Finalize Matchup</button>
+                <button className="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold py-3 rounded-lg transition-colors">Release Picks</button>
+            </div>
+        </div>
+
+        <div className="pt-4 flex justify-end">
+            <Button onClick={handleUpdate} className="bg-emerald-500 hover:bg-emerald-600 text-white border-none">Update Matchup</Button>
+        </div>
+      </div>
+
+      {/* Picks Section */}
+      <div className="border-t border-zinc-800 bg-[#18181A] p-6">
+        <h3 className="font-bold text-lg mb-4 text-white">Picks ({picks.length})</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead className="text-zinc-500 border-b border-zinc-800/50">
+              <tr>
+                <th className="pb-3 font-medium">User</th>
+                <th className="pb-3 font-medium">Pick</th>
+                <th className="pb-3 font-medium">Status</th>
+                <th className="pb-3 font-medium">Coins</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-800/50">
+                {picks.map(p => (
+                    <tr key={p.id} className="hover:bg-zinc-800/30 transition-colors">
+                        <td className="py-4">
+                            <div className="flex items-center gap-3">
+                                <img src={p.userImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.userId}`} className="w-8 h-8 rounded-full bg-zinc-800" />
+                                <span className="font-medium text-zinc-300">{p.userName}</span>
+                            </div>
+                        </td>
+                        <td className="py-4">
+                            <div className="flex items-center gap-2">
+                                <img src={p.team?.image} className="w-5 h-5 object-contain" />
+                                <span className="text-zinc-300">{p.team?.name}</span>
+                            </div>
+                        </td>
+                        <td className="py-4">
+                            <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider bg-zinc-800 text-zinc-400">
+                                {p.status || 'PENDING'}
+                            </span>
+                        </td>
+                        <td className="py-4 text-zinc-400">{p.coins || 0}</td>
+                    </tr>
+                ))}
+                {picks.length === 0 && (
+                    <tr>
+                        <td colSpan={4} className="py-8 text-center text-zinc-500">No picks found for this matchup.</td>
+                    </tr>
+                )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   );
 }
@@ -626,6 +936,7 @@ export default function AdminDashboard() {
                 <Route path="picks" element={<GenericTable collectionName="picks" />} />
                 <Route path="matchups/create" element={<AdminPlaceholder title="Create Matchup" />} />
                 <Route path="matchups/find" element={<AdminPlaceholder title="Find Matchup" />} />
+                <Route path="matchups/:id" element={<AdminEditMatchup />} />
 
                 {/* Announcements */}
                 <Route path="announcements" element={<GenericTable collectionName="announcements" />} />
