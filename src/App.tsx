@@ -10,6 +10,9 @@ import {
   Link2, LayoutDashboard, User as UserIcon, PlayCircle, Layers, Trophy,
   ShoppingCart, Gamepad2, Settings, Users, LogOut, ShieldAlert
 } from 'lucide-react';
+import {
+  MdOutlineSportsSoccer, MdOutlineSportsBasketball, MdOutlineSportsHockey, MdOutlineSportsBaseball
+} from 'react-icons/md';
 
 function Sidebar() {
   const location = useLocation();
@@ -218,26 +221,19 @@ function PlayDashboard() {
   const [matchups, setMatchups] = useState<any[]>([]);
   const [userPicks, setUserPicks] = useState<Record<string, any>>({});
   const [selectedMatchup, setSelectedMatchup] = useState<any | null>(null);
+  const [selectedSport, setSelectedSport] = useState<string | null>(null);
+
+  const [allFetchedMatchups, setAllFetchedMatchups] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) return;
     const setupMatchups = async () => {
       const snap = await getDocs(collection(db, 'matchups'));
       if (snap.empty) {
-        setMatchups([]);
+        setAllFetchedMatchups([]);
       } else {
-        const now = Date.now();
-        const next24Hours = now + 24 * 60 * 60 * 1000;
-
         const allMatchups = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        const filteredMatchups = allMatchups.filter((m: any) => {
-          const isFinal = m.status === 'STATUS_FINAL' || m.statusDesc?.toLowerCase().includes('final');
-          const isLive = m.status !== 'STATUS_SCHEDULED' && !isFinal && m.status !== 'STATUS_POSTPONED' && m.status !== 'STATUS_CANCELED';
-          const isUpcomingWithin24Hours = m.status === 'STATUS_SCHEDULED' && m.startTime <= next24Hours && m.startTime > (now - 24 * 60 * 60 * 1000);
-          return (isLive || isUpcomingWithin24Hours) && !isFinal;
-        });
-
-        setMatchups(filteredMatchups);
+        setAllFetchedMatchups(allMatchups);
       }
     };
 
@@ -255,6 +251,28 @@ function PlayDashboard() {
     setupMatchups();
     fetchPicks();
   }, [user]);
+
+  useEffect(() => {
+    const now = Date.now();
+    const next24Hours = now + 24 * 60 * 60 * 1000;
+
+    const filteredMatchups = allFetchedMatchups.filter((m: any) => {
+      const isFinal = m.status === 'STATUS_FINAL' || m.statusDesc?.toLowerCase().includes('final');
+      const isLive = m.status !== 'STATUS_SCHEDULED' && !isFinal && m.status !== 'STATUS_POSTPONED' && m.status !== 'STATUS_CANCELED';
+      const isUpcomingWithin24Hours = m.status === 'STATUS_SCHEDULED' && m.startTime <= next24Hours && m.startTime > (now - 24 * 60 * 60 * 1000);
+
+      if (!((isLive || isUpcomingWithin24Hours) && !isFinal)) return false;
+
+      if (selectedSport === 'SOCCER' && !['MLS', 'EPL', 'NWSL'].includes(m.league)) return false;
+      if (selectedSport === 'BASKETBALL' && !['NBA', 'MBB', 'WBB', 'WNBA'].includes(m.league)) return false;
+      if (selectedSport === 'HOCKEY' && !['NHL'].includes(m.league)) return false;
+      if (selectedSport === 'BASEBALL' && !['MLB'].includes(m.league)) return false;
+
+      return true;
+    });
+
+    setMatchups(filteredMatchups);
+  }, [allFetchedMatchups, selectedSport]);
 
   const handleMakePick = async (matchup: any, team: any) => {
     if (!user || !profile) return;
@@ -307,10 +325,20 @@ function PlayDashboard() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 mb-6 border-b border-zinc-800/80 pb-3">
-        <Button variant="secondary" className="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border-none rounded-full px-6 h-9">All</Button>
-        <Button variant="ghost" className="text-zinc-400 hover:text-zinc-200 rounded-full px-6 h-9">Available</Button>
-        <Button variant="ghost" className="text-zinc-400 hover:text-zinc-200 rounded-full px-6 h-9">Chain Builder</Button>
+      <div className="flex items-center gap-4 mb-6 border-b border-zinc-800/80 pb-3 flex-wrap">
+        <div className="flex items-center gap-1 bg-zinc-900/80 rounded-xl p-1 border border-zinc-800">
+          <Button variant="secondary" className="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border-none rounded-lg px-6 h-9">All</Button>
+          <Button variant="ghost" className="text-zinc-400 hover:text-zinc-200 rounded-lg px-6 h-9">Available</Button>
+          <Button variant="ghost" className="text-zinc-400 hover:text-zinc-200 rounded-lg px-6 h-9">Chain Builder</Button>
+        </div>
+
+        <div className="flex items-center gap-1 bg-zinc-900/80 rounded-xl p-1 border border-zinc-800">
+          <Button variant="ghost" onClick={() => setSelectedSport(null)} className={cn("rounded-lg px-4 h-9 font-medium", selectedSport === null ? "bg-zinc-950 text-zinc-100" : "text-zinc-400 hover:text-zinc-200")}>All</Button>
+          <Button variant="ghost" onClick={() => setSelectedSport('SOCCER')} className={cn("rounded-lg px-3 h-9", selectedSport === 'SOCCER' ? "bg-zinc-950 text-zinc-100" : "text-zinc-400 hover:text-zinc-200")}><MdOutlineSportsSoccer className="w-5 h-5" /></Button>
+          <Button variant="ghost" onClick={() => setSelectedSport('BASKETBALL')} className={cn("rounded-lg px-3 h-9", selectedSport === 'BASKETBALL' ? "bg-zinc-950 text-zinc-100" : "text-zinc-400 hover:text-zinc-200")}><MdOutlineSportsBasketball className="w-5 h-5" /></Button>
+          <Button variant="ghost" onClick={() => setSelectedSport('HOCKEY')} className={cn("rounded-lg px-3 h-9", selectedSport === 'HOCKEY' ? "bg-zinc-950 text-zinc-100" : "text-zinc-400 hover:text-zinc-200")}><MdOutlineSportsHockey className="w-5 h-5" /></Button>
+          <Button variant="ghost" onClick={() => setSelectedSport('BASEBALL')} className={cn("rounded-lg px-3 h-9", selectedSport === 'BASEBALL' ? "bg-zinc-950 text-zinc-100" : "text-zinc-400 hover:text-zinc-200")}><MdOutlineSportsBaseball className="w-5 h-5" /></Button>
+        </div>
       </div>
 
       {matchups.length === 0 ? (
