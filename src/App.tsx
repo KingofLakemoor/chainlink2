@@ -315,6 +315,13 @@ function PlayDashboard() {
 
   const handleMakePick = async (matchup: any, team: any) => {
     if (!user || !profile) return;
+
+    const hasActivePick = Object.values(userPicks).some((p: any) => p.status === 'PENDING');
+    if (hasActivePick) {
+      alert("You already have an active pick! Wait for it to finish before making another.");
+      return;
+    }
+
     if (profile.coins < matchup.cost) {
       alert("Not enough links!");
       return;
@@ -389,9 +396,12 @@ function PlayDashboard() {
         </div>
       ) : (
         <div className="grid lg:grid-cols-2 gap-5">
-        {matchups.map(m => {
+        {(() => {
+          const hasActivePickAnywhere = Object.values(userPicks).some((p: any) => p.status === 'PENDING');
+          return matchups.map(m => {
           const hasPicked = !!userPicks[m.id];
           const pickData = userPicks[m.id];
+          const isPickDisabled = hasPicked || hasActivePickAnywhere;
 
           return (
           <div key={m.id} className="bg-[#131415] border border-[#27272a] rounded-xl overflow-hidden hover:border-zinc-700 transition-colors shadow-sm relative group">
@@ -417,9 +427,9 @@ function PlayDashboard() {
                    <span className="text-sm font-semibold text-zinc-200">{m.awayTeam.name}</span>
                    <div className="relative">
                      <button
-                       disabled={hasPicked}
-                       onClick={() => !hasPicked && handleMakePick(m, m.awayTeam)}
-                       className={cn("w-20 h-20 rounded-xl border flex items-center justify-center p-2 bg-[#1a1a1a] transition-all", pickData?.pickId === m.awayTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!hasPicked ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default'))}
+                       disabled={isPickDisabled}
+                       onClick={() => !isPickDisabled && handleMakePick(m, m.awayTeam)}
+                       className={cn("w-20 h-20 rounded-xl border flex items-center justify-center p-2 bg-[#1a1a1a] transition-all", pickData?.pickId === m.awayTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
                      >
                         <img src={m.awayTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.awayTeam.name} />
                      </button>
@@ -450,9 +460,9 @@ function PlayDashboard() {
                    <span className="text-sm font-semibold text-zinc-200">@{m.homeTeam.name}</span>
                    <div className="relative">
                      <button
-                       disabled={hasPicked}
-                       onClick={() => !hasPicked && handleMakePick(m, m.homeTeam)}
-                       className={cn("w-20 h-20 rounded-xl border flex items-center justify-center p-2 bg-[#1a1a1a] transition-all", pickData?.pickId === m.homeTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!hasPicked ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default'))}
+                       disabled={isPickDisabled}
+                       onClick={() => !isPickDisabled && handleMakePick(m, m.homeTeam)}
+                       className={cn("w-20 h-20 rounded-xl border flex items-center justify-center p-2 bg-[#1a1a1a] transition-all", pickData?.pickId === m.homeTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
                      >
                         <img src={m.homeTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.homeTeam.name} />
                      </button>
@@ -483,7 +493,8 @@ function PlayDashboard() {
                )}
             </div>
           </div>
-        )})}
+        );
+        })})()}
         </div>
       )}
     </div>
