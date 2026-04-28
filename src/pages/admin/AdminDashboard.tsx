@@ -665,9 +665,14 @@ function AdminEditMatchup() {
         <div className="grid grid-cols-1 gap-6 border-t border-zinc-800/50 pt-6">
             <div className="space-y-2">
                 <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Type</label>
-                <select value={matchup.type || ''} onChange={(e) => handleChange('type', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700">
+                <select value={matchup.type || 'SCORE'} onChange={(e) => handleChange('type', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700">
                     <option value="SCORE">SCORE</option>
+                    <option value="STATS">STATS</option>
+                    <option value="LEADERS">LEADERS</option>
+                    <option value="BOOLEAN">BOOLEAN</option>
+                    <option value="CUSTOM">CUSTOM</option>
                     <option value="SPREAD">SPREAD</option>
+                    <option value="CUSTOM_SCORE">CUSTOM_SCORE</option>
                     <option value="OVER_UNDER">OVER_UNDER</option>
                 </select>
             </div>
