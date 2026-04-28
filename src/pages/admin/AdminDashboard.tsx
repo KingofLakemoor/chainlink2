@@ -553,6 +553,7 @@ function AdminEditMatchup() {
         }
 
         updateData.cost = Number(updateData.cost);
+        updateData.reward = Number(updateData.reward ?? 10);
         if (updateData.homeTeam) updateData.homeTeam.score = Number(updateData.homeTeam.score || 0);
         if (updateData.awayTeam) updateData.awayTeam.score = Number(updateData.awayTeam.score || 0);
 
@@ -703,6 +704,10 @@ function AdminEditMatchup() {
             <div className="space-y-2">
                 <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Cost</label>
                 <input type="number" value={matchup.cost || 0} onChange={(e) => handleChange('cost', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+            </div>
+            <div className="space-y-2">
+                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Reward</label>
+                <input type="number" value={matchup.reward ?? 10} onChange={(e) => handleChange('reward', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
             </div>
             <div className="space-y-2">
                 <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Start Time</label>
