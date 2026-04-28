@@ -9,7 +9,7 @@ export interface LeagueResponse {
   data: any[];
 }
 
-export function getScheduleEndpoints(league: League) {
+export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = false) {
   const today = new Date();
   const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
   const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
@@ -18,6 +18,7 @@ export function getScheduleEndpoints(league: League) {
   const formatDate = (d: Date) => d.toISOString().split("T")[0].replace(/-/g, "");
   const dates = [yesterday, today, tomorrow, theDayAfterTomorrow].map(formatDate);
 
+  // College basketball and PGA always use scoreboard
   if (league === "MBB") {
     return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?groups=50&dates=${date}&limit=500`);
   }
@@ -26,6 +27,21 @@ export function getScheduleEndpoints(league: League) {
   }
   if (league === "PGA") {
     return ['https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard'];
+  }
+
+  // If scoreboardOnly is true, use scoreboard endpoints to save bandwidth
+  if (scoreboardOnly) {
+    switch (league) {
+      case "NFL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=${date}`);
+      case "NBA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${date}`);
+      case "NHL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard?dates=${date}`);
+      case "MLB": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${date}`);
+      case "MLS": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard?dates=${date}`);
+      case "EPL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=${date}`);
+      case "COLLEGE-FOOTBALL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${date}`);
+      case "WNBA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/scoreboard?dates=${date}`);
+      default: return [];
+    }
   }
 
   const year = new Date().getFullYear();
@@ -42,12 +58,13 @@ export function getScheduleEndpoints(league: League) {
   }
 }
 
-export async function fetchScheduleData(endpoint: string, league: League) {
+export async function fetchScheduleData(endpoint: string, league: League, isScoreboardOnly: boolean = false) {
   const response = await fetch(endpoint);
   const data = await response.json();
   const scheduleData: Record<string, any> = {};
 
-  if (league === "MBB" || league === "WBB" || league === "PGA") {
+  // For scoreboards or leagues already using scoreboard
+  if (league === "MBB" || league === "WBB" || league === "PGA" || isScoreboardOnly) {
     const seenGameIds = new Set<string>();
     const uniqueEvents = [];
 
@@ -86,7 +103,7 @@ export async function fetchScheduleData(endpoint: string, league: League) {
   return scheduleData;
 }
 
-export async function scrapeLeagueSchedules(league: League): Promise<LeagueResponse> {
+export async function scrapeLeagueSchedules(league: League, scoreboardOnly: boolean = false): Promise<LeagueResponse> {
   const response: LeagueResponse = {
     scoreMatchupsCreated: 0,
     existingMatchups: 0,
@@ -96,7 +113,7 @@ export async function scrapeLeagueSchedules(league: League): Promise<LeagueRespo
     data: []
   };
 
-  const endpoints = getScheduleEndpoints(league);
+  const endpoints = getScheduleEndpoints(league, scoreboardOnly);
   if (!endpoints || endpoints.length === 0) {
     response.error = `No endpoints for ${league}`;
     return response;
@@ -107,7 +124,7 @@ export async function scrapeLeagueSchedules(league: League): Promise<LeagueRespo
 
   for (const endpoint of endpoints) {
     try {
-      const scheduleData = await fetchScheduleData(endpoint, league);
+      const scheduleData = await fetchScheduleData(endpoint, league, scoreboardOnly);
 
       for (const day in scheduleData) {
         const games = scheduleData[day].games;
