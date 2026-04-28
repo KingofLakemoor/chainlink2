@@ -137,7 +137,10 @@ export async function scrapeLeagueSchedules(league: League): Promise<LeagueRespo
               const golferA = a.athlete || a.team;
               const golferB = b.athlete || b.team;
 
-              const matchupGameId = `${gameId}_${a.id}_${b.id}`;
+              const idA = String(a.id);
+              const idB = String(b.id);
+              const sortedIds = [idA, idB].sort();
+              const matchupGameId = `${gameId}_${sortedIds[0]}_${sortedIds[1]}`;
 
               if (processedGameIds.has(matchupGameId)) continue;
               processedGameIds.add(matchupGameId);
