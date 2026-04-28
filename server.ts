@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from "express";
 import path from "path";
+import cron from "node-cron";
 import { scrapeLeagueSchedules, syncLeagueSchedules } from "./src/services/scheduleProcessor.js";
 import { initializeApp, cert } from 'firebase-admin/app';
 
@@ -98,28 +99,43 @@ async function startServer() {
     console.log(`[Cron] Initializing automatic schedule sync every ${SYNC_INTERVAL / 1000 / 60} minutes for leagues: ${LEAGUES_TO_SYNC.join(', ')}`);
 
     setInterval(async () => {
-      console.log(`[Cron] Starting scheduled sync cycle...`);
+      console.log(`[Cron] Starting frequent (scoreboard-only) sync cycle...`);
       for (const league of LEAGUES_TO_SYNC) {
         try {
-          await syncLeagueSchedules(league);
+          await syncLeagueSchedules(league, true);
         } catch (e) {
           console.error(`[Cron] Error syncing ${league}:`, e);
         }
       }
-      console.log(`[Cron] Scheduled sync cycle complete.`);
+      console.log(`[Cron] Frequent sync cycle complete.`);
     }, SYNC_INTERVAL);
 
     // Also run an initial sync 5 seconds after startup
     setTimeout(async () => {
-      console.log(`[Cron] Running initial sync...`);
+      console.log(`[Cron] Running initial frequent sync...`);
       for (const league of LEAGUES_TO_SYNC) {
         try {
-          await syncLeagueSchedules(league);
+          await syncLeagueSchedules(league, true);
         } catch (e) {
           console.error(`[Cron] Error on initial sync for ${league}:`, e);
         }
       }
     }, 5000);
+
+    // Nightly sync at 2 AM Arizona time
+    cron.schedule("0 2 * * *", async () => {
+      console.log(`[Cron] Starting nightly full scheduled sync cycle (2 AM Arizona time)...`);
+      for (const league of LEAGUES_TO_SYNC) {
+        try {
+          await syncLeagueSchedules(league, false);
+        } catch (e) {
+          console.error(`[Cron] Error on nightly sync for ${league}:`, e);
+        }
+      }
+      console.log(`[Cron] Nightly scheduled sync cycle complete.`);
+    }, {
+      timezone: "America/Phoenix"
+    });
   });
 }
 
