@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth-context';
 import { loginWithGoogle, loginWithEmail, signupWithEmail, logout, db } from './lib/firebase';
-import { collection, getDocs, doc, setDoc, query, where } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, query, where, onSnapshot } from 'firebase/firestore';
 import { Button } from './components/ui/button';
 import { cn } from './lib/utils';
 import {
@@ -245,6 +245,7 @@ function PlayDashboard() {
        const mockMatchups = [
             {
                 id: 'mock-1',
+                gameId: 'mock-1',
                 title: 'Who will win? Mock Team A @ Mock Team B',
                 league: 'EPL',
                 status: 'STATUS_SCHEDULED',
@@ -299,25 +300,35 @@ function PlayDashboard() {
     };
 
 
-    const fetchPicks = async () => {
+    let unsubPicks = () => {};
+    let unsubGlobalPicks = () => {};
+
+    const setupPicksListeners = () => {
       const q = query(collection(db, 'picks'), where('userId', '==', user.uid));
-      const pickSnap = await getDocs(q);
-      const picksInfo: Record<string, any> = {};
-      pickSnap.docs.forEach(d => {
-        const data = d.data();
-        picksInfo[data.matchupId] = data;
+      unsubPicks = onSnapshot(q, (pickSnap) => {
+        const picksInfo: Record<string, any> = {};
+        pickSnap.docs.forEach(d => {
+          const data = d.data();
+          picksInfo[data.matchupId] = data;
+        });
+        setUserPicks(picksInfo);
       });
-      setUserPicks(picksInfo);
 
       // Fetch all pending picks for global hot rating
       const globalQ = query(collection(db, 'picks'), where('status', '==', 'PENDING'));
-      const globalPickSnap = await getDocs(globalQ);
-      const allUpcomingPicks = globalPickSnap.docs.map(d => d.data());
-      setGlobalUpcomingPicks(allUpcomingPicks);
+      unsubGlobalPicks = onSnapshot(globalQ, (globalPickSnap) => {
+        const allUpcomingPicks = globalPickSnap.docs.map(d => d.data());
+        setGlobalUpcomingPicks(allUpcomingPicks);
+      });
     };
 
     setupMatchups();
-    fetchPicks();
+    setupPicksListeners();
+
+    return () => {
+      unsubPicks();
+      unsubGlobalPicks();
+    };
   }, [user]);
 
 
@@ -331,7 +342,7 @@ function PlayDashboard() {
       }
       counts[p.matchupId].total += 1;
 
-      const matchup = allFetchedMatchups.find(m => m.id === p.matchupId);
+      const matchup = allFetchedMatchups.find(m => m.gameId === p.matchupId);
       if (matchup && matchup.status === 'STATUS_SCHEDULED') {
          total += 1;
       }
@@ -382,10 +393,10 @@ function PlayDashboard() {
       return;
     }
     try {
-      const pickId = user.uid + "_" + matchup.id;
+      const pickId = user.uid + "_" + matchup.gameId;
       const pickDoc = {
         userId: user.uid,
-        matchupId: matchup.id,
+        matchupId: matchup.gameId,
         pickId: team.id,
         pickName: team.name,
         status: 'PENDING',
@@ -402,7 +413,7 @@ function PlayDashboard() {
         updatedAt: Date.now()
       }, { merge: true });
 
-      setUserPicks(prev => ({...prev, [matchup.id]: pickDoc}));
+      setUserPicks(prev => ({...prev, [matchup.gameId]: pickDoc}));
     } catch (e) {
       console.error(e);
       alert("Failed to save pick. Ensure your rules allow this write.");
@@ -455,18 +466,18 @@ function PlayDashboard() {
           const hasActivePickAnywhere = Object.values(userPicks).some((p: any) => p.status === 'PENDING');
           return matchups.map(m => {
 
-          const hasPicked = !!userPicks[m.id];
-          const pickData = userPicks[m.id];
+          const hasPicked = !!userPicks[m.gameId];
+          const pickData = userPicks[m.gameId];
           const isPickDisabled = hasPicked || hasActivePickAnywhere;
 
-          const mCounts = matchupPickCounts[m.id] || { total: 0, away: 0, home: 0 };
+          const mCounts = matchupPickCounts[m.gameId] || { total: 0, away: 0, home: 0 };
           const awayHotPct = mCounts.total > 0 ? Math.round((mCounts.away / mCounts.total) * 100) : 0;
           const homeHotPct = mCounts.total > 0 ? Math.round((mCounts.home / mCounts.total) * 100) : 0;
           const isScheduled = m.status === 'STATUS_SCHEDULED';
 
 
           return (
-          <div key={m.id} className="bg-[#131415] border border-[#27272a] rounded-xl overflow-hidden hover:border-zinc-700 transition-colors shadow-sm relative group">
+          <div key={m.gameId} className="bg-[#131415] border border-[#27272a] rounded-xl overflow-hidden hover:border-zinc-700 transition-colors shadow-sm relative group">
             {/* Header info */}
             <div className="bg-[#161d2b] px-4 py-2 border-b border-[#27272a] flex justify-between items-center bg-gradient-to-r from-[#111f38] to-[#121212]">
               <div className="flex items-center gap-2 font-bold text-sm text-zinc-200 tracking-tight">
