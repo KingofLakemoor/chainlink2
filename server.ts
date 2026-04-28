@@ -3,6 +3,7 @@ import express from "express";
 import path from "path";
 import { scrapeLeagueSchedules, syncLeagueSchedules } from "./src/services/scheduleProcessor.js";
 import { initializeApp, cert } from 'firebase-admin/app';
+import cron from "node-cron";
 
 // Note: initializeApp for admin requires service account credentials in a production setting.
 // Since we are using Firebase, let's export an endpoint or a button to trigger it manually,
@@ -120,6 +121,53 @@ async function startServer() {
         }
       }
     }, 5000);
+
+    // Nightly cleanup for abandoned matchups
+    cron.schedule('0 2 * * *', async () => {
+      console.log(`[Cron] Running nightly cleanup of abandoned matchups...`);
+      try {
+        const { adminDb } = await import("./src/lib/firebase-admin.js");
+        if (!adminDb) {
+           console.log("[Cron] adminDb not initialized. Skipping cleanup.");
+           return;
+        }
+
+        const matchupsRef = adminDb.collection('matchups');
+        const abandonedSnap = await matchupsRef.where('abandoned', '==', true).get();
+
+        if (abandonedSnap.empty) {
+          console.log(`[Cron] No abandoned matchups found for cleanup.`);
+          return;
+        }
+
+        console.log(`[Cron] Found ${abandonedSnap.size} abandoned matchups to delete.`);
+
+        let batch = adminDb.batch();
+        let opCount = 0;
+        let deleteCount = 0;
+
+        for (const doc of abandonedSnap.docs) {
+          batch.delete(doc.ref);
+          opCount++;
+          deleteCount++;
+
+          if (opCount === 500) {
+            await batch.commit();
+            batch = adminDb.batch();
+            opCount = 0;
+          }
+        }
+
+        if (opCount > 0) {
+          await batch.commit();
+        }
+
+        console.log(`[Cron] Successfully deleted ${deleteCount} abandoned matchups.`);
+      } catch (err) {
+        console.error(`[Cron] Error during nightly cleanup:`, err);
+      }
+    });
+
   });
 }
 

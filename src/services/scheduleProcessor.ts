@@ -32,6 +32,7 @@ export async function syncLeagueSchedules(league: League): Promise<LeagueRespons
       let opCount = 0;
       let newCount = 0;
       let updateCount = 0;
+      let abandonedCount = 0;
       const matchupsToGrade: any[] = [];
 
       for (const scrapedMatchup of response.data) {
@@ -40,7 +41,33 @@ export async function syncLeagueSchedules(league: League): Promise<LeagueRespons
 
         if (existingDoc) {
           const existingData = existingDoc.data();
-          if (existingData.status !== scrapedMatchup.status ||
+          if (existingData.abandoned === true) {
+            continue;
+          }
+
+          let isAbandonedNow = false;
+
+          if (existingData.status === 'STATUS_SCHEDULED' && scrapedMatchup.status === 'STATUS_IN_PROGRESS') {
+            const picksSnap = await adminDb.collection('picks')
+              .where('matchupId', '==', gameId)
+              .where('status', '==', 'PENDING')
+              .limit(1)
+              .get();
+
+            if (picksSnap.empty) {
+              isAbandonedNow = true;
+            }
+          }
+
+          if (isAbandonedNow) {
+            batch.update(existingDoc.ref, {
+              active: false,
+              abandoned: true,
+              updatedAt: Date.now()
+            });
+            opCount++;
+            abandonedCount++;
+          } else if (existingData.status !== scrapedMatchup.status ||
               existingData.startTime !== scrapedMatchup.startTime ||
               existingData.homeTeam?.score !== scrapedMatchup.homeTeam?.score ||
               existingData.awayTeam?.score !== scrapedMatchup.awayTeam?.score)
