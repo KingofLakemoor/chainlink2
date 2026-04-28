@@ -4,8 +4,8 @@ import { League, LeagueResponse, scrapeLeagueSchedules } from './espnScraper.js'
 
 export { scrapeLeagueSchedules } from './espnScraper.js';
 
-export async function syncLeagueSchedules(league: League): Promise<LeagueResponse> {
-  const response = await scrapeLeagueSchedules(league);
+export async function syncLeagueSchedules(league: League, scoreboardOnly: boolean = false): Promise<LeagueResponse> {
+  const response = await scrapeLeagueSchedules(league, scoreboardOnly);
 
   if (response.data && response.data.length > 0 && adminDb) {
     console.log(`[Sync] Fetched ${response.data.length} matchups for ${league}. Writing to Firestore...`);
