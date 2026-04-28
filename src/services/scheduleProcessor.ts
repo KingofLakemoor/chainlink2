@@ -40,12 +40,17 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
         if (existingDoc) {
           const existingData = existingDoc.data();
+
+          if (existingData.abandoned) {
+            continue;
+          }
+
           if (existingData.status !== scrapedMatchup.status ||
               existingData.startTime !== scrapedMatchup.startTime ||
               existingData.homeTeam?.score !== scrapedMatchup.homeTeam?.score ||
               existingData.awayTeam?.score !== scrapedMatchup.awayTeam?.score)
           {
-            batch.update(existingDoc.ref, {
+            const updateData: any = {
               status: scrapedMatchup.status,
               startTime: scrapedMatchup.startTime,
               'homeTeam.score': scrapedMatchup.homeTeam?.score || 0,
@@ -54,7 +59,22 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               'metadata.spread': scrapedMatchup.metadata?.spread,
               'metadata.network': scrapedMatchup.metadata?.network,
               updatedAt: Date.now()
-            });
+            };
+
+            if (existingData.status === 'STATUS_SCHEDULED' && scrapedMatchup.status === 'STATUS_IN_PROGRESS') {
+              const pendingPicksSnap = await adminDb.collection('picks')
+                .where('matchupId', '==', gameId)
+                .where('status', '==', 'PENDING')
+                .limit(1)
+                .get();
+
+              if (pendingPicksSnap.empty) {
+                updateData.abandoned = true;
+                updateData.active = false;
+              }
+            }
+
+            batch.update(existingDoc.ref, updateData);
             opCount++;
             updateCount++;
 
