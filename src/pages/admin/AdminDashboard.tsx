@@ -567,6 +567,26 @@ function AdminEditMatchup() {
 
   const handleFinalize = async () => {
       handleChange('status', 'STATUS_FINAL');
+
+      try {
+          const res = await fetch('/api/admin/grade-matchup', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ gameId: matchup.gameId })
+          });
+
+          const data = await res.json();
+          if (data.success) {
+              alert('Matchup finalized and picks graded successfully!');
+          } else {
+              alert('Failed to grade picks: ' + (data.error || 'Unknown error'));
+          }
+      } catch (e) {
+          console.error('Error finalizing matchup:', e);
+          alert('Failed to contact server for grading.');
+      }
   };
 
   if (loading) return <div className="p-8 text-zinc-500">Loading matchup details...</div>;

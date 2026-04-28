@@ -254,6 +254,18 @@ function PlayDashboard() {
                 awayTeam: { id: 'teamA', name: 'Mock Team A', image: 'https://via.placeholder.com/150', score: 0 },
                 homeTeam: { id: 'teamB', name: 'Mock Team B', image: 'https://via.placeholder.com/150', score: 0 },
                 metadata: {}
+            },
+            {
+                id: 'mock-live-1',
+                title: 'Who will win? Mock Live Away @ Mock Live Home',
+                league: 'EPL',
+                status: 'STATUS_IN_PROGRESS',
+                startTime: Date.now() - 3600000,
+                statusDesc: 'In Progress',
+                cost: 10,
+                awayTeam: { id: 'teamC', name: 'Mock Live Away', image: 'https://via.placeholder.com/150', score: 2 },
+                homeTeam: { id: 'teamD', name: 'Mock Live Home', image: 'https://via.placeholder.com/150', score: 1 },
+                metadata: {}
             }
         ];
 
@@ -506,20 +518,33 @@ function PlayDashboard() {
                         </div>
                       </div>
                     ) : (
-                      <>
-                        <div className={cn("w-16 h-10 bg-[#1a1a1a] rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden",
-                          (m.metadata?.lowerScoreWins ? m.awayTeam.score < m.homeTeam.score : m.awayTeam.score > m.homeTeam.score) ? "text-zinc-100" : "text-zinc-500"
+                      <div className="flex items-center gap-2">
+                        <div className={cn("w-16 h-10 rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden",
+                          m.status === 'STATUS_IN_PROGRESS' ? "bg-[#27272a] text-white ring-1 ring-zinc-700" : "bg-[#1a1a1a]",
+                          (m.metadata?.lowerScoreWins ? m.awayTeam.score < m.homeTeam.score : m.awayTeam.score > m.homeTeam.score) ? "text-zinc-100" : (m.status === 'STATUS_IN_PROGRESS' ? "text-zinc-200" : "text-zinc-500")
                         )}>
                            {(m.metadata?.lowerScoreWins ? m.awayTeam.score < m.homeTeam.score : m.awayTeam.score > m.homeTeam.score) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-300"></div>}
                            {m.awayTeam.score ?? 0}
                         </div>
-                        <div className={cn("w-16 h-10 bg-[#1a1a1a] rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden",
-                          (m.metadata?.lowerScoreWins ? m.homeTeam.score < m.awayTeam.score : m.homeTeam.score > m.awayTeam.score) ? "text-zinc-100" : "text-zinc-500"
+
+                        {m.status === 'STATUS_IN_PROGRESS' && (
+                          <div className="flex flex-col items-center justify-center min-w-[40px]">
+                            <span className="relative flex h-2.5 w-2.5 mb-1">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                            </span>
+                            <span className="text-[9px] font-bold text-red-500 tracking-wider">LIVE</span>
+                          </div>
+                        )}
+
+                        <div className={cn("w-16 h-10 rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden",
+                          m.status === 'STATUS_IN_PROGRESS' ? "bg-[#27272a] text-white ring-1 ring-zinc-700" : "bg-[#1a1a1a]",
+                          (m.metadata?.lowerScoreWins ? m.homeTeam.score < m.awayTeam.score : m.homeTeam.score > m.awayTeam.score) ? "text-zinc-100" : (m.status === 'STATUS_IN_PROGRESS' ? "text-zinc-200" : "text-zinc-500")
                         )}>
                            {(m.metadata?.lowerScoreWins ? m.homeTeam.score < m.awayTeam.score : m.homeTeam.score > m.awayTeam.score) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-300"></div>}
                            {m.homeTeam.score ?? 0}
                         </div>
-                      </>
+                      </div>
                     )}
                  </div>
 
