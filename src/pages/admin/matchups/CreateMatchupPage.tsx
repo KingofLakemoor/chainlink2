@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { collection, addDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Gamepad2 } from 'lucide-react';
@@ -62,7 +62,7 @@ export default function CreateMatchupPage() {
         updatedAt: Date.now()
       };
 
-      await addDoc(collection(db, 'matchups'), matchupData);
+      await setDoc(doc(db, 'matchups', matchupData.gameId), matchupData);
       navigate('/admin/matchups');
     } catch (error) {
       console.error('Error creating matchup:', error);

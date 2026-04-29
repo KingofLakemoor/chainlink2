@@ -227,13 +227,41 @@ function AdminMatchups() {
                const existingDoc = existingMap.get(gameId);
 
                if (existingDoc) {
-                 // Check if it needs update...
+                 // Check if it needs update or migration
                  const existingData = existingDoc.data();
-                 if (existingData.status !== scrapedMatchup.status ||
+                 const needsUpdate = existingData.status !== scrapedMatchup.status ||
                      existingData.startTime !== scrapedMatchup.startTime ||
                      existingData.homeTeam?.score !== scrapedMatchup.homeTeam?.score ||
-                     existingData.awayTeam?.score !== scrapedMatchup.awayTeam?.score)
-                 {
+                     existingData.awayTeam?.score !== scrapedMatchup.awayTeam?.score;
+
+                 if (existingDoc.id !== gameId) {
+                   // Migrate to use gameId as the document ID
+                   const newDocRef = doc(db, 'matchups', gameId);
+                   const updateData = {
+                     ...existingData,
+                     status: scrapedMatchup.status,
+                     startTime: scrapedMatchup.startTime,
+                     homeTeam: {
+                         ...(existingData.homeTeam || {}),
+                         score: scrapedMatchup.homeTeam?.score || existingData.homeTeam?.score || 0
+                     },
+                     awayTeam: {
+                         ...(existingData.awayTeam || {}),
+                         score: scrapedMatchup.awayTeam?.score || existingData.awayTeam?.score || 0
+                     },
+                     metadata: {
+                         ...(existingData.metadata || {}),
+                         overUnder: scrapedMatchup.metadata?.overUnder,
+                         spread: scrapedMatchup.metadata?.spread,
+                         network: scrapedMatchup.metadata?.network
+                     },
+                     updatedAt: Date.now()
+                   };
+                   batch.set(newDocRef, updateData);
+                   batch.delete(doc(db, 'matchups', existingDoc.id));
+                   opCount += 2;
+                   existingMap.set(gameId, { id: gameId, data: () => updateData } as any);
+                 } else if (needsUpdate) {
                    batch.update(doc(db, 'matchups', existingDoc.id), {
                      status: scrapedMatchup.status,
                      startTime: scrapedMatchup.startTime,
@@ -248,7 +276,7 @@ function AdminMatchups() {
                  }
                } else {
                  // Create new
-                 const newDocRef = doc(collection(db, 'matchups'));
+                 const newDocRef = doc(db, 'matchups', gameId);
                  batch.set(newDocRef, {
                    ...scrapedMatchup,
                    active: scrapedMatchup.active && defaultActive,
@@ -259,10 +287,10 @@ function AdminMatchups() {
                  newCount++;
 
                  // Add to tracking map for this loop
-                 existingMap.set(gameId, { id: newDocRef.id, data: () => scrapedMatchup } as any);
+                 existingMap.set(gameId, { id: gameId, data: () => scrapedMatchup } as any);
                }
 
-               if (opCount === 500) {
+               if (opCount >= 500) {
                  await batch.commit();
                  batch = writeBatch(db);
                  opCount = 0;
