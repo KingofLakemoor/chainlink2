@@ -132,6 +132,35 @@ async function startServer() {
           console.error(`[Cron] Error on nightly sync for ${league}:`, e);
         }
       }
+
+      console.log(`[Cron] Starting purge of abandoned matchups...`);
+      try {
+        const { adminDb } = await import("./src/lib/firebase-admin.js");
+        if (adminDb) {
+          let purgedCount = 0;
+          while (true) {
+            const abandonedSnap = await adminDb.collection('matchups')
+              .where('abandoned', '==', true)
+              .limit(500)
+              .get();
+
+            if (abandonedSnap.empty) {
+              break;
+            }
+
+            const batch = adminDb.batch();
+            abandonedSnap.docs.forEach(doc => {
+              batch.delete(doc.ref);
+            });
+            await batch.commit();
+            purgedCount += abandonedSnap.size;
+          }
+          console.log(`[Cron] Purged ${purgedCount} abandoned matchups.`);
+        }
+      } catch (e) {
+        console.error(`[Cron] Error purging abandoned matchups:`, e);
+      }
+
       console.log(`[Cron] Nightly scheduled sync cycle complete.`);
     }, {
       timezone: "America/Phoenix"
