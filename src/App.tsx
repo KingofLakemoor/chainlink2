@@ -233,6 +233,7 @@ function PlayDashboard() {
   const [matchups, setMatchups] = useState<any[]>([]);
   const [userPicks, setUserPicks] = useState<Record<string, any>>({});
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
+  const [filterType, setFilterType] = useState<'all' | 'available' | 'chain'>('all');
 
   const [allFetchedMatchups, setAllFetchedMatchups] = useState<any[]>([]);
   const [globalUpcomingPicks, setGlobalUpcomingPicks] = useState<any[]>([]);
@@ -368,6 +369,8 @@ function PlayDashboard() {
 
       if (!((isLive || isUpcomingWithin24Hours) && !isFinal)) return false;
 
+      if (filterType === 'available' && m.status !== 'STATUS_SCHEDULED') return false;
+
       if (selectedSport === 'SOCCER' && !['MLS', 'EPL', 'NWSL'].includes(m.league)) return false;
       if (selectedSport === 'BASKETBALL' && !['NBA', 'MBB', 'WBB', 'WNBA'].includes(m.league)) return false;
       if (selectedSport === 'HOCKEY' && !['NHL'].includes(m.league)) return false;
@@ -376,8 +379,10 @@ function PlayDashboard() {
       return true;
     });
 
+    filteredMatchups.sort((a: any, b: any) => a.startTime - b.startTime);
+
     setMatchups(filteredMatchups);
-  }, [allFetchedMatchups, selectedSport]);
+  }, [allFetchedMatchups, selectedSport, filterType]);
 
   const handleMakePick = async (matchup: any, team: any) => {
     if (!user || !profile) return;
@@ -438,9 +443,9 @@ function PlayDashboard() {
 
       <div className="flex items-center gap-4 mb-6 border-b border-zinc-800/80 pb-3 flex-wrap">
         <div className="flex items-center gap-1 bg-zinc-900/80 rounded-xl p-1 border border-zinc-800">
-          <Button variant="secondary" className="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border-none rounded-lg px-6 h-9">All</Button>
-          <Button variant="ghost" className="text-zinc-400 hover:text-zinc-200 rounded-lg px-6 h-9">Available</Button>
-          <Button variant="ghost" className="text-zinc-400 hover:text-zinc-200 rounded-lg px-6 h-9">Chain Builder</Button>
+          <Button variant={filterType === 'all' ? "secondary" : "ghost"} onClick={() => setFilterType('all')} className={cn("rounded-lg px-6 h-9", filterType === 'all' ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border-none" : "text-zinc-400 hover:text-zinc-200")}>All</Button>
+          <Button variant={filterType === 'available' ? "secondary" : "ghost"} onClick={() => setFilterType('available')} className={cn("rounded-lg px-6 h-9", filterType === 'available' ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border-none" : "text-zinc-400 hover:text-zinc-200")}>Available</Button>
+          <Button variant={filterType === 'chain' ? "secondary" : "ghost"} onClick={() => setFilterType('chain')} className={cn("rounded-lg px-6 h-9", filterType === 'chain' ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border-none" : "text-zinc-400 hover:text-zinc-200")}>Chain Builder</Button>
         </div>
 
         <div className="flex items-center gap-1 bg-zinc-900/80 rounded-xl p-1 border border-zinc-800">
