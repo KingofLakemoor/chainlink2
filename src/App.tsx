@@ -410,15 +410,30 @@ function PlayDashboard() {
         createdAt: Date.now(),
         updatedAt: Date.now()
       };
-      await setDoc(doc(db, 'picks', pickId), pickDoc);
 
-      await setDoc(doc(db, 'users', user.uid), {
-        ...profile,
-        coins: profile.coins - matchup.cost,
-        updatedAt: Date.now()
-      }, { merge: true });
+      if (import.meta.env.DEV && !user.getIdToken) {
+          // Mock local flow
+          await setDoc(doc(db, 'picks', pickId), pickDoc);
+          setUserPicks(prev => ({...prev, [matchup.gameId]: pickDoc}));
+          return;
+      }
 
+      const idToken = await user.getIdToken();
+      const res = await fetch('/api/picks/make-pick', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ matchupId: matchup.gameId, teamId: team.id, teamName: team.name })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      // Successfully saved by backend, real-time listener will update local state,
+      // but we can enthusiastically update locally if we want, or just wait for the listener.
       setUserPicks(prev => ({...prev, [matchup.gameId]: pickDoc}));
+
     } catch (e) {
       console.error(e);
       alert("Failed to save pick. Ensure your rules allow this write.");
