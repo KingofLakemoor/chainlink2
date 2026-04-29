@@ -41,6 +41,79 @@ async function startServer() {
   });
 
   // API boundaries
+  app.post("/api/picks/make-pick", async (req, res) => {
+    try {
+      const { matchupId, teamId, teamName } = req.body;
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+      }
+
+      const idToken = authHeader.split('Bearer ')[1];
+      const { adminAuth, adminDb } = await import("./src/lib/firebase-admin.js");
+      if (!adminAuth || !adminDb) return res.status(500).json({ success: false, error: "admin tools not initialized" });
+
+      const decodedToken = await adminAuth.verifyIdToken(idToken);
+      const uid = decodedToken.uid;
+
+      // Start transaction to check existing pick, check coins, deduct coins, and save pick
+      await adminDb.runTransaction(async (transaction: any) => {
+        const userRef = adminDb.collection('users').doc(uid);
+        const userDoc = await transaction.get(userRef);
+        if (!userDoc.exists) throw new Error("User not found");
+
+        const matchupRef = adminDb.collection('matchups').doc(matchupId);
+        const matchupDoc = await transaction.get(matchupRef);
+        if (!matchupDoc.exists) throw new Error("Matchup not found");
+
+        const matchup = matchupDoc.data()!;
+        if (!matchup.active) throw new Error("Matchup is locked");
+        if (matchup.status !== 'STATUS_SCHEDULED' && matchup.status !== 'STATUS_POSTPONED') {
+          throw new Error("Matchup has already started");
+        }
+
+        const profile = userDoc.data()!;
+        if (matchup.cost > 0 && profile.coins < matchup.cost) {
+          throw new Error("Not enough links!");
+        }
+
+        const picksRef = adminDb.collection('picks');
+        const activePicks = await picksRef.where('userId', '==', uid).where('status', '==', 'PENDING').get();
+        if (!activePicks.empty) {
+          throw new Error("You already have an active pick!");
+        }
+
+        const pickId = uid + "_" + matchupId;
+        const newPickRef = adminDb.collection('picks').doc(pickId);
+
+        transaction.set(newPickRef, {
+          userId: uid,
+          matchupId,
+          pickId: teamId,
+          pickName: teamName,
+          status: 'PENDING',
+          coins: matchup.cost,
+          active: true,
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        });
+
+        if (matchup.cost > 0) {
+          transaction.update(userRef, {
+            coins: profile.coins - matchup.cost,
+            updatedAt: Date.now()
+          });
+        }
+      });
+
+      res.json({ success: true });
+    } catch (e: any) {
+      console.error(e);
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
+
   app.post("/api/admin/sync-schedules", async (req, res) => {
     try {
       const { league } = req.body;
