@@ -177,7 +177,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                 finalStatus = "STATUS_FINAL";
               } else if (finalStatus === "STATUS_SCHEDULED" && (scoreA > 0 || scoreB > 0)) {
                 finalStatus = "STATUS_IN_PROGRESS";
-                finalStatusDesc = "In Progress";
+
               } else if (finalStatus === "STATUS_SCHEDULED") {
                 finalStatusDesc = "Upcoming";
               }
@@ -260,7 +260,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
               finalStatus = "STATUS_FINAL";
           } else if (finalStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0)) {
               finalStatus = "STATUS_IN_PROGRESS";
-              finalStatusDesc = "In Progress";
+
           } else if (finalStatus === "STATUS_SCHEDULED") {
               finalStatusDesc = "Upcoming";
           }
