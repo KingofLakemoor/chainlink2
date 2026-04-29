@@ -45,21 +45,45 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
             continue;
           }
 
-          if (existingData.status !== scrapedMatchup.status || existingData.statusDesc !== scrapedMatchup.statusDesc ||
+          const needsUpdate = existingData.status !== scrapedMatchup.status || existingData.statusDesc !== scrapedMatchup.statusDesc ||
               existingData.startTime !== scrapedMatchup.startTime ||
               existingData.homeTeam?.score !== scrapedMatchup.homeTeam?.score ||
-              existingData.awayTeam?.score !== scrapedMatchup.awayTeam?.score)
-          {
+              existingData.awayTeam?.score !== scrapedMatchup.awayTeam?.score;
+
+          if (needsUpdate || existingDoc.id !== gameId) {
             const updateData: any = {
+              ...existingData,
               status: scrapedMatchup.status,
               statusDesc: scrapedMatchup.statusDesc,
               startTime: scrapedMatchup.startTime,
-              'homeTeam.score': scrapedMatchup.homeTeam?.score || 0,
-              'awayTeam.score': scrapedMatchup.awayTeam?.score || 0,
-              'metadata.overUnder': scrapedMatchup.metadata?.overUnder,
-              'metadata.spread': scrapedMatchup.metadata?.spread,
-              'metadata.network': scrapedMatchup.metadata?.network,
+              homeTeam: {
+                  ...(existingData.homeTeam || {}),
+                  score: scrapedMatchup.homeTeam?.score || existingData.homeTeam?.score || 0
+              },
+              awayTeam: {
+                  ...(existingData.awayTeam || {}),
+                  score: scrapedMatchup.awayTeam?.score || existingData.awayTeam?.score || 0
+              },
+              metadata: {
+                  ...(existingData.metadata || {}),
+                  overUnder: scrapedMatchup.metadata?.overUnder,
+                  spread: scrapedMatchup.metadata?.spread,
+                  network: scrapedMatchup.metadata?.network
+              },
               updatedAt: Date.now()
+            };
+
+            // Flatten update properties specifically for batch.update when NOT migrating
+            const flattenedUpdate: any = {
+              status: updateData.status,
+              statusDesc: updateData.statusDesc,
+              startTime: updateData.startTime,
+              'homeTeam.score': updateData.homeTeam.score,
+              'awayTeam.score': updateData.awayTeam.score,
+              'metadata.overUnder': updateData.metadata.overUnder,
+              'metadata.spread': updateData.metadata.spread,
+              'metadata.network': updateData.metadata.network,
+              updatedAt: updateData.updatedAt
             };
 
             if (existingData.status === 'STATUS_SCHEDULED' && scrapedMatchup.status === 'STATUS_IN_PROGRESS') {
@@ -72,19 +96,29 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               if (pendingPicksSnap.empty) {
                 updateData.abandoned = true;
                 updateData.active = false;
+                flattenedUpdate.abandoned = true;
+                flattenedUpdate.active = false;
               }
             }
 
-            batch.update(existingDoc.ref, updateData);
-            opCount++;
+            if (existingDoc.id !== gameId) {
+              const newDocRef = matchupsRef.doc(gameId);
+              batch.set(newDocRef, updateData);
+              batch.delete(existingDoc.ref);
+              opCount += 2;
+              existingMap.set(gameId, { data: () => updateData, ref: newDocRef } as any);
+            } else if (needsUpdate) {
+              batch.update(existingDoc.ref, flattenedUpdate);
+              opCount++;
+            }
             updateCount++;
 
-            if (scrapedMatchup.status === 'STATUS_FINAL') {
-              matchupsToGrade.push(scrapedMatchup);
+            if (scrapedMatchup.status === 'STATUS_FINAL' && existingData.status !== 'STATUS_FINAL') {
+              matchupsToGrade.push({ ...existingData, ...updateData, gameId: scrapedMatchup.gameId, id: gameId });
             }
           }
         } else {
-          const newDocRef = matchupsRef.doc();
+          const newDocRef = matchupsRef.doc(gameId);
           batch.set(newDocRef, {
             ...scrapedMatchup,
             active: scrapedMatchup.active && defaultActive,
@@ -97,7 +131,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
           existingMap.set(gameId, { data: () => scrapedMatchup, ref: newDocRef } as any);
         }
 
-        if (opCount === 500) {
+        if (opCount >= 500) {
           await batch.commit();
           batch = adminDb.batch();
           opCount = 0;
