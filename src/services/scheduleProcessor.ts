@@ -45,13 +45,14 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
             continue;
           }
 
-          if (existingData.status !== scrapedMatchup.status ||
+          if (existingData.status !== scrapedMatchup.status || existingData.statusDesc !== scrapedMatchup.statusDesc ||
               existingData.startTime !== scrapedMatchup.startTime ||
               existingData.homeTeam?.score !== scrapedMatchup.homeTeam?.score ||
               existingData.awayTeam?.score !== scrapedMatchup.awayTeam?.score)
           {
             const updateData: any = {
               status: scrapedMatchup.status,
+              statusDesc: scrapedMatchup.statusDesc,
               startTime: scrapedMatchup.startTime,
               'homeTeam.score': scrapedMatchup.homeTeam?.score || 0,
               'awayTeam.score': scrapedMatchup.awayTeam?.score || 0,
