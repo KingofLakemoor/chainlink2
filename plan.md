@@ -1,14 +1,6 @@
-1. **Remove overriding of `statusDesc` to "In Progress"**
-   - In `src/services/espnScraper.ts`, the code overrides `finalStatusDesc` to "In Progress" when a game becomes active. This throws away the valuable information like time remaining or current period (e.g., "Bot 6th", "3rd Qtr"). We should leave `finalStatusDesc` as it comes from the API (which is `competition.status?.type?.shortDetail`) unless it's strictly upcoming.
-   - I have already run a `sed` command to remove `finalStatusDesc = "In Progress";` in `src/services/espnScraper.ts`.
-
-2. **Update `syncLeagueSchedules` to properly sync `statusDesc`**
-   - In `src/services/scheduleProcessor.ts`, the background task updates `status` but does not update `statusDesc`. We need to include `statusDesc` in the change check and `updateData` so the live updates flow to Firestore.
-   - I have already modified `src/services/scheduleProcessor.ts` to include `statusDesc` in both the comparison logic and the updated object.
-
-3. **Verify the change via tests/pre-commit**
-   - Ensure the scraper and sync processor compile successfully.
-   - Run the pre-commit steps and test verification.
-
-4. **Submit changes**
-   - Commit and push to the codebase.
+1. **Fetch Achievements and User Earned Achievements**: Update `ProfilePage.tsx` to fetch the complete list of achievements and the user's earned achievements from Firestore, so we can display them. The user wants them displayed as a Medal Table. The achievements should be grouped or sorted with rarer achievements higher up, and displaying the number of times they've been earned.
+2. **Update `ProfilePage` component**: Modify `src/pages/profile/ProfilePage.tsx` to include an achievements section. This section should display the user's achievements sorted by weight/rarity.
+3. **Verify the implementation locally**: Run Playwright to check if the achievements are rendered correctly.
+4. **Run static checks**: Run `npm run lint` and `npm run build`.
+5. **Complete pre-commit steps**: Complete pre commit steps to ensure proper testing, verification, review, and reflection are done.
+6. **Submit changes**: Push to a branch with a descriptive commit message.

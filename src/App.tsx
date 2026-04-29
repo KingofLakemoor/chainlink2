@@ -669,6 +669,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 import AdminDashboard from './pages/admin/AdminDashboard';
+import ProfilePage from './pages/profile/ProfilePage';
 
 export default function App() {
   return (
@@ -679,7 +680,7 @@ export default function App() {
           <Route path="/admin/*" element={<AdminDashboard />} />
           <Route path="/dashboard" element={<PrivateRoute><MainLayout><PlaceholderPage title="Dashboard" /></MainLayout></PrivateRoute>} />
           <Route path="/play" element={<PrivateRoute><MainLayout><PlayDashboard /></MainLayout></PrivateRoute>} />
-          <Route path="/profile" element={<PrivateRoute><MainLayout><PlaceholderPage title="My Profile" /></MainLayout></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><MainLayout><ProfilePage /></MainLayout></PrivateRoute>} />
           <Route path="/pickem" element={<PrivateRoute><MainLayout><PlaceholderPage title="Pick'em" /></MainLayout></PrivateRoute>} />
           <Route path="/squads" element={<PrivateRoute><MainLayout><PlaceholderPage title="Squads" /></MainLayout></PrivateRoute>} />
           <Route path="/leaderboards" element={<PrivateRoute><MainLayout><PlaceholderPage title="Leaderboards" /></MainLayout></PrivateRoute>} />
