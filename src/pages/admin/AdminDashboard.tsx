@@ -5,6 +5,7 @@ import { scrapeLeagueSchedules } from '../../services/espnScraper';
 import { useAuth } from '../../lib/auth-context';
 import { Navigate, Routes, Route, Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
+import CreateMatchupPage from './matchups/CreateMatchupPage';
 import {
   Users, Gamepad2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
@@ -964,7 +965,7 @@ export default function AdminDashboard() {
                 {/* Matchups routes */}
                 <Route path="matchups" element={<AdminMatchups />} />
                 <Route path="picks" element={<GenericTable collectionName="picks" />} />
-                <Route path="matchups/create" element={<AdminPlaceholder title="Create Matchup" />} />
+                <Route path="matchups/create" element={<CreateMatchupPage />} />
                 <Route path="matchups/find" element={<AdminPlaceholder title="Find Matchup" />} />
                 <Route path="matchups/:id" element={<AdminEditMatchup />} />
 
