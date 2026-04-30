@@ -365,14 +365,16 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
               finalStatus = "STATUS_FINAL";
           } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || (rawStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0))) {
               finalStatus = "STATUS_IN_PROGRESS";
-              if (league === "MLB" && competition.status?.type?.detail) {
-                  const detail = competition.status.type.detail;
-                  if (detail.includes("Bot ")) {
-                      finalStatusDesc = detail.replace("Bot ", "Bottom ");
-                  } else if (detail.includes("Mid ")) {
-                      finalStatusDesc = detail.replace("Mid ", "Middle ");
-                  } else {
-                      finalStatusDesc = detail;
+              if (league === "MLB") {
+                  const detailStr = competition.status?.type?.detail || competition.status?.type?.shortDetail;
+                  if (detailStr) {
+                      if (detailStr.includes("Bot ")) {
+                          finalStatusDesc = detailStr.replace("Bot ", "Bottom ");
+                      } else if (detailStr.includes("Mid ")) {
+                          finalStatusDesc = detailStr.replace("Mid ", "Middle ");
+                      } else {
+                          finalStatusDesc = detailStr;
+                      }
                   }
               }
           } else if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus)) {
