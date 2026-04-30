@@ -33,9 +33,11 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
       let newCount = 0;
       let updateCount = 0;
       const matchupsToGrade: any[] = [];
+      const scrapedGameIds = new Set<string>();
 
       for (const scrapedMatchup of response.data) {
         const gameId = scrapedMatchup.gameId;
+        scrapedGameIds.add(gameId);
         const existingDoc = existingMap.get(gameId);
 
         if (existingDoc) {
@@ -136,6 +138,40 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
           await batch.commit();
           batch = adminDb.batch();
           opCount = 0;
+        }
+      }
+
+      // Check for removed/cancelled games only on full schedule sync
+      if (!scoreboardOnly) {
+        for (const [gameId, doc] of existingMap.entries()) {
+          const data = doc.data();
+          // If it was scheduled, not abandoned, and no longer in the scraped data
+          if (data.status === 'STATUS_SCHEDULED' && !data.abandoned && !scrapedGameIds.has(gameId)) {
+            const pendingPicksSnap = await adminDb.collection('picks')
+              .where('matchupId', '==', gameId)
+              .where('status', '==', 'PENDING')
+              .limit(1)
+              .get();
+
+            if (pendingPicksSnap.empty) {
+              // No picks, safe to hide and let cron purge
+              batch.update(doc.ref, { abandoned: true, active: false, updatedAt: Date.now() });
+              opCount++;
+              updateCount++;
+            } else {
+              // Has picks, mark as postponed so grader refunds them
+              batch.update(doc.ref, { status: 'STATUS_POSTPONED', statusDesc: 'Canceled', updatedAt: Date.now() });
+              opCount++;
+              updateCount++;
+              matchupsToGrade.push({ ...data, status: 'STATUS_POSTPONED', id: gameId, gameId });
+            }
+
+            if (opCount >= 500) {
+              await batch.commit();
+              batch = adminDb.batch();
+              opCount = 0;
+            }
+          }
         }
       }
 
