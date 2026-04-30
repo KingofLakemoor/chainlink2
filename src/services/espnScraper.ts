@@ -193,7 +193,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
             if (status === "STATUS_SCHEDULED") {
               statusDesc = "Upcoming";
             }
-            const gameTime = new Date(game.date).getTime();
+            const defaultGameTime = new Date(game.date).getTime();
 
             for (let i = 0; i < numMatchups; i++) {
               const a = competitors[i * 2];
@@ -215,6 +215,40 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                  const ls = c.linescores?.find((ls: any) => ls.period === p);
                  return ls?.value ? ls.value : 0;
               };
+
+              const getTeeTime = (c: any, p: number) => {
+                 const ls = c.linescores?.find((ls: any) => ls.period === p);
+                 if (ls?.statistics?.categories?.[0]?.stats) {
+                     for (const stat of ls.statistics.categories[0].stats) {
+                         if (stat.displayValue && typeof stat.displayValue === 'string') {
+                             const match = stat.displayValue.match(/[A-Z][a-z]{2} [A-Z][a-z]{2} \d{1,2}/);
+                             if (match) {
+                                 let dateStr = stat.displayValue;
+                                 if (!/\d{4}/.test(dateStr)) {
+                                     const year = new Date(defaultGameTime).getFullYear();
+                                     dateStr = dateStr.replace(match[0], `${match[0]} ${year}`);
+                                 }
+                                 const parsed = new Date(dateStr).getTime();
+                                 if (!isNaN(parsed)) return parsed;
+                             }
+                         }
+                     }
+                 }
+                 return null;
+              };
+
+              const teeTimeA = getTeeTime(a, currentPeriod);
+              const teeTimeB = getTeeTime(b, currentPeriod);
+
+              let gameTime = defaultGameTime;
+              if (teeTimeA && teeTimeB) {
+                  gameTime = Math.min(teeTimeA, teeTimeB);
+              } else if (teeTimeA) {
+                  gameTime = teeTimeA;
+              } else if (teeTimeB) {
+                  gameTime = teeTimeB;
+              }
+
               const scoreA = getScore(a, currentPeriod);
               const scoreB = getScore(b, currentPeriod);
 
