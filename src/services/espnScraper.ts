@@ -216,6 +216,11 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                  return ls?.value ? ls.value : 0;
               };
 
+              const getHolesPlayed = (c: any, p: number) => {
+                 const ls = c.linescores?.find((ls: any) => ls.period === p);
+                 return ls?.linescores?.length || 0;
+              };
+
               const getTeeTime = (c: any, p: number) => {
                  const ls = c.linescores?.find((ls: any) => ls.period === p);
                  if (ls?.statistics?.categories?.[0]?.stats) {
@@ -258,15 +263,27 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
 
               if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || finalStatusDesc.toLowerCase().includes('final')) {
                 finalStatus = "STATUS_FINAL";
-              } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || (rawStatus === "STATUS_SCHEDULED" && (scoreA > 0 || scoreB > 0))) {
-                finalStatus = "STATUS_IN_PROGRESS";
               } else if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus)) {
                 finalStatus = "STATUS_POSTPONED";
               } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus)) {
                 finalStatus = "STATUS_DELAYED";
               } else {
-                finalStatus = "STATUS_SCHEDULED";
-                finalStatusDesc = "Upcoming";
+                const holesA = getHolesPlayed(a, currentPeriod);
+                const holesB = getHolesPlayed(b, currentPeriod);
+                const pairingHolesPlayed = Math.min(holesA, holesB);
+
+                if (holesA === 18 && holesB === 18) {
+                    finalStatus = "STATUS_FINAL";
+                    finalStatusDesc = "THRU F";
+                } else if (holesA > 0 || holesB > 0) {
+                    finalStatus = "STATUS_IN_PROGRESS";
+                    finalStatusDesc = `THRU ${pairingHolesPlayed}`;
+                } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || (rawStatus === "STATUS_SCHEDULED" && (scoreA > 0 || scoreB > 0))) {
+                    finalStatus = "STATUS_IN_PROGRESS";
+                } else {
+                    finalStatus = "STATUS_SCHEDULED";
+                    finalStatusDesc = "Upcoming";
+                }
               }
 
               parsedMatchups.push({
