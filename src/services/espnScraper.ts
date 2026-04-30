@@ -1,5 +1,47 @@
 export type League = "NFL" | "NBA" | "NHL" | "MLB" | "MLS" | "EPL" | "MBB" | "WBB" | "NWSL" | "COLLEGE-FOOTBALL" | "WNBA" | "PGA" | string;
 
+
+export const MATCHUP_FINAL_STATUSES = [
+  "STATUS_FINAL",
+  "STATUS_FULL_TIME",
+  "STATUS_FULL_PEN",
+  "STATUS_FINAL_AET",
+  "STATUS_FINAL_ET",
+  "STATUS_FINAL_OT",
+  "STATUS_FORFEIT",
+];
+
+export const MATCHUP_IN_PROGRESS_STATUSES = [
+  "STATUS_IN_PROGRESS",
+  "STATUS_FIRST_HALF",
+  "STATUS_SECOND_HALF",
+  "STATUS_HALFTIME",
+  "STATUS_END_PERIOD",
+  "STATUS_SHOOTOUT",
+  "STATUS_END_OF_EXTRATIME",
+  "STATUS_IN_PROGRESS_PEN",
+  "STATUS_IN_PROGRESS_ET",
+  "STATUS_OVERTIME",
+  "STATUS_IN_PROGRESS_PEN_ET",
+];
+
+export const MATCHUP_DELAYED_STATUSES = [
+  "STATUS_DELAYED",
+  "STATUS_RAIN_DELAY",
+  "STATUS_DELAY",
+];
+
+export const MATCHUP_POSTPONED_STATUSES = [
+  "STATUS_POSTPONED",
+  "STATUS_CANCELED",
+  "STATUS_SUSPENDED",
+  "STATUS_ABANDONDED",
+];
+
+export const MATCHUP_SCHEDULED_STATUSES = ["STATUS_SCHEDULED"];
+
+export const MATCHUP_UNKNOWN_STATUSES = ["STATUS_UNKNOWN"];
+
 export interface LeagueResponse {
   scoreMatchupsCreated: number;
   existingMatchups: number;
@@ -170,15 +212,20 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
               const scoreA = getScore(a, currentPeriod);
               const scoreB = getScore(b, currentPeriod);
 
-              let finalStatus = competition.status?.type?.name || "STATUS_SCHEDULED";
+              let rawStatus = competition.status?.type?.name || "STATUS_SCHEDULED";
               let finalStatusDesc = competition.status?.type?.shortDetail || "Upcoming";
+              let finalStatus = "STATUS_SCHEDULED";
 
-              if (finalStatusDesc.toLowerCase().includes('final')) {
+              if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || finalStatusDesc.toLowerCase().includes('final')) {
                 finalStatus = "STATUS_FINAL";
-              } else if (finalStatus === "STATUS_SCHEDULED" && (scoreA > 0 || scoreB > 0)) {
+              } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || (rawStatus === "STATUS_SCHEDULED" && (scoreA > 0 || scoreB > 0))) {
                 finalStatus = "STATUS_IN_PROGRESS";
-
-              } else if (finalStatus === "STATUS_SCHEDULED") {
+              } else if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus)) {
+                finalStatus = "STATUS_POSTPONED";
+              } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus)) {
+                finalStatus = "STATUS_DELAYED";
+              } else {
+                finalStatus = "STATUS_SCHEDULED";
                 finalStatusDesc = "Upcoming";
               }
 
@@ -253,15 +300,20 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
           const homeScore = parseFloat(home.score || "0");
           const awayScore = parseFloat(away.score || "0");
 
-          let finalStatus = competition.status?.type?.name || "STATUS_SCHEDULED";
+          let rawStatus = competition.status?.type?.name || "STATUS_SCHEDULED";
           let finalStatusDesc = competition.status?.type?.shortDetail || "Upcoming";
+          let finalStatus = "STATUS_SCHEDULED";
 
-          if (finalStatusDesc.toLowerCase().includes('final')) {
+          if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || finalStatusDesc.toLowerCase().includes('final')) {
               finalStatus = "STATUS_FINAL";
-          } else if (finalStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0)) {
+          } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || (rawStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0))) {
               finalStatus = "STATUS_IN_PROGRESS";
-
-          } else if (finalStatus === "STATUS_SCHEDULED") {
+          } else if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus)) {
+              finalStatus = "STATUS_POSTPONED";
+          } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus)) {
+              finalStatus = "STATUS_DELAYED";
+          } else {
+              finalStatus = "STATUS_SCHEDULED";
               finalStatusDesc = "Upcoming";
           }
 

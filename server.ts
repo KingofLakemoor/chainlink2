@@ -166,7 +166,7 @@ async function startServer() {
     console.log(`Server running on http://localhost:${PORT}`);
 
     // Automatic schedule syncing
-    const SYNC_INTERVAL = 10 * 60 * 1000; // 10 minutes
+    const SYNC_INTERVAL = 2 * 60 * 1000; // 2 minutes
     const LEAGUES_TO_SYNC = ["NBA", "NHL", "MLB", "PGA", "WNBA", "NFL", "WBB", "MBB", "MLS", "EPL", "NWSL", "COLLEGE-FOOTBALL"];
 
     console.log(`[Cron] Initializing automatic schedule sync every ${SYNC_INTERVAL / 1000 / 60} minutes for leagues: ${LEAGUES_TO_SYNC.join(', ')}`);

@@ -1,74 +1,57 @@
 const fs = require('fs');
+const path = require('path');
 
-let content = fs.readFileSync('src/App.tsx', 'utf8');
+const filePath = path.join(__dirname, 'src/services/espnScraper.ts');
+let content = fs.readFileSync(filePath, 'utf8');
 
-// 1. Add state variables for upcoming picks
-content = content.replace(
-  "const [allFetchedMatchups, setAllFetchedMatchups] = useState<any[]>([]);",
-  "const [allFetchedMatchups, setAllFetchedMatchups] = useState<any[]>([]);\n  const [globalUpcomingPicks, setGlobalUpcomingPicks] = useState<any[]>([]);"
-);
+const constants = `
+export const MATCHUP_FINAL_STATUSES = [
+  "STATUS_FINAL",
+  "STATUS_FULL_TIME",
+  "STATUS_FULL_PEN",
+  "STATUS_FINAL_AET",
+  "STATUS_FINAL_ET",
+  "STATUS_FINAL_OT",
+  "STATUS_FORFEIT",
+];
 
-// 2. Fetch all upcoming picks
-let fetchPicksReplacement = `
-    const fetchPicks = async () => {
-      const q = query(collection(db, 'picks'), where('userId', '==', user.uid));
-      const pickSnap = await getDocs(q);
-      const picksInfo: Record<string, any> = {};
-      pickSnap.docs.forEach(d => {
-        const data = d.data();
-        picksInfo[data.matchupId] = data;
-      });
-      setUserPicks(picksInfo);
+export const MATCHUP_IN_PROGRESS_STATUSES = [
+  "STATUS_IN_PROGRESS",
+  "STATUS_FIRST_HALF",
+  "STATUS_SECOND_HALF",
+  "STATUS_HALFTIME",
+  "STATUS_END_PERIOD",
+  "STATUS_SHOOTOUT",
+  "STATUS_END_OF_EXTRATIME",
+  "STATUS_IN_PROGRESS_PEN",
+  "STATUS_IN_PROGRESS_ET",
+  "STATUS_OVERTIME",
+  "STATUS_IN_PROGRESS_PEN_ET",
+];
 
-      // Fetch all pending picks for global hot rating
-      const globalQ = query(collection(db, 'picks'), where('status', '==', 'PENDING'));
-      const globalPickSnap = await getDocs(globalQ);
-      const allUpcomingPicks = globalPickSnap.docs.map(d => d.data());
-      setGlobalUpcomingPicks(allUpcomingPicks);
-    };`;
+export const MATCHUP_DELAYED_STATUSES = [
+  "STATUS_DELAYED",
+  "STATUS_RAIN_DELAY",
+  "STATUS_DELAY",
+];
 
-content = content.replace(
-  /const fetchPicks = async \(\) => {[\s\S]*?setUserPicks\(picksInfo\);\n    };/,
-  fetchPicksReplacement
-);
+export const MATCHUP_POSTPONED_STATUSES = [
+  "STATUS_POSTPONED",
+  "STATUS_CANCELED",
+  "STATUS_SUSPENDED",
+  "STATUS_ABANDONDED",
+];
 
-// 3. Mock data for DEV
-let mockReplacement = `
-       const mockMatchups = [
-            {
-                id: 'mock-1',
-                title: 'Who will win? Mock Team A @ Mock Team B',
-                league: 'EPL',
-                status: 'STATUS_SCHEDULED',
-                startTime: Date.now() + 1000000,
-                statusDesc: 'Upcoming',
-                cost: 10,
-                awayTeam: { id: 'teamA', name: 'Mock Team A', image: 'https://via.placeholder.com/150', score: 0 },
-                homeTeam: { id: 'teamB', name: 'Mock Team B', image: 'https://via.placeholder.com/150', score: 0 },
-                metadata: {}
-            }
-        ];
+export const MATCHUP_SCHEDULED_STATUSES = ["STATUS_SCHEDULED"];
 
-       const handleMockMatchups = (e: any) => {
-         if (e.detail && e.detail.matchups) {
-           setAllFetchedMatchups(e.detail.matchups);
-         }
-       };
-       window.addEventListener('mock-matchups', handleMockMatchups);
+export const MATCHUP_UNKNOWN_STATUSES = ["STATUS_UNKNOWN"];
 
-       setAllFetchedMatchups(mockMatchups);
-
-       // Mock upcoming picks for hot rating visual
-       setGlobalUpcomingPicks([
-         { matchupId: 'mock-1', pick: { id: 'teamA' }, status: 'PENDING' },
-         { matchupId: 'mock-1', pick: { id: 'teamA' }, status: 'PENDING' },
-         { matchupId: 'mock-1', pick: { id: 'teamB' }, status: 'PENDING' }
-       ]);
 `;
 
 content = content.replace(
-  /const mockMatchups = \[[\s\S]*?setAllFetchedMatchups\(mockMatchups\);/,
-  mockReplacement
+  `export type League = "NFL" | "NBA" | "MLB" | "NHL" | "PGA" | "COLLEGE-FOOTBALL" | "MBB" | "WBB" | "WNBA" | "MLS" | "EPL" | "NWSL";`,
+  `export type League = "NFL" | "NBA" | "MLB" | "NHL" | "PGA" | "COLLEGE-FOOTBALL" | "MBB" | "WBB" | "WNBA" | "MLS" | "EPL" | "NWSL";\n` + constants
 );
 
-fs.writeFileSync('src/App.tsx', content);
+fs.writeFileSync(filePath, content, 'utf8');
+console.log('Constants added to espnScraper.ts');

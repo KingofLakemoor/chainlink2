@@ -1,26 +1,19 @@
 const fs = require('fs');
+const path = require('path');
 
-let content = fs.readFileSync('src/App.tsx', 'utf8');
+const filePath = path.join(__dirname, 'src/services/scheduleProcessor.ts');
+let content = fs.readFileSync(filePath, 'utf8');
 
-const updatedScoreDisplay = `                 <div className="flex items-center gap-2">
-                    {isScheduled ? (
-                      <div className="flex items-center justify-center gap-2 w-[140px]">
-                        <div className="flex-1 flex justify-end">
-                           <div className="w-12 h-1.5 bg-zinc-800 rounded-full overflow-hidden flex justify-end">
-                             <div className="h-full bg-blue-500 rounded-full" style={{ width: \`\${awayHotPct}%\` }}></div>
-                           </div>
-                        </div>
-                        <div className="flex-1 flex justify-start">
-                           <div className="w-12 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                             <div className="h-full bg-blue-500 rounded-full" style={{ width: \`\${homeHotPct}%\` }}></div>
-                           </div>
-                        </div>
-                      </div>
-                    ) : (`;
+const oldGradingCondition = `            if (scrapedMatchup.status === 'STATUS_FINAL' && existingData.status !== 'STATUS_FINAL') {
+              matchupsToGrade.push({ ...existingData, ...updateData, gameId: scrapedMatchup.gameId, id: gameId });
+            }`;
 
-content = content.replace(
-  /                 <div className="flex items-center gap-2">\n                    \{isScheduled \? \([\s\S]*?                      <\/>\n                    \) : \(/,
-  updatedScoreDisplay
-);
+const newGradingCondition = `            if ((scrapedMatchup.status === 'STATUS_FINAL' && existingData.status !== 'STATUS_FINAL') ||
+                (scrapedMatchup.status === 'STATUS_POSTPONED' && existingData.status !== 'STATUS_POSTPONED')) {
+              matchupsToGrade.push({ ...existingData, ...updateData, gameId: scrapedMatchup.gameId, id: gameId });
+            }`;
 
-fs.writeFileSync('src/App.tsx', content);
+content = content.replace(oldGradingCondition, newGradingCondition);
+
+fs.writeFileSync(filePath, content, 'utf8');
+console.log('scheduleProcessor.ts updated');

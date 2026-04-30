@@ -113,7 +113,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
             }
             updateCount++;
 
-            if (scrapedMatchup.status === 'STATUS_FINAL' && existingData.status !== 'STATUS_FINAL') {
+            if ((scrapedMatchup.status === 'STATUS_FINAL' && existingData.status !== 'STATUS_FINAL') ||
+                (scrapedMatchup.status === 'STATUS_POSTPONED' && existingData.status !== 'STATUS_POSTPONED')) {
               matchupsToGrade.push({ ...existingData, ...updateData, gameId: scrapedMatchup.gameId, id: gameId });
             }
           }
