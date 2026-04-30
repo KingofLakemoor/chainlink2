@@ -10,7 +10,7 @@ export async function gradeMatchups(matchups: any[]) {
     return;
   }
 
-  const finalMatchups = matchups.filter(m => m.status === 'STATUS_FINAL');
+  const finalMatchups = matchups.filter(m => m.status === 'STATUS_FINAL' || m.status === 'STATUS_POSTPONED');
   if (finalMatchups.length === 0) return;
 
   console.log(`[Grader] Found ${finalMatchups.length} final matchups to grade.`);
@@ -44,11 +44,14 @@ export async function gradeSingleMatchup(matchup: any) {
   const homeScore = matchup.homeTeam?.score || 0;
   const awayScore = matchup.awayTeam?.score || 0;
   const lowerScoreWins = matchup.metadata?.lowerScoreWins;
+  const isPostponed = matchup.status === 'STATUS_POSTPONED';
 
   let winnerId: string | null = null;
   let isTie = false;
 
-  if (homeScore === awayScore) {
+  if (isPostponed) {
+    isTie = true; // Treats postponed as a push to refund
+  } else if (homeScore === awayScore) {
     isTie = true;
   } else if (lowerScoreWins) {
     winnerId = homeScore < awayScore ? matchup.homeTeam.id : matchup.awayTeam.id;

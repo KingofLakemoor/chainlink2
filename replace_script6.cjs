@@ -1,20 +1,13 @@
 const fs = require('fs');
-let content = fs.readFileSync('src/App.tsx', 'utf8');
+const path = require('path');
 
-const footerReplacement = `               <div className="flex flex-col items-center">
-                 {m.cost > 0 && (
-                   <span className="text-xs text-zinc-400 flex items-center gap-1 font-medium">
-                     Wager: <Link2 className="w-3.5 h-3.5 text-cyan-400 ml-0.5" /> <span className="text-cyan-400 font-mono tracking-wide">{m.cost}</span>
-                   </span>
-                 )}
-                 <span className="text-xs text-zinc-400 flex items-center gap-1 font-medium">
-                   Reward: <Link2 className="w-3.5 h-3.5 text-cyan-400 ml-0.5" /> <span className="text-cyan-400 font-mono tracking-wide">{m.cost > 0 ? m.cost * 2 : (m.reward || m.cost)}</span>
-                 </span>
-               </div>`;
+const filePath = path.join(__dirname, 'server.ts');
+let content = fs.readFileSync(filePath, 'utf8');
 
-content = content.replace(
-  /<div className="flex flex-col items-center">[\s\S]*?<\/div>/,
-  footerReplacement
-);
+const oldInterval = `const SYNC_INTERVAL = 10 * 60 * 1000; // 10 minutes`;
+const newInterval = `const SYNC_INTERVAL = 2 * 60 * 1000; // 2 minutes`;
 
-fs.writeFileSync('src/App.tsx', content);
+content = content.replace(oldInterval, newInterval);
+
+fs.writeFileSync(filePath, content, 'utf8');
+console.log('server.ts cron interval updated');

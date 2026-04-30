@@ -1,25 +1,47 @@
 const fs = require('fs');
+const path = require('path');
 
-let content = fs.readFileSync('src/App.tsx', 'utf8');
+const filePath = path.join(__dirname, 'src/services/grader.ts');
+let content = fs.readFileSync(filePath, 'utf8');
 
-const footerReplacement = `               <button className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-1">
-                 <span className="text-[10px]">↓</span> Share Matchup
-               </button>
+const oldFilter = `  const finalMatchups = matchups.filter(m => m.status === 'STATUS_FINAL');`;
+const newFilter = `  const finalMatchups = matchups.filter(m => m.status === 'STATUS_FINAL' || m.status === 'STATUS_POSTPONED');`;
+content = content.replace(oldFilter, newFilter);
 
-               <div className="flex flex-col items-center">
-                 {m.cost > 0 && (
-                   <span className="text-xs text-zinc-400 flex items-center gap-1 font-medium">
-                     Wager: <Link2 className="w-3.5 h-3.5 text-cyan-400 ml-0.5" /> <span className="text-cyan-400 font-mono tracking-wide">{m.cost}</span>
-                   </span>
-                 )}
-                 <span className="text-xs text-zinc-400 flex items-center gap-1 font-medium">
-                   Reward: <Link2 className="w-3.5 h-3.5 text-cyan-400 ml-0.5" /> <span className="text-cyan-400 font-mono tracking-wide">{m.cost > 0 ? m.cost * 2 : (m.reward || 10)}</span>
-                 </span>
-               </div>`;
+const oldGradingLogic = `  const homeScore = matchup.homeTeam?.score || 0;
+  const awayScore = matchup.awayTeam?.score || 0;
+  const lowerScoreWins = matchup.metadata?.lowerScoreWins;
 
-content = content.replace(
-  /               <button className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-1">\n                 <span className="text-\[10px\]">↓<\/span> Share Matchup\n               <\/button>\n\n               <span className="text-xs text-zinc-400 flex items-center gap-1 font-medium">\n                 Reward: <Link2 className="w-3\.5 h-3\.5 text-cyan-400 ml-0\.5" \/> <span className="text-cyan-400 font-mono tracking-wide">\{m\.cost\}<\/span>\n               <\/span>/,
-  footerReplacement
-);
+  let winnerId: string | null = null;
+  let isTie = false;
 
-fs.writeFileSync('src/App.tsx', content);
+  if (homeScore === awayScore) {
+    isTie = true;
+  } else if (lowerScoreWins) {
+    winnerId = homeScore < awayScore ? matchup.homeTeam.id : matchup.awayTeam.id;
+  } else {
+    winnerId = homeScore > awayScore ? matchup.homeTeam.id : matchup.awayTeam.id;
+  }`;
+
+const newGradingLogic = `  const homeScore = matchup.homeTeam?.score || 0;
+  const awayScore = matchup.awayTeam?.score || 0;
+  const lowerScoreWins = matchup.metadata?.lowerScoreWins;
+  const isPostponed = matchup.status === 'STATUS_POSTPONED';
+
+  let winnerId: string | null = null;
+  let isTie = false;
+
+  if (isPostponed) {
+    isTie = true; // Treats postponed as a push to refund
+  } else if (homeScore === awayScore) {
+    isTie = true;
+  } else if (lowerScoreWins) {
+    winnerId = homeScore < awayScore ? matchup.homeTeam.id : matchup.awayTeam.id;
+  } else {
+    winnerId = homeScore > awayScore ? matchup.homeTeam.id : matchup.awayTeam.id;
+  }`;
+
+content = content.replace(oldGradingLogic, newGradingLogic);
+
+fs.writeFileSync(filePath, content, 'utf8');
+console.log('grader.ts updated');

@@ -1,40 +1,56 @@
 const fs = require('fs');
+const path = require('path');
 
-let content = fs.readFileSync('src/App.tsx', 'utf8');
+const filePath = path.join(__dirname, 'src/services/espnScraper.ts');
+let content = fs.readFileSync(filePath, 'utf8');
 
-// Use useMemo to compute matchup pick counts
-let calculation = `
-  const { totalUpcomingPicks, matchupPickCounts } = React.useMemo(() => {
-    let total = 0;
-    const counts: Record<string, { total: number, away: number, home: number }> = {};
+const constants = `
+export const MATCHUP_FINAL_STATUSES = [
+  "STATUS_FINAL",
+  "STATUS_FULL_TIME",
+  "STATUS_FULL_PEN",
+  "STATUS_FINAL_AET",
+  "STATUS_FINAL_ET",
+  "STATUS_FINAL_OT",
+  "STATUS_FORFEIT",
+];
 
-    globalUpcomingPicks.forEach(p => {
-      if (!counts[p.matchupId]) {
-        counts[p.matchupId] = { total: 0, away: 0, home: 0 };
-      }
-      counts[p.matchupId].total += 1;
+export const MATCHUP_IN_PROGRESS_STATUSES = [
+  "STATUS_IN_PROGRESS",
+  "STATUS_FIRST_HALF",
+  "STATUS_SECOND_HALF",
+  "STATUS_HALFTIME",
+  "STATUS_END_PERIOD",
+  "STATUS_SHOOTOUT",
+  "STATUS_END_OF_EXTRATIME",
+  "STATUS_IN_PROGRESS_PEN",
+  "STATUS_IN_PROGRESS_ET",
+  "STATUS_OVERTIME",
+  "STATUS_IN_PROGRESS_PEN_ET",
+];
 
-      const matchup = allFetchedMatchups.find(m => m.id === p.matchupId);
-      if (matchup && matchup.status === 'STATUS_SCHEDULED') {
-         total += 1;
-      }
+export const MATCHUP_DELAYED_STATUSES = [
+  "STATUS_DELAYED",
+  "STATUS_RAIN_DELAY",
+  "STATUS_DELAY",
+];
 
-      if (matchup && p.pick?.id === matchup.awayTeam?.id) {
-        counts[p.matchupId].away += 1;
-      } else if (matchup && p.pick?.id === matchup.homeTeam?.id) {
-        counts[p.matchupId].home += 1;
-      }
-    });
+export const MATCHUP_POSTPONED_STATUSES = [
+  "STATUS_POSTPONED",
+  "STATUS_CANCELED",
+  "STATUS_SUSPENDED",
+  "STATUS_ABANDONDED",
+];
 
-    return { totalUpcomingPicks: total, matchupPickCounts: counts };
-  }, [globalUpcomingPicks, allFetchedMatchups]);
+export const MATCHUP_SCHEDULED_STATUSES = ["STATUS_SCHEDULED"];
 
-  useEffect(() => {
+export const MATCHUP_UNKNOWN_STATUSES = ["STATUS_UNKNOWN"];
 `;
 
 content = content.replace(
-  /  useEffect\(\(\) => \{\n    const now = Date\.now\(\);/,
-  calculation + "    const now = Date.now();"
+  `export interface LeagueResponse {`,
+  constants + `\nexport interface LeagueResponse {`
 );
 
-fs.writeFileSync('src/App.tsx', content);
+fs.writeFileSync(filePath, content, 'utf8');
+console.log('Constants added to espnScraper.ts');

@@ -1,58 +1,78 @@
 const fs = require('fs');
+const path = require('path');
 
-let content = fs.readFileSync('src/App.tsx', 'utf8');
+const filePath = path.join(__dirname, 'src/services/espnScraper.ts');
+let content = fs.readFileSync(filePath, 'utf8');
 
-const matchPicksCalculation = `
-          const hasPicked = !!userPicks[m.id];
-          const pickData = userPicks[m.id];
-          const isPickDisabled = hasPicked || hasActivePickAnywhere;
+const oldPgaBlock = `
+              let finalStatus = competition.status?.type?.name || "STATUS_SCHEDULED";
+              let finalStatusDesc = competition.status?.type?.shortDetail || "Upcoming";
 
-          const mCounts = matchupPickCounts[m.id] || { total: 0, away: 0, home: 0 };
-          const awayHotPct = mCounts.total > 0 ? Math.round((mCounts.away / mCounts.total) * 100) : 0;
-          const homeHotPct = mCounts.total > 0 ? Math.round((mCounts.home / mCounts.total) * 100) : 0;
-          const isScheduled = m.status === 'STATUS_SCHEDULED';
+              if (finalStatusDesc.toLowerCase().includes('final')) {
+                finalStatus = "STATUS_FINAL";
+              } else if (finalStatus === "STATUS_SCHEDULED" && (scoreA > 0 || scoreB > 0)) {
+                finalStatus = "STATUS_IN_PROGRESS";
+
+              } else if (finalStatus === "STATUS_SCHEDULED") {
+                finalStatusDesc = "Upcoming";
+              }
 `;
 
-content = content.replace(
-  /          const hasPicked = !!userPicks\[m\.id\];\n          const pickData = userPicks\[m\.id\];\n          const isPickDisabled = hasPicked \|\| hasActivePickAnywhere;/,
-  matchPicksCalculation
-);
+const newPgaBlock = `
+              let rawStatus = competition.status?.type?.name || "STATUS_SCHEDULED";
+              let finalStatusDesc = competition.status?.type?.shortDetail || "Upcoming";
+              let finalStatus = "STATUS_SCHEDULED";
 
-const scoreDisplayReplacement = `                 <div className="flex items-center gap-2">
-                    {isScheduled ? (
-                      <>
-                        <div className="w-16 h-10 flex items-center justify-center relative">
-                          <div className="w-12 h-1 bg-zinc-800 rounded-full overflow-hidden">
-                            <div className="h-full bg-blue-500 rounded-full" style={{ width: \`\${awayHotPct}%\` }}></div>
-                          </div>
-                        </div>
-                        <div className="w-16 h-10 flex items-center justify-center relative">
-                          <div className="w-12 h-1 bg-zinc-800 rounded-full overflow-hidden">
-                            <div className="h-full bg-blue-500 rounded-full" style={{ width: \`\${homeHotPct}%\` }}></div>
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className={cn("w-16 h-10 bg-[#1a1a1a] rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden",
-                          (m.metadata?.lowerScoreWins ? m.awayTeam.score < m.homeTeam.score : m.awayTeam.score > m.homeTeam.score) ? "text-zinc-100" : "text-zinc-500"
-                        )}>
-                           {(m.metadata?.lowerScoreWins ? m.awayTeam.score < m.homeTeam.score : m.awayTeam.score > m.homeTeam.score) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-300"></div>}
-                           {m.awayTeam.score ?? 0}
-                        </div>
-                        <div className={cn("w-16 h-10 bg-[#1a1a1a] rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden",
-                          (m.metadata?.lowerScoreWins ? m.homeTeam.score < m.awayTeam.score : m.homeTeam.score > m.awayTeam.score) ? "text-zinc-100" : "text-zinc-500"
-                        )}>
-                           {(m.metadata?.lowerScoreWins ? m.homeTeam.score < m.awayTeam.score : m.homeTeam.score > m.awayTeam.score) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-300"></div>}
-                           {m.homeTeam.score ?? 0}
-                        </div>
-                      </>
-                    )}
-                 </div>`;
+              if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || finalStatusDesc.toLowerCase().includes('final')) {
+                finalStatus = "STATUS_FINAL";
+              } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || (rawStatus === "STATUS_SCHEDULED" && (scoreA > 0 || scoreB > 0))) {
+                finalStatus = "STATUS_IN_PROGRESS";
+              } else if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus)) {
+                finalStatus = "STATUS_POSTPONED";
+              } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus)) {
+                finalStatus = "STATUS_DELAYED";
+              } else {
+                finalStatus = "STATUS_SCHEDULED";
+                finalStatusDesc = "Upcoming";
+              }
+`;
 
-content = content.replace(
-  /                 <div className="flex items-center gap-2">\n                    <div className=\{cn\("w-16 h-10 bg-\[#1a1a1a\] rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden",\n                      \(m\.metadata\?\.lowerScoreWins \? m\.awayTeam\.score < m\.homeTeam\.score : m\.awayTeam\.score > m\.homeTeam\.score\) \? "text-zinc-100" : "text-zinc-500"\n                    \)\}>\n                       \{\(m\.metadata\?\.lowerScoreWins \? m\.awayTeam\.score < m\.homeTeam\.score : m\.awayTeam\.score > m\.homeTeam\.score\) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-300"><\/div>\}\n                       \{m\.awayTeam\.score \?\? 0\}\n                    <\/div>\n                    <div className=\{cn\("w-16 h-10 bg-\[#1a1a1a\] rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden",\n                      \(m\.metadata\?\.lowerScoreWins \? m\.homeTeam\.score < m\.awayTeam\.score : m\.homeTeam\.score > m\.awayTeam\.score\) \? "text-zinc-100" : "text-zinc-500"\n                    \)\}>\n                       \{\(m\.metadata\?\.lowerScoreWins \? m\.homeTeam\.score < m\.awayTeam\.score : m\.homeTeam\.score > m\.awayTeam\.score\) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-300"><\/div>\}\n                       \{m\.homeTeam\.score \?\? 0\}\n                    <\/div>\n                 <\/div>/,
-  scoreDisplayReplacement
-);
+content = content.replace(oldPgaBlock, newPgaBlock);
 
-fs.writeFileSync('src/App.tsx', content);
+const oldOtherBlock = `
+          let finalStatus = competition.status?.type?.name || "STATUS_SCHEDULED";
+          let finalStatusDesc = competition.status?.type?.shortDetail || "Upcoming";
+
+          if (finalStatusDesc.toLowerCase().includes('final')) {
+              finalStatus = "STATUS_FINAL";
+          } else if (finalStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0)) {
+              finalStatus = "STATUS_IN_PROGRESS";
+
+          } else if (finalStatus === "STATUS_SCHEDULED") {
+              finalStatusDesc = "Upcoming";
+          }
+`;
+
+const newOtherBlock = `
+          let rawStatus = competition.status?.type?.name || "STATUS_SCHEDULED";
+          let finalStatusDesc = competition.status?.type?.shortDetail || "Upcoming";
+          let finalStatus = "STATUS_SCHEDULED";
+
+          if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || finalStatusDesc.toLowerCase().includes('final')) {
+              finalStatus = "STATUS_FINAL";
+          } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || (rawStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0))) {
+              finalStatus = "STATUS_IN_PROGRESS";
+          } else if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus)) {
+              finalStatus = "STATUS_POSTPONED";
+          } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus)) {
+              finalStatus = "STATUS_DELAYED";
+          } else {
+              finalStatus = "STATUS_SCHEDULED";
+              finalStatusDesc = "Upcoming";
+          }
+`;
+
+content = content.replace(oldOtherBlock, newOtherBlock);
+
+fs.writeFileSync(filePath, content, 'utf8');
+console.log('Status logic updated in espnScraper.ts');
