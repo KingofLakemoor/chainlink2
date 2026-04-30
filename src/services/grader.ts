@@ -67,7 +67,7 @@ export async function gradeSingleMatchup(matchup: any) {
     let pickStatus = 'LOSS';
     if (isTie) {
       pickStatus = 'PUSH';
-    } else if (pickData.pickId === winnerId) {
+    } else if (pickData.pick?.id === winnerId) {
       pickStatus = 'WIN';
     }
 

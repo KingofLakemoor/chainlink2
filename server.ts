@@ -43,7 +43,7 @@ async function startServer() {
   // API boundaries
   app.post("/api/picks/make-pick", async (req, res) => {
     try {
-      const { matchupId, teamId, teamName } = req.body;
+      const { matchupId, team } = req.body;
       const authHeader = req.headers.authorization;
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ success: false, error: 'Unauthorized' });
@@ -89,8 +89,7 @@ async function startServer() {
         transaction.set(newPickRef, {
           userId: uid,
           matchupId,
-          pickId: teamId,
-          pickName: teamName,
+          pick: team,
           status: 'PENDING',
           coins: matchup.cost,
           active: true,

@@ -75,9 +75,10 @@ service cloud.firestore {
     // picks
     match /picks/{pickId} {
       function isValidPick(data) {
-        return data.keys().hasAll(['userId', 'matchupId', 'pickId', 'pickName', 'status', 'coins', 'active', 'createdAt', 'updatedAt']) &&
+        return data.keys().hasAll(['userId', 'matchupId', 'pick', 'status', 'coins', 'active', 'createdAt', 'updatedAt']) &&
                data.userId is string && data.matchupId is string &&
-               data.pickId is string && data.pickName is string &&
+               data.pick is map && data.pick.keys().hasAll(['id', 'name', 'image']) &&
+               data.pick.id is string && data.pick.name is string && data.pick.image is string &&
                data.coins is number &&
                data.status in ['PENDING', 'WIN', 'LOSS', 'PUSH'] &&
                data.active is bool;
@@ -95,7 +96,7 @@ service cloud.firestore {
           isAdmin() ||
           (
             request.auth.uid == existing().userId &&
-            incoming().diff(existing()).affectedKeys().hasOnly(['pickId', 'pickName', 'active', 'updatedAt']) &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['pick', 'active', 'updatedAt']) &&
             existing().status == 'PENDING'
           )
         )

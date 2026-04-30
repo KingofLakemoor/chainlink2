@@ -402,8 +402,11 @@ function PlayDashboard() {
       const pickDoc = {
         userId: user.uid,
         matchupId: matchup.gameId,
-        pickId: team.id,
-        pickName: team.name,
+        pick: {
+          id: team.id,
+          name: team.name,
+          image: team.image
+        },
         status: 'PENDING',
         coins: matchup.cost,
         active: true,
@@ -413,7 +416,11 @@ function PlayDashboard() {
 
       if (import.meta.env.DEV && !user.getIdToken) {
           // Mock local flow
-          await setDoc(doc(db, 'picks', pickId), pickDoc);
+          try {
+            await setDoc(doc(db, 'picks', pickId), pickDoc);
+          } catch (e) {
+            console.warn("Mock local flow: Failed to save to Firestore. Skipping...");
+          }
           setUserPicks(prev => ({...prev, [matchup.gameId]: pickDoc}));
           return;
       }
@@ -425,7 +432,7 @@ function PlayDashboard() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${idToken}`
         },
-        body: JSON.stringify({ matchupId: matchup.gameId, teamId: team.id, teamName: team.name })
+        body: JSON.stringify({ matchupId: matchup.gameId, team: { id: team.id, name: team.name, image: team.image } })
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
@@ -522,11 +529,11 @@ function PlayDashboard() {
                      <button
                        disabled={isPickDisabled}
                        onClick={() => !isPickDisabled && handleMakePick(m, m.awayTeam)}
-                       className={cn("w-20 h-20 rounded-xl border flex items-center justify-center p-2 bg-[#1a1a1a] transition-all", pickData?.pickId === m.awayTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
+                       className={cn("w-20 h-20 rounded-xl border flex items-center justify-center p-2 bg-[#1a1a1a] transition-all", pickData?.pick?.id === m.awayTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
                      >
                         <img src={m.awayTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.awayTeam.name} />
                      </button>
-                     {pickData?.pickId === m.awayTeam.id && (
+                     {pickData?.pick?.id === m.awayTeam.id && (
                        <div className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-[#22c55e] flex items-center justify-center shadow-lg">
                          <Link2 className="w-3 h-3 text-zinc-950 stroke-[3]" />
                        </div>
@@ -585,11 +592,11 @@ function PlayDashboard() {
                      <button
                        disabled={isPickDisabled}
                        onClick={() => !isPickDisabled && handleMakePick(m, m.homeTeam)}
-                       className={cn("w-20 h-20 rounded-xl border flex items-center justify-center p-2 bg-[#1a1a1a] transition-all", pickData?.pickId === m.homeTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
+                       className={cn("w-20 h-20 rounded-xl border flex items-center justify-center p-2 bg-[#1a1a1a] transition-all", pickData?.pick?.id === m.homeTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
                      >
                         <img src={m.homeTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.homeTeam.name} />
                      </button>
-                     {pickData?.pickId === m.homeTeam.id && (
+                     {pickData?.pick?.id === m.homeTeam.id && (
                        <div className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-[#22c55e] flex items-center justify-center shadow-lg">
                          <Link2 className="w-3 h-3 text-zinc-950 stroke-[3]" />
                        </div>
