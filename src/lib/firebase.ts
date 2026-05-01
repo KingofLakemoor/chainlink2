@@ -12,8 +12,11 @@ export const initFirebase = async () => {
   try {
     const res = await fetch('/__/firebase/init.json');
     if (res.ok) {
-      const initJson = await res.json();
-      dynamicConfig = { ...dynamicConfig, ...initJson };
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const initJson = await res.json();
+        dynamicConfig = { ...dynamicConfig, ...initJson };
+      }
     }
   } catch (e) {
     console.warn('Could not fetch dynamic firebase init config, using local environment variables.');

@@ -607,6 +607,10 @@ function AdminEditMatchup() {
               body: JSON.stringify({ gameId: matchup.gameId })
           });
 
+          const contentType = res.headers.get("content-type");
+          if (!contentType || !contentType.includes("application/json")) {
+            throw new Error("Server returned an invalid response. The backend API may not be running.");
+          }
           const data = await res.json();
           if (data.success) {
               alert('Matchup finalized and picks graded successfully!');

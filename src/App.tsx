@@ -425,6 +425,10 @@ function PlayDashboard() {
         },
         body: JSON.stringify({ matchupId: matchup.gameId })
       });
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server returned an invalid response. The backend API may not be running.");
+      }
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
@@ -490,6 +494,10 @@ function PlayDashboard() {
         },
         body: JSON.stringify({ matchupId: matchup.gameId, team: { id: team.id, name: team.name, image: team.image || "" } })
       });
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server returned an invalid response. The backend API may not be running.");
+      }
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
 
