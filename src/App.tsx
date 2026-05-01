@@ -110,6 +110,7 @@ function Landing() {
   const { user, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -124,7 +125,7 @@ function Landing() {
 
     try {
       if (isSignUp) {
-        await signupWithEmail(email, password);
+        await signupWithEmail(email, password, username);
       } else {
         await loginWithEmail(email, password);
       }
@@ -150,6 +151,19 @@ function Landing() {
       <div className="w-full max-w-sm bg-[#121212] border border-[#27272a] rounded-xl p-6 shadow-xl z-20">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-left">
           {error && <div className="text-red-500 text-sm p-2 bg-red-500/10 rounded">{error}</div>}
+
+          {isSignUp && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Username</label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="bg-[#1a1a1a] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all"
+                required={isSignUp}
+              />
+            </div>
+          )}
 
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Email</label>

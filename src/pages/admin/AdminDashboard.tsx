@@ -535,7 +535,7 @@ function AdminEditMatchup() {
                 const uSnap = await getDocs(query(collection(db, 'users'), where('__name__', '==', p.userId)));
                 if (!uSnap.empty) {
                     const u = uSnap.docs[0].data();
-                    userName = u.name || p.userId;
+                    userName = u.username || u.name || p.userId;
                     userImage = u.image || "";
                 }
             } catch (e) {
