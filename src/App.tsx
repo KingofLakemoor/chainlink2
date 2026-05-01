@@ -266,7 +266,7 @@ function PlayDashboard() {
                 status: 'STATUS_SCHEDULED',
                 startTime: Date.now() + 1000000,
                 statusDesc: 'Upcoming',
-                cost: 10,
+                cost: 0,
                 awayTeam: { id: 'teamA', name: 'Mock Team A', image: 'https://via.placeholder.com/150', score: 0 },
                 homeTeam: { id: 'teamB', name: 'Mock Team B', image: 'https://via.placeholder.com/150', score: 0 },
                 metadata: {}
@@ -278,7 +278,7 @@ function PlayDashboard() {
                 status: 'STATUS_IN_PROGRESS',
                 startTime: Date.now() - 3600000,
                 statusDesc: 'In Progress',
-                cost: 10,
+                cost: 0,
                 awayTeam: { id: 'teamC', name: 'Mock Live Away', image: 'https://via.placeholder.com/150', score: 2 },
                 homeTeam: { id: 'teamD', name: 'Mock Live Home', image: 'https://via.placeholder.com/150', score: 1 },
                 metadata: {}
@@ -461,7 +461,7 @@ function PlayDashboard() {
         pick: {
           id: team.id,
           name: team.name,
-          image: team.image
+          image: team.image || ""
         },
         status: 'PENDING',
         coins: matchup.cost,
@@ -488,7 +488,7 @@ function PlayDashboard() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${idToken}`
         },
-        body: JSON.stringify({ matchupId: matchup.gameId, team: { id: team.id, name: team.name, image: team.image } })
+        body: JSON.stringify({ matchupId: matchup.gameId, team: { id: team.id, name: team.name, image: team.image || "" } })
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
@@ -499,7 +499,7 @@ function PlayDashboard() {
 
     } catch (e) {
       console.error(e);
-      alert("Failed to save pick. Ensure your rules allow this write.");
+      alert("Failed to save pick. Ensure your rules allow this write. Error: " + e.message);
     }
   };
 

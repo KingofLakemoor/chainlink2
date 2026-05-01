@@ -98,7 +98,7 @@ async function startServer() {
 
       res.json({ success: true });
     } catch (e: any) {
-      console.error(e);
+      console.error("Cancel pick error:", e.message, e);
       res.status(500).json({ success: false, error: e.message });
     }
   });
@@ -168,7 +168,7 @@ async function startServer() {
 
       res.json({ success: true });
     } catch (e: any) {
-      console.error(e);
+      console.error("Make pick error:", e.message, e);
       res.status(500).json({ success: false, error: e.message });
     }
   });
@@ -202,7 +202,7 @@ async function startServer() {
       await gradeMatchups([{ ...matchup, status: 'STATUS_FINAL' }]); // Force grade
       res.json({ success: true });
     } catch (e: any) {
-      console.error(e);
+      console.error("Make pick error:", e.message, e);
       res.status(500).json({ success: false, error: e.message });
     }
   });
