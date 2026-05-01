@@ -205,118 +205,127 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
               const idA = String(a.id);
               const idB = String(b.id);
               const sortedIds = [idA, idB].sort();
-              const matchupGameId = `${gameId}_${sortedIds[0]}_${sortedIds[1]}`;
-
-              if (processedGameIds.has(matchupGameId)) continue;
-              processedGameIds.add(matchupGameId);
 
               const currentPeriod = competition.status?.period || 1;
-              const getScore = (c: any, p: number) => {
-                 const ls = c.linescores?.find((ls: any) => ls.period === p);
-                 return ls?.value ? ls.value : 0;
-              };
 
-              const getHolesPlayed = (c: any, p: number) => {
-                 const ls = c.linescores?.find((ls: any) => ls.period === p);
-                 return ls?.linescores?.length || 0;
-              };
+              for (let p = 1; p <= currentPeriod; p++) {
+                  const matchupGameId = p === 1 ? `${gameId}_${sortedIds[0]}_${sortedIds[1]}` : `${gameId}_${p}_${sortedIds[0]}_${sortedIds[1]}`;
 
-              const getTeeTime = (c: any, p: number) => {
-                 const ls = c.linescores?.find((ls: any) => ls.period === p);
-                 if (ls?.statistics?.categories?.[0]?.stats) {
-                     for (const stat of ls.statistics.categories[0].stats) {
-                         if (stat.displayValue && typeof stat.displayValue === 'string') {
-                             const match = stat.displayValue.match(/[A-Z][a-z]{2} [A-Z][a-z]{2} \d{1,2}/);
-                             if (match) {
-                                 let dateStr = stat.displayValue;
-                                 if (!/\d{4}/.test(dateStr)) {
-                                     const year = new Date(defaultGameTime).getFullYear();
-                                     dateStr = dateStr.replace(match[0], `${match[0]} ${year}`);
+                  if (processedGameIds.has(matchupGameId)) continue;
+                  processedGameIds.add(matchupGameId);
+
+                  const getScore = (c: any, period: number) => {
+                     const ls = c.linescores?.find((ls: any) => ls.period === period);
+                     return ls?.value ? ls.value : 0;
+                  };
+
+                  const getHolesPlayed = (c: any, period: number) => {
+                     const ls = c.linescores?.find((ls: any) => ls.period === period);
+                     return ls?.linescores?.length || 0;
+                  };
+
+                  const getTeeTime = (c: any, period: number) => {
+                     const ls = c.linescores?.find((ls: any) => ls.period === period);
+                     if (ls?.statistics?.categories?.[0]?.stats) {
+                         for (const stat of ls.statistics.categories[0].stats) {
+                             if (stat.displayValue && typeof stat.displayValue === 'string') {
+                                 const match = stat.displayValue.match(/[A-Z][a-z]{2} [A-Z][a-z]{2} \d{1,2}/);
+                                 if (match) {
+                                     let dateStr = stat.displayValue;
+                                     if (!/\d{4}/.test(dateStr)) {
+                                         const year = new Date(defaultGameTime).getFullYear();
+                                         dateStr = dateStr.replace(match[0], `${match[0]} ${year}`);
+                                     }
+                                     const parsed = new Date(dateStr).getTime();
+                                     if (!isNaN(parsed)) return parsed;
                                  }
-                                 const parsed = new Date(dateStr).getTime();
-                                 if (!isNaN(parsed)) return parsed;
                              }
                          }
                      }
-                 }
-                 return null;
-              };
+                     return null;
+                  };
 
-              const teeTimeA = getTeeTime(a, currentPeriod);
-              const teeTimeB = getTeeTime(b, currentPeriod);
+                  const teeTimeA = getTeeTime(a, p);
+                  const teeTimeB = getTeeTime(b, p);
 
-              let gameTime = defaultGameTime;
-              if (teeTimeA && teeTimeB) {
-                  gameTime = Math.min(teeTimeA, teeTimeB);
-              } else if (teeTimeA) {
-                  gameTime = teeTimeA;
-              } else if (teeTimeB) {
-                  gameTime = teeTimeB;
+                  let gameTime = defaultGameTime;
+                  if (teeTimeA && teeTimeB) {
+                      gameTime = Math.min(teeTimeA, teeTimeB);
+                  } else if (teeTimeA) {
+                      gameTime = teeTimeA;
+                  } else if (teeTimeB) {
+                      gameTime = teeTimeB;
+                  }
+
+                  const scoreA = getScore(a, p);
+                  const scoreB = getScore(b, p);
+
+                  let rawStatus = competition.status?.type?.name || "STATUS_SCHEDULED";
+                  let finalStatusDesc = competition.status?.type?.shortDetail || "Upcoming";
+                  let finalStatus = "STATUS_SCHEDULED";
+
+                  if (p < currentPeriod) {
+                      finalStatus = "STATUS_FINAL";
+                      finalStatusDesc = "THRU F";
+                  } else {
+                      if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || finalStatusDesc.toLowerCase().includes('final')) {
+                        finalStatus = "STATUS_FINAL";
+                      } else if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus)) {
+                        finalStatus = "STATUS_POSTPONED";
+                      } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus)) {
+                        finalStatus = "STATUS_DELAYED";
+                      } else {
+                        const holesA = getHolesPlayed(a, p);
+                        const holesB = getHolesPlayed(b, p);
+                        const pairingHolesPlayed = Math.min(holesA, holesB);
+
+                        if (holesA === 18 && holesB === 18) {
+                            finalStatus = "STATUS_FINAL";
+                            finalStatusDesc = "THRU F";
+                        } else if (holesA > 0 || holesB > 0) {
+                            finalStatus = "STATUS_IN_PROGRESS";
+                            finalStatusDesc = `THRU ${pairingHolesPlayed}`;
+                        } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || (rawStatus === "STATUS_SCHEDULED" && (scoreA > 0 || scoreB > 0))) {
+                            finalStatus = "STATUS_IN_PROGRESS";
+                        } else {
+                            finalStatus = "STATUS_SCHEDULED";
+                            finalStatusDesc = "Upcoming";
+                        }
+                      }
+                  }
+
+                  parsedMatchups.push({
+                     startTime: gameTime,
+                     active: true,
+                     featured: false,
+                     title: `Round ${p} Total Score: ${golferA.displayName || golferA.name || 'Golfer A'} vs ${golferB.displayName || golferB.name || 'Golfer B'} (Lower Wins)`,
+                     league,
+                     type: "SCORE",
+                     status: finalStatus,
+                     statusDesc: finalStatusDesc,
+                     gameId: matchupGameId,
+                     homeTeam: {
+                       id: String(b.id),
+                       name: golferB.displayName || golferB.name || "Golfer B",
+                       image: golferB.flag?.href || "/icons/icon-256x256.png",
+                       score: scoreB
+                     },
+                     awayTeam: {
+                       id: String(a.id),
+                       name: golferA.displayName || golferA.name || "Golfer A",
+                       image: golferA.flag?.href || "/icons/icon-256x256.png",
+                       score: scoreA
+                     },
+                     cost: 10,
+                     metadata: {
+                       network: competition.geoBroadcasts?.[0]?.media?.shortName || "N/A",
+                       tournament: game.name,
+                       period: p,
+                       golf: true,
+                       lowerScoreWins: true
+                     }
+                  });
               }
-
-              const scoreA = getScore(a, currentPeriod);
-              const scoreB = getScore(b, currentPeriod);
-
-              let rawStatus = competition.status?.type?.name || "STATUS_SCHEDULED";
-              let finalStatusDesc = competition.status?.type?.shortDetail || "Upcoming";
-              let finalStatus = "STATUS_SCHEDULED";
-
-              if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || finalStatusDesc.toLowerCase().includes('final')) {
-                finalStatus = "STATUS_FINAL";
-              } else if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus)) {
-                finalStatus = "STATUS_POSTPONED";
-              } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus)) {
-                finalStatus = "STATUS_DELAYED";
-              } else {
-                const holesA = getHolesPlayed(a, currentPeriod);
-                const holesB = getHolesPlayed(b, currentPeriod);
-                const pairingHolesPlayed = Math.min(holesA, holesB);
-
-                if (holesA === 18 && holesB === 18) {
-                    finalStatus = "STATUS_FINAL";
-                    finalStatusDesc = "THRU F";
-                } else if (holesA > 0 || holesB > 0) {
-                    finalStatus = "STATUS_IN_PROGRESS";
-                    finalStatusDesc = `THRU ${pairingHolesPlayed}`;
-                } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || (rawStatus === "STATUS_SCHEDULED" && (scoreA > 0 || scoreB > 0))) {
-                    finalStatus = "STATUS_IN_PROGRESS";
-                } else {
-                    finalStatus = "STATUS_SCHEDULED";
-                    finalStatusDesc = "Upcoming";
-                }
-              }
-
-              parsedMatchups.push({
-                 startTime: gameTime,
-                 active: true,
-                 featured: false,
-                 title: `Round ${currentPeriod} Total Score: ${golferA.displayName || golferA.name || 'Golfer A'} vs ${golferB.displayName || golferB.name || 'Golfer B'} (Lower Wins)`,
-                 league,
-                 type: "SCORE",
-                 status: finalStatus,
-                 statusDesc: finalStatusDesc,
-                 gameId: matchupGameId,
-                 homeTeam: {
-                   id: String(b.id),
-                   name: golferB.displayName || golferB.name || "Golfer B",
-                   image: golferB.flag?.href || "/icons/icon-256x256.png",
-                   score: scoreB
-                 },
-                 awayTeam: {
-                   id: String(a.id),
-                   name: golferA.displayName || golferA.name || "Golfer A",
-                   image: golferA.flag?.href || "/icons/icon-256x256.png",
-                   score: scoreA
-                 },
-                 cost: 10,
-                 metadata: {
-                   network: competition.geoBroadcasts?.[0]?.media?.shortName || "N/A",
-                   tournament: game.name,
-                   period: currentPeriod,
-                   golf: true,
-                   lowerScoreWins: true
-                 }
-              });
             }
             continue;
           }
