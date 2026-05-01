@@ -344,7 +344,7 @@ function AdminMatchups() {
   return (
     <div className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden shadow-xl flex flex-col h-full max-h-[85vh]">
       <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-[#18181A]">
-        <h3 className="font-bold text-lg">Matchups Management ({data.filter(m => m.status !== 'STATUS_FINAL' && (leagueFilter === 'All' || m.league === leagueFilter)).length})</h3>
+        <h3 className="font-bold text-lg">Matchups Management ({data.filter(m => !m.abandoned && m.status !== 'STATUS_FINAL' && (leagueFilter === 'All' || m.league === leagueFilter)).length})</h3>
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
@@ -385,7 +385,7 @@ function AdminMatchups() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800">
-              {data.filter(row => row.status !== 'STATUS_FINAL' && (leagueFilter === 'All' || row.league === leagueFilter)).sort((a, b) => (a.startTime || 0) - (b.startTime || 0)).map(row => (
+              {data.filter(row => !row.abandoned && row.status !== 'STATUS_FINAL' && (leagueFilter === 'All' || row.league === leagueFilter)).sort((a, b) => (a.startTime || 0) - (b.startTime || 0)).map(row => (
                 <tr key={row.id} className="hover:bg-zinc-800/30 transition-colors">
                   <td className="px-4 py-3 font-bold text-zinc-300">{row.league}</td>
                   <td className="px-4 py-3 text-zinc-200">{row.title}</td>

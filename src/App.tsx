@@ -377,6 +377,8 @@ function PlayDashboard() {
     const next24Hours = now + 24 * 60 * 60 * 1000;
 
     const filteredMatchups = allFetchedMatchups.filter((m: any) => {
+      if (m.abandoned) return false;
+
       const isFinal = m.status === 'STATUS_FINAL' || m.statusDesc?.toLowerCase().includes('final');
       const isLive = m.status !== 'STATUS_SCHEDULED' && !isFinal && m.status !== 'STATUS_POSTPONED' && m.status !== 'STATUS_CANCELED';
       const isUpcomingWithin24Hours = m.status === 'STATUS_SCHEDULED' && m.startTime <= next24Hours && m.startTime > (now - 24 * 60 * 60 * 1000);
