@@ -316,7 +316,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                        image: golferA.flag?.href || "/icons/icon-256x256.png",
                        score: scoreA
                      },
-                     cost: 10,
+                     cost: 0,
                      metadata: {
                        network: competition.geoBroadcasts?.[0]?.media?.shortName || "N/A",
                        tournament: game.name,
@@ -417,7 +417,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                image: away.team.logo || "/icons/icon-256x256.png",
                score: parseFloat(away.score || "0")
              },
-             cost: 10,
+             cost: 0,
              metadata: {
                network,
                overUnder,
