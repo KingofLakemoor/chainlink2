@@ -41,6 +41,69 @@ async function startServer() {
   });
 
   // API boundaries
+  app.post("/api/picks/cancel-pick", async (req, res) => {
+    try {
+      const { matchupId } = req.body;
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+      }
+
+      const idToken = authHeader.split('Bearer ')[1];
+      const { adminAuth, adminDb } = await import("./src/lib/firebase-admin.js");
+      if (!adminAuth || !adminDb) return res.status(500).json({ success: false, error: "admin tools not initialized" });
+
+      const decodedToken = await adminAuth.verifyIdToken(idToken);
+      const uid = decodedToken.uid;
+
+      await adminDb.runTransaction(async (transaction: any) => {
+        const userRef = adminDb.collection('users').doc(uid);
+        const userDoc = await transaction.get(userRef);
+        if (!userDoc.exists) throw new Error("User not found");
+
+        const matchupRef = adminDb.collection('matchups').doc(matchupId);
+        const matchupDoc = await transaction.get(matchupRef);
+        if (!matchupDoc.exists) throw new Error("Matchup not found");
+
+        const matchup = matchupDoc.data()!;
+        if (!matchup.active) throw new Error("Matchup is locked");
+        if (matchup.status !== 'STATUS_SCHEDULED' && matchup.status !== 'STATUS_POSTPONED') {
+          throw new Error("Matchup has already started and cannot be cancelled");
+        }
+
+        const pickId = uid + "_" + matchupId;
+        const pickRef = adminDb.collection('picks').doc(pickId);
+        const pickDoc = await transaction.get(pickRef);
+
+        if (!pickDoc.exists) {
+          throw new Error("Pick not found");
+        }
+
+        const pickData = pickDoc.data()!;
+        if (pickData.status !== 'PENDING') {
+          throw new Error("Pick is no longer pending");
+        }
+
+        const profile = userDoc.data()!;
+        const refundAmount = matchup.cost > 0 ? matchup.cost : 0;
+
+        transaction.delete(pickRef);
+
+        if (refundAmount > 0) {
+          transaction.update(userRef, {
+            coins: profile.coins + refundAmount,
+            updatedAt: Date.now()
+          });
+        }
+      });
+
+      res.json({ success: true });
+    } catch (e: any) {
+      console.error(e);
+      res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
   app.post("/api/picks/make-pick", async (req, res) => {
     try {
       const { matchupId, team } = req.body;
