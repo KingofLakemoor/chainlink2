@@ -76,6 +76,12 @@ export async function gradeSingleMatchup(matchup: any) {
         const userRef = adminDb!.collection('users').doc(userId);
         const chainRef = adminDb!.collection('chains').doc(`${userId}_current`);
 
+        const pickRefGet = await transaction.get(pickDoc.ref);
+        if (!pickRefGet.exists || pickRefGet.data()?.status !== 'PENDING') {
+           console.warn(`[Grader] Pick ${pickDoc.id} is no longer PENDING or does not exist. Skipping.`);
+           return;
+        }
+
         const userDoc = await transaction.get(userRef);
         const chainDoc = await transaction.get(chainRef);
 
@@ -90,7 +96,7 @@ export async function gradeSingleMatchup(matchup: any) {
         // Apply logic
         if (pickStatus === 'WIN') {
           // Typically reward is cost * 2, let's assume standard wager * 2 for win
-          coins += wager * 2;
+          coins += wager + (matchup.reward ?? 10);
           stats.wins += 1;
           chainData.chain += 1;
           chainData.wins += 1;

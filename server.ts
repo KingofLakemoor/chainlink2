@@ -89,12 +89,11 @@ async function startServer() {
 
         transaction.delete(pickRef);
 
+        const updateData: any = { updatedAt: Date.now() };
         if (refundAmount > 0) {
-          transaction.update(userRef, {
-            coins: profile.coins + refundAmount,
-            updatedAt: Date.now()
-          });
+          updateData.coins = profile.coins + refundAmount;
         }
+        transaction.update(userRef, updateData);
       });
 
       res.json({ success: true });
@@ -160,12 +159,11 @@ async function startServer() {
           updatedAt: Date.now()
         });
 
+        const updateData: any = { updatedAt: Date.now() };
         if (matchup.cost > 0) {
-          transaction.update(userRef, {
-            coins: profile.coins - matchup.cost,
-            updatedAt: Date.now()
-          });
+          updateData.coins = profile.coins - matchup.cost;
         }
+        transaction.update(userRef, updateData);
       });
 
       res.json({ success: true });
@@ -242,6 +240,45 @@ async function startServer() {
           console.error(`[Cron] Error syncing ${league}:`, e);
         }
       }
+
+      // Safety Background Loop: Find stuck picks and grade them
+      console.log(`[Cron] Running safety check for stuck pending picks...`);
+      try {
+        const { adminDb } = await import("./src/lib/firebase-admin.js");
+        const { gradeMatchups } = await import("./src/services/grader.js");
+        if (adminDb) {
+           // Limit the query to prevent massive memory usage and read operations
+           const stuckPicksSnap = await adminDb.collection('picks')
+             .where('status', '==', 'PENDING')
+             .limit(100)
+             .get();
+           if (!stuckPicksSnap.empty) {
+               const matchupIds = new Set<string>();
+               stuckPicksSnap.docs.forEach(doc => matchupIds.add(doc.data().matchupId));
+
+               if (matchupIds.size > 0) {
+                 // Batch query to find any matchups that are finalized/postponed
+                 const matchupsToGrade = [];
+                 for (const mId of Array.from(matchupIds)) {
+                     const mSnap = await adminDb.collection('matchups').doc(mId).get();
+                     if (mSnap.exists) {
+                         const mData = mSnap.data()!;
+                         if (mData.status === 'STATUS_FINAL' || mData.status === 'STATUS_POSTPONED') {
+                             matchupsToGrade.push({ ...mData, gameId: mId });
+                         }
+                     }
+                 }
+                 if (matchupsToGrade.length > 0) {
+                     console.log(`[Cron] Safety loop found ${matchupsToGrade.length} stuck completed matchups. Triggering grader.`);
+                     await gradeMatchups(matchupsToGrade);
+                 }
+               }
+           }
+        }
+      } catch (e) {
+          console.error(`[Cron] Error in safety loop:`, e);
+      }
+
       console.log(`[Cron] Frequent sync cycle complete.`);
     }, SYNC_INTERVAL);
 
