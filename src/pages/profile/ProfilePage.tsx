@@ -96,10 +96,10 @@ export default function ProfilePage() {
          <div className="relative">
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-[#27272a] shadow-xl z-10 relative">
                {profile.image ? (
-                 <img src={profile.image} alt={profile.name} className="w-full h-full object-cover" />
+                 <img src={profile.image} alt={profile.username || profile.name} className="w-full h-full object-cover" />
                ) : (
                  <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-4xl font-bold text-zinc-400">
-                   {profile.name?.charAt(0) || user.email?.charAt(0) || '?'}
+                   {(profile.username || profile.name)?.charAt(0) || user.email?.charAt(0) || '?'}
                  </div>
                )}
             </div>
@@ -111,7 +111,7 @@ export default function ProfilePage() {
          </div>
 
          <div className="flex-1 text-center md:text-left z-10">
-            <h1 className="text-3xl md:text-4xl font-bold text-zinc-100 mb-2 font-display">{profile.name}</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-zinc-100 mb-2 font-display">{profile.username || profile.name}</h1>
             <div className="flex flex-col md:flex-row gap-2 md:gap-4 text-sm text-zinc-400 justify-center md:justify-start">
                <div className="flex items-center gap-1.5 justify-center md:justify-start">
                  <Mail className="w-4 h-4 text-zinc-500" />

@@ -21,9 +21,10 @@ service cloud.firestore {
     // users
     match /users/{userId} {
       function isValidUser(data) {
-        return data.keys().hasAll(['email', 'name', 'role', 'status', 'createdAt']) &&
+        return data.keys().hasAll(['email', 'name', 'username', 'role', 'status', 'createdAt']) &&
                data.email is string && data.email.size() <= 200 &&
                data.name is string && data.name.size() <= 100 &&
+               data.username is string && data.username.size() <= 100 &&
                data.role in ['USER', 'ADMIN'] &&
                data.status in ['ACTIVE', 'INACTIVE'] &&
                data.createdAt is number;
@@ -40,7 +41,7 @@ service cloud.firestore {
           (isAdmin() && isValidUser(incoming())) ||
           (
             request.auth.uid == userId &&
-            incoming().diff(existing()).affectedKeys().hasOnly(['name', 'image', 'settings', 'status', 'updatedAt'])
+            incoming().diff(existing()).affectedKeys().hasOnly(['name', 'image', 'settings', 'status', 'updatedAt', 'username'])
           )
         )
       );

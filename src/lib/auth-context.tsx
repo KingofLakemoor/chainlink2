@@ -33,10 +33,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (import.meta.env.DEV) {
-      const handleMockLogin = () => {
+      const handleMockLogin = (e: any) => {
+        const username = e.detail?.username || 'MockUser123';
+        const email = e.detail?.email || 'mock@example.com';
+
         const mockUser = {
           uid: 'mock-user-123',
-          email: 'mock@example.com',
+          email: email,
           displayName: 'Mock User',
           photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=mock-user-123',
         } as User;
@@ -45,6 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: mockUser.uid,
           email: mockUser.email,
           name: mockUser.displayName,
+          username: username,
           image: mockUser.photoURL,
           coins: 100,
           role: 'ADMIN', // Make mock user an ADMIN for testing locally

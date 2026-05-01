@@ -32,7 +32,7 @@ export const initFirebase = async () => {
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 
-const ensureUserProfile = async (user: User) => {
+const ensureUserProfile = async (user: User, username?: string) => {
   // Check if user exists, if not create default profile
   const userRef = doc(db, 'users', user.uid);
   const userSnap = await getDoc(userRef);
@@ -40,6 +40,7 @@ const ensureUserProfile = async (user: User) => {
     await setDoc(userRef, {
       email: user.email,
       name: user.displayName || 'Anonymous',
+      username: username || 'User' + Math.floor(Math.random() * 1000000),
       image: user.photoURL || '',
       coins: 100, // starting coins
       role: 'USER', // Defaulting to USER for security
@@ -81,16 +82,16 @@ export const loginWithEmail = async (email: string, pass: string) => {
   }
 };
 
-export const signupWithEmail = async (email: string, pass: string) => {
+export const signupWithEmail = async (email: string, pass: string, username: string) => {
   if (import.meta.env.DEV && (!app.options.apiKey || app.options.apiKey === 'MY_FIREBASE_API_KEY')) {
     console.log('Mock login triggered (no valid API key in dev mode)');
-    window.dispatchEvent(new Event('mock-login'));
+    window.dispatchEvent(new CustomEvent('mock-login', { detail: { email, username } }));
     return;
   }
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     if (userCredential && userCredential.user) {
-      await ensureUserProfile(userCredential.user);
+      await ensureUserProfile(userCredential.user, username);
     }
   } catch (error: any) {
     console.error('Email signup failed', error);
