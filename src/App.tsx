@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth-context';
 import { loginWithGoogle, loginWithEmail, signupWithEmail, logout, db } from './lib/firebase';
-import { collection, getDocs, doc, setDoc, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, deleteDoc, query, where, onSnapshot } from 'firebase/firestore';
 import { Button } from './components/ui/button';
 import { cn } from './lib/utils';
 import {
@@ -398,6 +398,48 @@ function PlayDashboard() {
     setMatchups(filteredMatchups);
   }, [allFetchedMatchups, selectedSport, filterType]);
 
+  const handleCancelPick = async (matchup: any) => {
+    if (!user || !profile) return;
+    try {
+      const pickId = user.uid + "_" + matchup.gameId;
+
+      if (import.meta.env.DEV && !user.getIdToken) {
+          // Mock local flow
+          try {
+            await deleteDoc(doc(db, 'picks', pickId));
+          } catch (e) {
+            console.warn("Mock local flow: Failed to delete from Firestore. Skipping...");
+          }
+          const updatedPicks = { ...userPicks };
+          delete updatedPicks[matchup.gameId];
+          setUserPicks(updatedPicks);
+          return;
+      }
+
+      const idToken = await user.getIdToken();
+      const res = await fetch('/api/picks/cancel-pick', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ matchupId: matchup.gameId })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      // Successfully removed by backend, real-time listener will update local state,
+      // but we enthusiastically update locally
+      const updatedPicks = { ...userPicks };
+      delete updatedPicks[matchup.gameId];
+      setUserPicks(updatedPicks);
+
+    } catch (e) {
+      console.error(e);
+      alert("Failed to cancel pick.");
+    }
+  };
+
   const handleMakePick = async (matchup: any, team: any) => {
     if (!user || !profile) return;
 
@@ -595,7 +637,16 @@ function PlayDashboard() {
            {!hasPicked ? (
               <div className="w-[88px]"></div>
            ) : (
-              <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
+              (m.status === 'STATUS_SCHEDULED' || m.status === 'STATUS_POSTPONED') && m.active !== false ? (
+                <button
+                  onClick={() => handleCancelPick(m)}
+                  className="text-xs font-bold text-red-500 hover:text-red-400 transition-colors uppercase tracking-wide border border-red-500/30 hover:border-red-400/50 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded"
+                >
+                  Cancel Pick
+                </button>
+              ) : (
+                <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
+              )
            )}
         </div>
       </div>
