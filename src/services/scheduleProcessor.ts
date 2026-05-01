@@ -88,7 +88,10 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               updatedAt: updateData.updatedAt
             };
 
-            if (existingData.status === 'STATUS_SCHEDULED' && scrapedMatchup.status === 'STATUS_IN_PROGRESS') {
+            if (existingData.status === 'STATUS_SCHEDULED' &&
+                (scrapedMatchup.status === 'STATUS_IN_PROGRESS' ||
+                 scrapedMatchup.status === 'STATUS_FINAL' ||
+                 scrapedMatchup.status === 'STATUS_POSTPONED')) {
               const pendingPicksSnap = await adminDb.collection('picks')
                 .where('matchupId', '==', gameId)
                 .where('status', '==', 'PENDING')
@@ -115,23 +118,38 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
             }
             updateCount++;
 
-            if ((scrapedMatchup.status === 'STATUS_FINAL' && existingData.status !== 'STATUS_FINAL') ||
-                (scrapedMatchup.status === 'STATUS_POSTPONED' && existingData.status !== 'STATUS_POSTPONED')) {
+            if (!updateData.abandoned &&
+               ((scrapedMatchup.status === 'STATUS_FINAL' && existingData.status !== 'STATUS_FINAL') ||
+                (scrapedMatchup.status === 'STATUS_POSTPONED' && existingData.status !== 'STATUS_POSTPONED'))) {
               matchupsToGrade.push({ ...existingData, ...updateData, gameId: scrapedMatchup.gameId, id: gameId });
             }
           }
         } else {
           const newDocRef = matchupsRef.doc(gameId);
-          batch.set(newDocRef, {
+
+          let abandoned = false;
+          let active = scrapedMatchup.active && defaultActive;
+
+          if (scrapedMatchup.status === 'STATUS_IN_PROGRESS' ||
+              scrapedMatchup.status === 'STATUS_FINAL' ||
+              scrapedMatchup.status === 'STATUS_POSTPONED') {
+            abandoned = true;
+            active = false;
+          }
+
+          const newMatchupData = {
             ...scrapedMatchup,
-            active: scrapedMatchup.active && defaultActive,
+            active,
+            abandoned,
             updatedAt: Date.now(),
             createdAt: Date.now()
-          });
+          };
+
+          batch.set(newDocRef, newMatchupData);
           opCount++;
           newCount++;
 
-          existingMap.set(gameId, { data: () => scrapedMatchup, ref: newDocRef } as any);
+          existingMap.set(gameId, { data: () => newMatchupData, ref: newDocRef } as any);
         }
 
         if (opCount >= 500) {
