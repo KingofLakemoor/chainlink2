@@ -62,7 +62,7 @@ export async function gradeSingleMatchup(matchup: any) {
   for (const pickDoc of pendingPicksSnap.docs) {
     const pickData = pickDoc.data();
     const userId = pickData.userId;
-    const wager = pickData.coins || 10;
+    const wager = pickData.coins ?? 10;
 
     let pickStatus = 'LOSS';
     if (isTie) {
