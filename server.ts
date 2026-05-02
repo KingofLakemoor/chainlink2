@@ -36,6 +36,11 @@ async function startServer() {
 
   app.use('/api', apiRouter);
 
+  // Catch-all 404 handler specifically for /api routes to prevent Vite fallback
+  app.use('/api', (req, res) => {
+    res.status(404).json({ success: false, error: 'Not Found' });
+  });
+
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({

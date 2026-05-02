@@ -609,7 +609,8 @@ function AdminEditMatchup() {
 
           const contentType = res.headers.get("content-type");
           if (!contentType || !contentType.includes("application/json")) {
-            throw new Error("Server returned an invalid response. The backend API may not be running.");
+            const rawText = await res.text();
+            throw new Error(`Server returned an invalid response (${res.status}). The backend API may not be running.\nResponse: ${rawText.substring(0, 100)}`);
           }
           const data = await res.json();
           if (data.success) {
@@ -617,9 +618,9 @@ function AdminEditMatchup() {
           } else {
               alert('Failed to grade picks: ' + (data.error || 'Unknown error'));
           }
-      } catch (e) {
+      } catch (e: any) {
           console.error('Error finalizing matchup:', e);
-          alert('Failed to contact server for grading.');
+          alert(`Failed to contact server for grading. Error: ${e.message}`);
       }
   };
 

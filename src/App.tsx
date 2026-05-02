@@ -437,7 +437,8 @@ function PlayDashboard() {
       });
       const contentType = res.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Server returned an invalid response. The backend API may not be running.");
+        const rawText = await res.text();
+        throw new Error(`Server returned an invalid response (${res.status}). The backend API may not be running.\nResponse: ${rawText.substring(0, 100)}`);
       }
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
@@ -448,9 +449,9 @@ function PlayDashboard() {
       delete updatedPicks[matchup.gameId];
       setUserPicks(updatedPicks);
 
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert("Failed to cancel pick.");
+      alert(`Failed to cancel pick. ${e.message}`);
     }
   };
 
@@ -507,7 +508,8 @@ function PlayDashboard() {
       });
       const contentType = res.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Server returned an invalid response. The backend API may not be running.");
+        const rawText = await res.text();
+        throw new Error(`Server returned an invalid response (${res.status}). The backend API may not be running.\nResponse: ${rawText.substring(0, 100)}`);
       }
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
@@ -516,9 +518,9 @@ function PlayDashboard() {
       // but we can enthusiastically update locally if we want, or just wait for the listener.
       setUserPicks(prev => ({...prev, [matchup.gameId]: pickDoc}));
 
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert("Failed to save pick. Ensure your rules allow this write. Error: " + e.message);
+      alert(`Failed to save pick. Ensure your rules allow this write. Error: ${e.message}`);
     }
   };
 
