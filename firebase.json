@@ -1,4 +1,17 @@
 {
+  "functions": {
+    "predeploy": "npm run build",
+    "source": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "src/**",
+      "scripts/**",
+      "test-results/**",
+      "public/**"
+    ]
+  },
   "firestore": {
     "rules": "firestore.rules", "indexes": "firestore.indexes.json"
   },
