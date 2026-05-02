@@ -85,7 +85,7 @@ async function startServer() {
         }
 
         const profile = userDoc.data()!;
-        const refundAmount = matchup.cost > 0 ? matchup.cost : 0;
+        const refundAmount = pickData.coins ?? 0;
 
         transaction.delete(pickRef);
 
@@ -139,8 +139,8 @@ async function startServer() {
           throw new Error("Not enough links!");
         }
 
-        const picksRef = adminDb.collection('picks');
-        const activePicks = await picksRef.where('userId', '==', uid).where('status', '==', 'PENDING').get();
+        const picksQuery = adminDb.collection('picks').where('userId', '==', uid).where('status', '==', 'PENDING');
+        const activePicks = await transaction.get(picksQuery);
         if (!activePicks.empty) {
           throw new Error("You already have an active pick!");
         }
