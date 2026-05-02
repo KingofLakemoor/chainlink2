@@ -101,6 +101,14 @@ export const nightlySync = onSchedule({ schedule: "0 9 * * *", timeoutSeconds: 3
 
 const app = express();
 app.use(express.json());
+
+// Mount the API router to both /api and / to handle Firebase Hosting rewrite stripping behavior
 app.use('/api', apiRouter);
+app.use(apiRouter);
+
+// Catch-all 404 handler for unmatched API routes
+app.use((req, res) => {
+  res.status(404).json({ success: false, error: 'Not Found' });
+});
 
 export const api = onRequest(app as any);
