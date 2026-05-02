@@ -23,3 +23,12 @@ The project uses Firebase for Authentication and Firestore. Here are the key ski
 - **Firebase Admin SDK:**
   - For local development, the Firebase Admin SDK requires credentials. This can be satisfied either by downloading a service account JSON file and pointing `GOOGLE_APPLICATION_CREDENTIALS` to it, or by establishing Application Default Credentials directly via the Google Cloud CLI (`gcloud auth application-default login`).
   - The backend is designed for deployment on Cloud Run via AI Studio, utilizing `applicationDefault()` for Firebase Admin SDK credentials.
+
+## Background Jobs & Cron
+
+The backend runs scheduled background jobs to keep the schedule and matchups in sync.
+
+- **Nightly Sync (2 AM Arizona Time / 9 AM UTC):**
+  - A cron job runs a full schedule sync for all active leagues. It fetches the full-season `/schedule` payload instead of the lightweight `/scoreboard` used during the frequent daytime updates.
+  - This overnight job is responsible for fetching new scheduled matchups. It will mark any matchups that were previously `STATUS_SCHEDULED` but are no longer in the ESPN schedule payload as canceled/postponed if they have pending picks, or mark them as `abandoned: true` if they have no active picks.
+  - The cron job concludes by purging all database matchups that are marked `abandoned: true` in batches. This is essential to keep the database size manageable and clear out stale, unpicked games.
