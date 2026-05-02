@@ -96,7 +96,8 @@ apiRouter.post("/picks/make-pick", async (req, res) => {
       }
 
       const profile = userDoc.data()!;
-      if (matchup.cost > 0 && profile.coins < matchup.cost) {
+      const matchCost = matchup.cost ?? 0;
+      if (matchCost > 0 && profile.coins < matchCost) {
         throw new Error("Not enough links!");
       }
 
@@ -114,15 +115,15 @@ apiRouter.post("/picks/make-pick", async (req, res) => {
         matchupId,
         pick: team,
         status: 'PENDING',
-        coins: matchup.cost,
+        coins: matchCost,
         active: true,
         createdAt: Date.now(),
         updatedAt: Date.now()
       });
 
       const updateData: any = { updatedAt: Date.now() };
-      if (matchup.cost > 0) {
-        updateData.coins = profile.coins - matchup.cost;
+      if (matchCost > 0) {
+        updateData.coins = profile.coins - matchCost;
       }
       transaction.update(userRef, updateData);
     });

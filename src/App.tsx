@@ -463,7 +463,8 @@ function PlayDashboard() {
       return;
     }
 
-    if (profile.coins < matchup.cost) {
+    const matchCost = matchup.cost ?? 0;
+    if (profile.coins < matchCost) {
       alert("Not enough links!");
       return;
     }
@@ -478,7 +479,7 @@ function PlayDashboard() {
           image: team.image || ""
         },
         status: 'PENDING',
-        coins: matchup.cost,
+        coins: matchCost,
         active: true,
         createdAt: Date.now(),
         updatedAt: Date.now()
