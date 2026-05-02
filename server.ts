@@ -294,8 +294,8 @@ async function startServer() {
       }
     }, 5000);
 
-    // Nightly sync at 2 AM Arizona time
-    cron.schedule("0 2 * * *", async () => {
+    // Nightly sync at 2 AM Arizona time (9 AM UTC)
+    cron.schedule("0 9 * * *", async () => {
       console.log(`[Cron] Starting nightly full scheduled sync cycle (2 AM Arizona time)...`);
       for (const league of LEAGUES_TO_SYNC) {
         try {
@@ -334,8 +334,6 @@ async function startServer() {
       }
 
       console.log(`[Cron] Nightly scheduled sync cycle complete.`);
-    }, {
-      timezone: "America/Phoenix"
     });
   });
 }
