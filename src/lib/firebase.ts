@@ -109,10 +109,18 @@ export const loginWithGoogle = async () => {
     return;
   }
   try {
-    await signInWithRedirect(auth, provider);
+    const userCredential = await signInWithPopup(auth, provider);
+    if (userCredential && userCredential.user) {
+      await ensureUserProfile(userCredential.user);
+    }
   } catch (error: any) {
-    console.error('Redirect login failed', error);
-    throw error;
+    console.warn('Popup login failed, falling back to redirect', error);
+    try {
+      await signInWithRedirect(auth, provider);
+    } catch (redirectError: any) {
+      console.error('Redirect login failed', redirectError);
+      throw redirectError;
+    }
   }
 };
 
