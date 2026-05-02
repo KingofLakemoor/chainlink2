@@ -2,6 +2,7 @@
   "functions": {
     "predeploy": "npm run build",
     "source": ".",
+    "runtime": "nodejs22",
     "ignore": [
       "firebase.json",
       "**/.*",
