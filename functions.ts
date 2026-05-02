@@ -1,6 +1,9 @@
 import { onSchedule } from "firebase-functions/v2/scheduler";
+import { onRequest, HttpsOptions } from "firebase-functions/v2/https";
 import { syncLeagueSchedules } from "./src/services/scheduleProcessor.js";
 import "./src/lib/firebase-admin.js"; // Ensure Firebase is initialized
+import express from 'express';
+import { apiRouter } from './src/apiRouter.js';
 
 const LEAGUES_TO_SYNC = ["NBA", "NHL", "MLB", "PGA", "WNBA", "NFL", "WBB", "MBB", "MLS", "EPL", "NWSL", "COLLEGE-FOOTBALL"];
 
@@ -95,3 +98,9 @@ export const nightlySync = onSchedule({ schedule: "0 9 * * *", timeoutSeconds: 3
 
   console.log(`[Cron] Nightly scheduled sync cycle complete.`);
 });
+
+const app = express();
+app.use(express.json());
+app.use('/api', apiRouter);
+
+export const api = onRequest(app as any);
