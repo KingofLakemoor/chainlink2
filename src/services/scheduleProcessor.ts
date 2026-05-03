@@ -47,14 +47,17 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
             continue;
           }
 
+          const newTitle = existingData.hasCustomTitle ? existingData.title : scrapedMatchup.title;
           const needsUpdate = existingData.status !== scrapedMatchup.status || existingData.statusDesc !== scrapedMatchup.statusDesc ||
               existingData.startTime !== scrapedMatchup.startTime ||
               existingData.homeTeam?.score !== scrapedMatchup.homeTeam?.score ||
-              existingData.awayTeam?.score !== scrapedMatchup.awayTeam?.score;
+              existingData.awayTeam?.score !== scrapedMatchup.awayTeam?.score ||
+              existingData.title !== newTitle;
 
           if (needsUpdate || existingDoc.id !== gameId) {
             const updateData: any = {
               ...existingData,
+              title: newTitle,
               status: scrapedMatchup.status,
               statusDesc: scrapedMatchup.statusDesc,
               startTime: scrapedMatchup.startTime,
@@ -77,6 +80,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
             // Flatten update properties specifically for batch.update when NOT migrating
             const flattenedUpdate: any = {
+              title: updateData.title,
               status: updateData.status,
               statusDesc: updateData.statusDesc,
               startTime: updateData.startTime,

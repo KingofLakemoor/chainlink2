@@ -652,6 +652,15 @@ function AdminEditMatchup() {
                     onChange={(e) => handleChange('title', e.target.value)}
                     className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700"
                 />
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    type="checkbox"
+                    checked={matchup.hasCustomTitle || false}
+                    onChange={(e) => handleChange('hasCustomTitle', e.target.checked)}
+                    className="w-4 h-4 rounded border-zinc-700 bg-zinc-900 text-green-500 focus:ring-green-500/20"
+                  />
+                  <label className="text-xs text-zinc-400">Lock Custom Title (prevents API overwrites)</label>
+                </div>
             </div>
             <div className="space-y-2">
                 <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">League</label>
