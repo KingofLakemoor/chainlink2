@@ -111,4 +111,4 @@ app.use((req, res) => {
   res.status(404).json({ success: false, error: 'Not Found' });
 });
 
-export const api = onRequest(app as any);
+export const api = onRequest({ invoker: "public" }, app as any);
