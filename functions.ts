@@ -3,6 +3,7 @@ import { onRequest, HttpsOptions } from "firebase-functions/v2/https";
 import { syncLeagueSchedules } from "./src/services/scheduleProcessor.js";
 import "./src/lib/firebase-admin.js"; // Ensure Firebase is initialized
 import express from 'express';
+import cors from 'cors';
 import { apiRouter } from './src/apiRouter.js';
 
 const LEAGUES_TO_SYNC = ["NBA", "NHL", "MLB", "PGA", "WNBA", "NFL", "WBB", "MBB", "MLS", "EPL", "NWSL", "COLLEGE-FOOTBALL"];
@@ -100,6 +101,7 @@ export const nightlySync = onSchedule({ schedule: "0 9 * * *", timeoutSeconds: 3
 });
 
 const app = express();
+app.use(cors({ origin: true }));
 app.use(express.json());
 
 // Mount the API router to both /api and / to handle Firebase Hosting rewrite stripping behavior
