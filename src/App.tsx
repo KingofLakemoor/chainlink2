@@ -312,14 +312,17 @@ function PlayDashboard() {
        return () => window.removeEventListener('mock-matchups', handleMockMatchups);
     }
 
-    const setupMatchups = async () => {
-      const snap = await getDocs(collection(db, 'matchups'));
-      if (snap.empty) {
-        setAllFetchedMatchups([]);
-      } else {
-        const allMatchups = snap.docs.map(d => ({id: d.id, ...d.data()}));
-        setAllFetchedMatchups(allMatchups);
-      }
+    let unsubMatchups = () => {};
+
+    const setupMatchups = () => {
+      unsubMatchups = onSnapshot(collection(db, 'matchups'), (snap) => {
+        if (snap.empty) {
+          setAllFetchedMatchups([]);
+        } else {
+          const allMatchups = snap.docs.map(d => ({id: d.id, ...d.data()}));
+          setAllFetchedMatchups(allMatchups);
+        }
+      });
     };
 
 
@@ -349,6 +352,7 @@ function PlayDashboard() {
     setupPicksListeners();
 
     return () => {
+      unsubMatchups();
       unsubPicks();
       unsubGlobalPicks();
     };
