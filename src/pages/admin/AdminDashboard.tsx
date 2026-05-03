@@ -6,6 +6,10 @@ import { useAuth } from '../../lib/auth-context';
 import { Navigate, Routes, Route, Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 import CreateMatchupPage from './matchups/CreateMatchupPage';
+import CreateAchievementPage from './achievements/CreateAchievementPage';
+import AwardAchievementPage from './achievements/AwardAchievementPage';
+import AchievementsListPage from './achievements/AchievementsListPage';
+import EditAchievementPage from './achievements/EditAchievementPage';
 import {
   Users, Gamepad2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
@@ -1012,9 +1016,10 @@ export default function AdminDashboard() {
                 <Route path="sponsors/featured" element={<AdminPlaceholder title="Featured Sponsors" />} />
 
                 {/* Achievements */}
-                <Route path="achievements" element={<GenericTable collectionName="achievements" />} />
-                <Route path="achievements/create" element={<AdminPlaceholder title="Create Achievement" />} />
-                <Route path="achievements/award" element={<AdminPlaceholder title="Award Achievement" />} />
+                <Route path="achievements" element={<AchievementsListPage />} />
+                <Route path="achievements/create" element={<CreateAchievementPage />} />
+                <Route path="achievements/award" element={<AwardAchievementPage />} />
+                <Route path="achievements/edit/:id" element={<EditAchievementPage />} />
 
                 {/* Flat routes */}
                 <Route path="pickem" element={<GenericTable collectionName="pickemCampaigns" />} />
