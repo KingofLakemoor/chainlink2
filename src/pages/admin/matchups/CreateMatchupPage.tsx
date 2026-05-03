@@ -46,6 +46,7 @@ export default function CreateMatchupPage() {
         featuredType: formData.featured ? formData.featuredType : '',
         status: formData.status,
         gameId: formData.gameId || `custom-${Date.now()}`,
+        hasCustomTitle: true,
         homeTeam: {
           id: formData.homeTeamId || 'home',
           name: formData.homeTeamName,
