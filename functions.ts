@@ -100,6 +100,72 @@ export const nightlySync = onSchedule({ schedule: "0 9 * * *", timeoutSeconds: 3
   console.log(`[Cron] Nightly scheduled sync cycle complete.`);
 });
 
+export const monthlyShopRefresh = onSchedule({ schedule: "0 0 1 * *", timeoutSeconds: 300 }, async (event) => {
+  console.log(`[Cron] Starting monthly shop refresh cycle...`);
+  try {
+    const { adminDb } = await import("./src/lib/firebase-admin.js");
+    if (adminDb) {
+      const shopItemsSnap = await adminDb.collection('shopItems').where('forSale', '==', true).get();
+      const itemsByType = {
+        'PROFILE_BANNER': [] as any[],
+        'AVATAR_RING': [] as any[],
+        'TITLE': [] as any[]
+      };
+
+      shopItemsSnap.docs.forEach((doc: any) => {
+        const data = doc.data();
+        if (data.type && itemsByType[data.type as keyof typeof itemsByType]) {
+          itemsByType[data.type as keyof typeof itemsByType].push({ id: doc.id, ...data });
+        }
+      });
+
+      const selectedIds = new Set<string>();
+
+      for (const type of Object.keys(itemsByType)) {
+        const items = itemsByType[type as keyof typeof itemsByType];
+        // Shuffle the items
+        for (let i = items.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [items[i], items[j]] = [items[j], items[i]];
+        }
+        // Take up to 3
+        const selected = items.slice(0, 3);
+        selected.forEach(item => selectedIds.add(item.id));
+      }
+
+      let batch = adminDb.batch();
+      let opCount = 0;
+      let totalUpdated = 0;
+
+      for (const doc of shopItemsSnap.docs) {
+        const data = doc.data();
+        if (data.type === 'PROFILE_BANNER' || data.type === 'AVATAR_RING' || data.type === 'TITLE') {
+          const shouldBeActive = selectedIds.has(doc.id);
+          if (data.active !== shouldBeActive) {
+            batch.update(doc.ref, { active: shouldBeActive, updatedAt: Date.now() });
+            opCount++;
+            totalUpdated++;
+
+            if (opCount >= 500) {
+              await batch.commit();
+              batch = adminDb.batch();
+              opCount = 0;
+            }
+          }
+        }
+      }
+
+      if (opCount > 0) {
+        await batch.commit();
+      }
+
+      console.log(`[Cron] Monthly shop refresh complete. Updated ${totalUpdated} items.`);
+    }
+  } catch (e) {
+    console.error(`[Cron] Error in monthly shop refresh:`, e);
+  }
+});
+
 const app = express();
 app.use(cors({ origin: true }));
 app.use(express.json());
