@@ -341,6 +341,10 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
           const away = competitors.find((c: any) => c.homeAway === "away");
           if (!home || !away) continue;
 
+          const homeName = home.team?.name || "";
+          const awayName = away.team?.name || "";
+          if (homeName.includes("TBD") || awayName.includes("TBD")) continue;
+
           const gameTime = new Date(game.date).getTime();
 
           const overUnder = competition.odds?.[0]?.overUnder || null;
