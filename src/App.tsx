@@ -788,6 +788,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ProfilePage from './pages/profile/ProfilePage';
 import LeaderboardsPage from './pages/leaderboards/LeaderboardsPage';
+import ShopPage from './pages/shop/ShopPage';
 
 export default function App() {
   return (
@@ -802,7 +803,7 @@ export default function App() {
           <Route path="/pickem" element={<PrivateRoute><MainLayout><PlaceholderPage title="Pick'em" /></MainLayout></PrivateRoute>} />
           <Route path="/squads" element={<PrivateRoute><MainLayout><PlaceholderPage title="Squads" /></MainLayout></PrivateRoute>} />
           <Route path="/leaderboards" element={<PrivateRoute><MainLayout><LeaderboardsPage /></MainLayout></PrivateRoute>} />
-          <Route path="/shop" element={<PrivateRoute><MainLayout><PlaceholderPage title="Link Shop" /></MainLayout></PrivateRoute>} />
+          <Route path="/shop" element={<PrivateRoute><MainLayout><ShopPage /></MainLayout></PrivateRoute>} />
           <Route path="/games" element={<PrivateRoute><MainLayout><PlaceholderPage title="Games" /></MainLayout></PrivateRoute>} />
           <Route path="/settings" element={<PrivateRoute><MainLayout><PlaceholderPage title="Settings" /></MainLayout></PrivateRoute>} />
           {/* Catch all route back to play */}
