@@ -94,7 +94,11 @@ function TopStats() {
       </div>
       <div className="w-px h-4 bg-zinc-700"></div>
       <div className="flex items-center gap-3 text-sm">
-         <span className="text-[#22c55e] font-bold tracking-tight">W{chain?.chain || 0}</span>
+         {(chain?.chain || 0) < 0 ? (
+           <span className="text-red-500 font-bold tracking-tight">L{Math.abs(chain?.chain || 0)}</span>
+         ) : (
+           <span className="text-[#22c55e] font-bold tracking-tight">W{chain?.chain || 0}</span>
+         )}
          <span className="hidden sm:inline text-zinc-400 font-mono text-xs tracking-wider">
            {profile?.stats?.wins || 0} - {profile?.stats?.losses || 0} - {profile?.stats?.pushes || 0}
          </span>

@@ -98,14 +98,14 @@ export async function gradeSingleMatchup(matchup: any) {
           // Typically reward is cost * 2, let's assume standard wager * 2 for win
           coins += wager + (matchup.reward ?? 10);
           stats.wins += 1;
-          chainData.chain += 1;
+          chainData.chain = chainData.chain < 0 ? 1 : chainData.chain + 1;
           chainData.wins += 1;
           if (chainData.chain > (chainData.best || 0)) {
             chainData.best = chainData.chain;
           }
         } else if (pickStatus === 'LOSS') {
           stats.losses += 1;
-          chainData.chain = 0; // Reset chain
+          chainData.chain = chainData.chain > 0 ? -1 : (chainData.chain === 0 ? -1 : chainData.chain - 1);
           chainData.losses += 1;
         } else if (pickStatus === 'PUSH') {
           // Refund wager

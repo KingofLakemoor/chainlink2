@@ -3,6 +3,7 @@ import { useAuth } from '../../lib/auth-context';
 import { db } from '../../lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { Button } from '../../components/ui/button';
+import { cn } from '../../lib/utils';
 import { Trophy, Download, Medal, Flame, CheckCircle2, Percent, Users } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -179,7 +180,9 @@ export default function LeaderboardsPage() {
           <div className="relative z-10 flex-1 min-w-0">
             <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-1">Current Chain</p>
             <p className="text-zinc-100 font-bold truncate">{topCurrentChain?.username || topCurrentChain?.name || 'N/A'}</p>
-            <p className="text-orange-400 font-mono font-bold text-lg leading-none mt-1">{topCurrentChain?.currentChain || 0}</p>
+            <p className={cn("font-mono font-bold text-lg leading-none mt-1", (topCurrentChain?.currentChain || 0) < 0 ? "text-red-500" : "text-orange-400")}>
+              {(topCurrentChain?.currentChain || 0) < 0 ? `L${Math.abs(topCurrentChain?.currentChain || 0)}` : `W${topCurrentChain?.currentChain || 0}`}
+            </p>
           </div>
         </div>
 
@@ -205,7 +208,7 @@ export default function LeaderboardsPage() {
           <div className="relative z-10 flex-1 min-w-0">
             <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-1">Longest Chain</p>
             <p className="text-zinc-100 font-bold truncate">{topBestChain?.username || topBestChain?.name || 'N/A'}</p>
-            <p className="text-yellow-400 font-mono font-bold text-lg leading-none mt-1">{topBestChain?.bestChain || 0}</p>
+            <p className="text-yellow-400 font-mono font-bold text-lg leading-none mt-1">W{topBestChain?.bestChain || 0}</p>
           </div>
         </div>
 
@@ -294,11 +297,11 @@ export default function LeaderboardsPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-center text-red-400 font-mono font-bold">{player.stats?.losses || 0}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-zinc-300 font-mono">{player.winRate?.toFixed(1) || 0}%</td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-orange-500/10 text-orange-400 font-mono font-bold border border-orange-500/20">
-                        {player.currentChain || 0}
+                      <div className={cn("inline-flex items-center justify-center w-8 h-8 rounded-full font-mono font-bold border", (player.currentChain || 0) < 0 ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-orange-500/10 text-orange-400 border-orange-500/20")}>
+                        {(player.currentChain || 0) < 0 ? `L${Math.abs(player.currentChain || 0)}` : `W${player.currentChain || 0}`}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center text-yellow-400 font-mono font-bold">{player.bestChain || 0}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center text-yellow-400 font-mono font-bold">W{player.bestChain || 0}</td>
                   </tr>
                 ))
               )}
