@@ -12,7 +12,8 @@
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "init-db": "tsx scripts/init_collections.ts",
-    "seed-achievements": "tsx scripts/seed_achievements.ts"
+    "seed-achievements": "tsx scripts/seed_achievements.ts",
+    "seed-shop": "tsx scripts/seed_shop.ts"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
