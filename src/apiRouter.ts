@@ -146,6 +146,104 @@ apiRouter.post("/admin/sync-schedules", async (req, res) => {
   }
 });
 
+apiRouter.post("/shop/buy", async (req, res) => {
+  try {
+    const { itemId } = req.body;
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const idToken = authHeader.split('Bearer ')[1];
+    if (!adminAuth || !adminDb) return res.status(500).json({ success: false, error: "admin tools not initialized" });
+
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    await adminDb.runTransaction(async (transaction: any) => {
+      const userRef = adminDb.collection('users').doc(uid);
+      const userDoc = await transaction.get(userRef);
+      if (!userDoc.exists) throw new Error("User not found");
+
+      const itemRef = adminDb.collection('shopItems').doc(itemId);
+      const itemDoc = await transaction.get(itemRef);
+      if (!itemDoc.exists) throw new Error("Item not found");
+
+      const item = itemDoc.data()!;
+      if (!item.active) throw new Error("Item is no longer available");
+
+      const profile = userDoc.data()!;
+      const cost = item.cost ?? 0;
+
+      if (profile.coins < cost) {
+        throw new Error("Not enough links!");
+      }
+
+      const inventory = profile.inventory || [];
+      if (inventory.includes(itemId)) {
+        throw new Error("You already own this item!");
+      }
+
+      const updateData: any = {
+        updatedAt: Date.now(),
+        coins: profile.coins - cost,
+        inventory: [...inventory, itemId]
+      };
+
+      transaction.update(userRef, updateData);
+    });
+
+    res.json({ success: true });
+  } catch (e: any) {
+    console.error("Buy item error:", e.message, e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+apiRouter.post("/user/equip", async (req, res) => {
+  try {
+    const { itemId, type } = req.body; // type is e.g. 'PROFILE_BANNER', 'AVATAR_RING', 'TITLE'
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const idToken = authHeader.split('Bearer ')[1];
+    if (!adminAuth || !adminDb) return res.status(500).json({ success: false, error: "admin tools not initialized" });
+
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    await adminDb.runTransaction(async (transaction: any) => {
+      const userRef = adminDb.collection('users').doc(uid);
+      const userDoc = await transaction.get(userRef);
+      if (!userDoc.exists) throw new Error("User not found");
+
+      const profile = userDoc.data()!;
+      const inventory = profile.inventory || [];
+
+      // If itemId is null, it means unequip
+      if (itemId !== null && !inventory.includes(itemId)) {
+        throw new Error("You do not own this item!");
+      }
+
+      const equippedCosmetics = profile.equippedCosmetics || {};
+
+      const updateData: any = {
+        updatedAt: Date.now(),
+        equippedCosmetics: { ...equippedCosmetics, [type]: itemId }
+      };
+
+      transaction.update(userRef, updateData);
+    });
+
+    res.json({ success: true });
+  } catch (e: any) {
+    console.error("Equip item error:", e.message, e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 apiRouter.post("/admin/grade-matchup", async (req, res) => {
   try {
     const { gameId } = req.body;
