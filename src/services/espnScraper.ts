@@ -1,4 +1,4 @@
-export type League = "NFL" | "NBA" | "NHL" | "MLB" | "MLS" | "EPL" | "MBB" | "WBB" | "NWSL" | "COLLEGE-FOOTBALL" | "WNBA" | "PGA" | string;
+export type League = "NFL" | "NBA" | "NHL" | "MLB" | "MLS" | "EPL" | "MBB" | "WBB" | "NWSL" | "COLLEGE-FOOTBALL" | "WNBA" | "PGA" | "FIFA" | string;
 
 
 export const MATCHUP_FINAL_STATUSES = [
@@ -86,6 +86,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
       case "MLB": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${date}`);
       case "MLS": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard?dates=${date}`);
       case "EPL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=${date}`);
+      case "FIFA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${date}`);
       case "COLLEGE-FOOTBALL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${date}`);
       case "WNBA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/scoreboard?dates=${date}`);
       default: return [];
@@ -100,6 +101,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
     case "MLB": return [`https://cdn.espn.com/core/mlb/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "MLS": return [`https://cdn.espn.com/core/soccer/schedule/_/league/usa.1??dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "EPL": return [`https://cdn.espn.com/core/soccer/schedule/_/league/eng.1??dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
+    case "FIFA": return [`https://cdn.espn.com/core/soccer/schedule/_/league/fifa.world?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "COLLEGE-FOOTBALL": return [`https://cdn.espn.com/core/college-football/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "WNBA": return [`https://cdn.espn.com/core/wnba/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     default: return [];

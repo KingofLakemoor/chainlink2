@@ -56,6 +56,7 @@ function Sidebar({ open, setOpen }: { open: boolean; setOpen: (val: boolean) => 
         <div className="mt-6 mb-2 px-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">ChainLink</div>
         <NavItem icon={PlayCircle} label="Play ChainLink" path="/play" />
         <NavItem icon={Layers} label="Pick'em" path="/pickem" />
+        <NavItem icon={Trophy} label="Brackets" path="/brackets" />
         <NavItem icon={Users} label="Squads" path="/squads" />
         <NavItem icon={Trophy} label="Leaderboards" path="/leaderboards" />
 
@@ -399,7 +400,7 @@ function PlayDashboard() {
 
       if (filterType === 'available' && m.status !== 'STATUS_SCHEDULED') return false;
 
-      if (selectedSport === 'SOCCER' && !['MLS', 'EPL', 'NWSL'].includes(m.league)) return false;
+      if (selectedSport === 'SOCCER' && !['MLS', 'EPL', 'NWSL', 'FIFA'].includes(m.league)) return false;
       if (selectedSport === 'BASKETBALL' && !['NBA', 'MBB', 'WBB', 'WNBA'].includes(m.league)) return false;
       if (selectedSport === 'HOCKEY' && !['NHL'].includes(m.league)) return false;
       if (selectedSport === 'BASEBALL' && !['MLB'].includes(m.league)) return false;
@@ -789,6 +790,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import ProfilePage from './pages/profile/ProfilePage';
 import LeaderboardsPage from './pages/leaderboards/LeaderboardsPage';
 import ShopPage from './pages/shop/ShopPage';
+import { BracketsPage } from './pages/Brackets';
 
 export default function App() {
   return (
@@ -801,6 +803,7 @@ export default function App() {
           <Route path="/play" element={<PrivateRoute><MainLayout><PlayDashboard /></MainLayout></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><MainLayout><ProfilePage /></MainLayout></PrivateRoute>} />
           <Route path="/pickem" element={<PrivateRoute><MainLayout><PlaceholderPage title="Pick'em" /></MainLayout></PrivateRoute>} />
+          <Route path="/brackets" element={<PrivateRoute><MainLayout><BracketsPage /></MainLayout></PrivateRoute>} />
           <Route path="/squads" element={<PrivateRoute><MainLayout><PlaceholderPage title="Squads" /></MainLayout></PrivateRoute>} />
           <Route path="/leaderboards" element={<PrivateRoute><MainLayout><LeaderboardsPage /></MainLayout></PrivateRoute>} />
           <Route path="/shop" element={<PrivateRoute><MainLayout><ShopPage /></MainLayout></PrivateRoute>} />
