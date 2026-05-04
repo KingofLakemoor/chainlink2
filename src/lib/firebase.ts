@@ -1,5 +1,5 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, signOut, Auth, User, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, signOut, Auth, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, Firestore } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -80,6 +80,15 @@ export const loginWithEmail = async (email: string, pass: string) => {
       await ensureUserProfile(userCredential.user);
     }
   } catch (error: any) {
+    if (error.code === 'auth/invalid-credential') {
+      let methods: string[] = [];
+      try {
+        methods = await fetchSignInMethodsForEmail(auth, email);
+      } catch (e) {}
+      if (methods.includes('google.com')) {
+        throw new Error('This email is associated with a Google account. Please sign in with Google.');
+      }
+    }
     console.error('Email login failed', error);
     throw error;
   }
@@ -97,6 +106,15 @@ export const signupWithEmail = async (email: string, pass: string, username: str
       await ensureUserProfile(userCredential.user, username);
     }
   } catch (error: any) {
+    if (error.code === 'auth/email-already-in-use') {
+      let methods: string[] = [];
+      try {
+        methods = await fetchSignInMethodsForEmail(auth, email);
+      } catch (e) {}
+      if (methods.includes('google.com')) {
+        throw new Error('This email is already associated with a Google account. Please sign in with Google.');
+      }
+    }
     console.error('Email signup failed', error);
     throw error;
   }
@@ -114,6 +132,19 @@ export const loginWithGoogle = async () => {
       await ensureUserProfile(userCredential.user);
     }
   } catch (error: any) {
+    if (error.code === 'auth/account-exists-with-different-credential') {
+      const email = error.customData?.email;
+      if (email) {
+        let methods: string[] = [];
+        try {
+          methods = await fetchSignInMethodsForEmail(auth, email);
+        } catch (e) {}
+        if (methods.includes('password')) {
+          throw new Error(`An account already exists with ${email}. Please sign in using your Email/Password.`);
+        }
+      }
+      throw new Error('An account already exists with different credentials. Please sign in using the original method.');
+    }
     console.warn('Popup login failed, falling back to redirect', error);
     try {
       await signInWithRedirect(auth, provider);
