@@ -10,7 +10,7 @@ import { format } from 'date-fns';
 export default function LeaderboardsPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [selectedMonth, setSelectedMonth] = useState('all-time'); // all-time by default for now
+  const [selectedMonth, setSelectedMonth] = useState('current'); // current by default
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
 
   useEffect(() => {
