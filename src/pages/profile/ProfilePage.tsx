@@ -4,12 +4,17 @@ import { Button } from '../../components/ui/button';
 import { Trophy, Coins, Calendar, Mail, CheckCircle2, XCircle, MinusCircle, Medal } from 'lucide-react';
 import { format } from 'date-fns';
 import { db } from '../../lib/firebase';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, where, documentId } from 'firebase/firestore';
+import { Link } from 'react-router-dom';
 
 export default function ProfilePage() {
   const { user, profile, loading } = useAuth();
   const [achievements, setAchievements] = useState<any[]>([]);
   const [achievementsLoading, setAchievementsLoading] = useState(true);
+
+  const [inventoryItems, setInventoryItems] = useState<any[]>([]);
+  const [inventoryLoading, setInventoryLoading] = useState(true);
+  const [equipLoading, setEquipLoading] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAchievements = async () => {
@@ -36,6 +41,75 @@ export default function ProfilePage() {
     };
     fetchAchievements();
   }, []);
+
+  useEffect(() => {
+    const fetchInventory = async () => {
+      if (!profile?.inventory || profile.inventory.length === 0) {
+        setInventoryItems([]);
+        setInventoryLoading(false);
+        return;
+      }
+
+      try {
+        if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
+          const mockItems = [
+            { id: 'ring_gold', name: 'Gold Ring', description: 'A fancy gold ring.', cost: 500, type: 'AVATAR_RING', active: true, image: 'border-yellow-500' },
+            { id: 'banner_neon', name: 'Neon Banner', description: 'Bright profile header.', cost: 1000, type: 'PROFILE_BANNER', active: true, image: 'bg-gradient-to-r from-fuchsia-500 to-cyan-500' },
+            { id: 'title_highroller', name: 'High Roller', description: 'Show off your wealth.', cost: 2500, type: 'TITLE', active: true, image: '' },
+          ];
+          setInventoryItems(mockItems.filter(i => profile.inventory.includes(i.id)));
+          setInventoryLoading(false);
+          return;
+        }
+
+        // chunk array in case there are more than 10 inventory items
+        const chunkSize = 10;
+        const chunks = [];
+        for (let i = 0; i < profile.inventory.length; i += chunkSize) {
+            chunks.push(profile.inventory.slice(i, i + chunkSize));
+        }
+
+        const fetchPromises = chunks.map(chunk =>
+            getDocs(query(collection(db, 'shopItems'), where(documentId(), 'in', chunk)))
+        );
+
+        const snapshots = await Promise.all(fetchPromises);
+        const fetchedItems = snapshots.flatMap(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        setInventoryItems(fetchedItems);
+      } catch (e) {
+        console.error("Error fetching inventory", e);
+      } finally {
+        setInventoryLoading(false);
+      }
+    };
+    fetchInventory();
+  }, [profile?.inventory]);
+
+  const handleEquip = async (itemId: string | null, type: string) => {
+    if (!user) return;
+    setEquipLoading(type);
+
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/user/equip', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ itemId, type })
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Equip failed", res.status, text);
+      }
+    } catch (e) {
+      console.error("Equip error", e);
+    } finally {
+      setEquipLoading(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -90,11 +164,22 @@ export default function ProfilePage() {
     <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
 
       {/* Profile Header */}
-      <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6 md:p-10 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden">
-         <div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5 pointer-events-none"></div>
+      <div className={`bg-[#121212] border border-zinc-800 rounded-2xl p-6 md:p-10 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden ${
+        profile?.equippedCosmetics?.PROFILE_BANNER ?
+          inventoryItems.find(i => i.id === profile.equippedCosmetics.PROFILE_BANNER)?.image || ''
+          : ''
+      }`}>
+         {/* Only show default background if no banner is equipped */}
+         {!profile?.equippedCosmetics?.PROFILE_BANNER && (
+            <div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5 pointer-events-none"></div>
+         )}
 
          <div className="relative">
-            <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-[#27272a] shadow-xl z-10 relative">
+            <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 shadow-xl z-10 relative ${
+              profile?.equippedCosmetics?.AVATAR_RING ?
+                inventoryItems.find(i => i.id === profile.equippedCosmetics.AVATAR_RING)?.image || 'border-[#27272a]'
+                : 'border-[#27272a]'
+            }`}>
                {profile.image ? (
                  <img src={profile.image} alt={profile.username || profile.name} className="w-full h-full object-cover" />
                ) : (
@@ -111,14 +196,23 @@ export default function ProfilePage() {
          </div>
 
          <div className="flex-1 text-center md:text-left z-10">
-            <h1 className="text-3xl md:text-4xl font-bold text-zinc-100 mb-2 font-display">{profile.username || profile.name}</h1>
-            <div className="flex flex-col md:flex-row gap-2 md:gap-4 text-sm text-zinc-400 justify-center md:justify-start">
+            <h1 className="text-3xl md:text-4xl font-bold text-zinc-100 mb-1 font-display drop-shadow-md">{profile.username || profile.name}</h1>
+
+            {profile?.equippedCosmetics?.TITLE && (
+               <div className="mb-3 inline-block">
+                  <span className="text-sm font-bold text-[#22c55e] px-2 py-0.5 rounded bg-black/40 border border-[#22c55e]/30 shadow-sm backdrop-blur-sm">
+                     {inventoryItems.find(i => i.id === profile.equippedCosmetics.TITLE)?.name || 'Title'}
+                  </span>
+               </div>
+            )}
+
+            <div className="flex flex-col md:flex-row gap-2 md:gap-4 text-sm text-zinc-300 justify-center md:justify-start drop-shadow-md font-medium">
                <div className="flex items-center gap-1.5 justify-center md:justify-start">
-                 <Mail className="w-4 h-4 text-zinc-500" />
+                 <Mail className="w-4 h-4 opacity-70" />
                  {user.email}
                </div>
                <div className="flex items-center gap-1.5 justify-center md:justify-start">
-                 <Calendar className="w-4 h-4 text-zinc-500" />
+                 <Calendar className="w-4 h-4 opacity-70" />
                  Joined {joinDate}
                </div>
             </div>
@@ -249,6 +343,57 @@ export default function ProfilePage() {
                      })}
                   </div>
                ))}
+            </div>
+         )}
+      </div>
+
+      {/* Inventory & Cosmetics */}
+      <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6 mt-6">
+         <h2 className="text-lg font-bold text-zinc-200 mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+               <Coins className="w-5 h-5 text-cyan-400" /> Inventory & Cosmetics
+            </div>
+            <Link to="/shop" className="text-sm font-medium text-cyan-400 hover:text-cyan-300">
+               Visit Shop
+            </Link>
+         </h2>
+
+         {inventoryLoading ? (
+            <div className="text-center text-zinc-500 py-8">Loading inventory...</div>
+         ) : inventoryItems.length === 0 ? (
+            <div className="text-center text-zinc-500 py-8 flex flex-col items-center justify-center">
+               <div className="mb-2">You don't own any cosmetics yet.</div>
+               <Link to="/shop">
+                  <Button variant="outline" className="mt-2 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800">
+                     Browse Shop
+                  </Button>
+               </Link>
+            </div>
+         ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+               {inventoryItems.map(item => {
+                  const isEquipped = profile?.equippedCosmetics?.[item.type] === item.id;
+
+                  return (
+                     <div key={item.id} className={`bg-[#18181a] border rounded-xl p-4 flex flex-col ${isEquipped ? 'border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.1)]' : 'border-zinc-800'}`}>
+                        <div className="flex justify-between items-start mb-2">
+                           <h3 className="text-md font-bold text-zinc-200">{item.name}</h3>
+                           <span className="text-[10px] px-2 py-1 bg-zinc-800 text-zinc-400 rounded uppercase font-bold tracking-wider">{item.type.replace('_', ' ')}</span>
+                        </div>
+                        <p className="text-xs text-zinc-500 mb-4 flex-1">{item.description}</p>
+
+                        <Button
+                           onClick={() => handleEquip(isEquipped ? null : item.id, item.type)}
+                           disabled={equipLoading === item.type}
+                           variant={isEquipped ? "destructive" : "default"}
+                           className={`w-full ${isEquipped ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20 border-0' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300'}`}
+                           size="sm"
+                        >
+                           {equipLoading === item.type ? 'Processing...' : isEquipped ? 'Unequip' : 'Equip'}
+                        </Button>
+                     </div>
+                  );
+               })}
             </div>
          )}
       </div>
