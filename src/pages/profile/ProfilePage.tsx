@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
-import { Trophy, Coins, Calendar, Mail, CheckCircle2, XCircle, MinusCircle, Medal } from 'lucide-react';
+import { Trophy, Coins, Calendar, Mail, CheckCircle2, XCircle, MinusCircle, Medal, BarChart3 } from 'lucide-react';
 import { format } from 'date-fns';
 import { db } from '../../lib/firebase';
 import { collection, getDocs, orderBy, query, where, documentId } from 'firebase/firestore';
@@ -9,6 +9,8 @@ import { Link } from 'react-router-dom';
 
 export default function ProfilePage() {
   const { user, profile, loading } = useAuth();
+  const [picks, setPicks] = useState<any[]>([]);
+  const [picksLoading, setPicksLoading] = useState(true);
   const [achievements, setAchievements] = useState<any[]>([]);
   const [achievementsLoading, setAchievementsLoading] = useState(true);
 
@@ -85,6 +87,42 @@ export default function ProfilePage() {
     fetchInventory();
   }, [profile?.inventory]);
 
+  useEffect(() => {
+    const fetchPicks = async () => {
+      if (!user) {
+        setPicksLoading(false);
+        return;
+      }
+      try {
+        if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
+          // Mock picks for local UI testing
+          setPicks([
+            { id: '1', status: 'WIN', updatedAt: new Date('2024-01-10').getTime() },
+            { id: '2', status: 'WIN', updatedAt: new Date('2024-01-15').getTime() },
+            { id: '3', status: 'LOSS', updatedAt: new Date('2024-02-01').getTime() },
+            { id: '4', status: 'WIN', updatedAt: new Date('2024-02-10').getTime() },
+            { id: '5', status: 'WIN', updatedAt: new Date('2024-02-15').getTime() },
+            { id: '6', status: 'WIN', updatedAt: new Date('2024-02-20').getTime() },
+            { id: '7', status: 'LOSS', updatedAt: new Date('2024-02-25').getTime() },
+            { id: '8', status: 'LOSS', updatedAt: new Date('2024-03-01').getTime() },
+          ]);
+          setPicksLoading(false);
+          return;
+        }
+
+        const q = query(collection(db, 'picks'), where('userId', '==', user.uid));
+        const snap = await getDocs(q);
+        const fetchedPicks = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setPicks(fetchedPicks);
+      } catch (e) {
+        console.error("Error fetching picks", e);
+      } finally {
+        setPicksLoading(false);
+      }
+    };
+    fetchPicks();
+  }, [user]);
+
   const handleEquip = async (itemId: string | null, type: string) => {
     if (!user) return;
     setEquipLoading(type);
@@ -131,6 +169,57 @@ export default function ProfilePage() {
   const stats = profile.stats || { wins: 0, losses: 0, pushes: 0 };
   const totalDecisions = stats.wins + stats.losses;
   const winRate = totalDecisions > 0 ? (stats.wins / totalDecisions) * 100 : 0;
+
+  // Aggregate monthly stats from picks
+  const monthlyStats = React.useMemo(() => {
+    if (!picks || picks.length === 0) return [];
+
+    const sortedPicks = [...picks].sort((a, b) => (a.updatedAt || 0) - (b.updatedAt || 0));
+    const monthsMap: Record<string, any> = {};
+    let currentChain = 0;
+    let currentMonthKey = '';
+
+    sortedPicks.forEach(pick => {
+      if (pick.status === 'PENDING') return;
+
+      const date = new Date(pick.updatedAt || Date.now());
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const monthLabel = format(date, 'MMMM yyyy');
+
+      if (monthKey !== currentMonthKey) {
+        currentChain = 0;
+        currentMonthKey = monthKey;
+      }
+
+      if (!monthsMap[monthKey]) {
+        monthsMap[monthKey] = {
+          monthKey,
+          monthLabel,
+          wins: 0,
+          losses: 0,
+          pushes: 0,
+          longestWinChain: 0,
+          longestLossChain: 0,
+        };
+      }
+
+      const monthData = monthsMap[monthKey];
+
+      if (pick.status === 'WIN') {
+        monthData.wins += 1;
+        currentChain = currentChain < 0 ? 1 : currentChain + 1;
+        monthData.longestWinChain = Math.max(monthData.longestWinChain, currentChain);
+      } else if (pick.status === 'LOSS') {
+        monthData.losses += 1;
+        currentChain = currentChain > 0 ? -1 : (currentChain === 0 ? -1 : currentChain - 1);
+        monthData.longestLossChain = Math.max(monthData.longestLossChain, Math.abs(currentChain));
+      } else if (pick.status === 'PUSH') {
+        monthData.pushes += 1;
+      }
+    });
+
+    return Object.values(monthsMap).sort((a: any, b: any) => b.monthKey.localeCompare(a.monthKey));
+  }, [picks]);
 
   // Formatting date
   let joinDate = 'Unknown';
@@ -285,8 +374,62 @@ export default function ProfilePage() {
 
       </div>
 
+      {/* Monthly Performance */}
+      {picksLoading ? (
+         <div className="text-center text-zinc-500 py-8">Loading monthly performance...</div>
+      ) : monthlyStats.length > 0 && (
+         <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6 mt-6">
+            <h2 className="text-lg font-bold text-zinc-200 mb-6 flex items-center gap-2">
+               <BarChart3 className="w-5 h-5 text-cyan-400" /> Monthly Performance
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+               {monthlyStats.map((stat: any) => {
+                  const mTotal = stat.wins + stat.losses;
+                  const mWinRate = mTotal > 0 ? ((stat.wins / mTotal) * 100).toFixed(1) : '0.0';
+
+                  return (
+                     <div key={stat.monthKey} className="bg-[#18181a] border border-zinc-800 rounded-xl p-4 flex flex-col hover:border-zinc-700 transition-colors">
+                        <div className="flex justify-between items-center mb-3">
+                           <h3 className="text-zinc-200 font-bold">{stat.monthLabel}</h3>
+                           <span className="text-xs font-mono font-bold bg-zinc-800/50 text-cyan-400 px-2 py-1 rounded">
+                              {mWinRate}% WR
+                           </span>
+                        </div>
+
+                        <div className="flex items-center justify-between text-sm mb-3">
+                           <span className="text-zinc-500 font-medium">Record</span>
+                           <div className="flex items-center gap-2 font-mono">
+                              <span className="text-green-400 font-bold">{stat.wins}W</span>
+                              <span className="text-zinc-600">-</span>
+                              <span className="text-red-400 font-bold">{stat.losses}L</span>
+                              {stat.pushes > 0 && (
+                                 <>
+                                    <span className="text-zinc-600">-</span>
+                                    <span className="text-zinc-400 font-bold">{stat.pushes}P</span>
+                                 </>
+                              )}
+                           </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 mt-auto">
+                           <div className="bg-zinc-800/30 rounded p-2 flex flex-col items-center">
+                              <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Max Win Streak</span>
+                              <span className="text-green-400 font-bold font-mono">W{stat.longestWinChain}</span>
+                           </div>
+                           <div className="bg-zinc-800/30 rounded p-2 flex flex-col items-center">
+                              <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Max Loss Streak</span>
+                              <span className="text-red-400 font-bold font-mono">L{stat.longestLossChain}</span>
+                           </div>
+                        </div>
+                     </div>
+                  );
+               })}
+            </div>
+         </div>
+      )}
+
       {/* Medal Table */}
-      <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6">
+      <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6 mt-6">
          <h2 className="text-lg font-bold text-zinc-200 mb-6 flex items-center gap-2">
             <Medal className="w-5 h-5 text-yellow-400" /> Medal Table
          </h2>
