@@ -5,6 +5,26 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
 import { loadStripe } from '@stripe/stripe-js';
+import { Hexagons } from '../../components/ui/avatar-backgrounds/hexagons';
+import { Hip } from '../../components/ui/avatar-backgrounds/hip';
+import { Inferno } from '../../components/ui/avatar-backgrounds/inferno';
+import { Mandala } from '../../components/ui/avatar-backgrounds/mandala';
+import { Ocean } from '../../components/ui/avatar-backgrounds/ocean';
+import { PhantomStar } from '../../components/ui/avatar-backgrounds/phantomstar';
+import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
+
+const AvatarBackgroundMap: Record<string, React.FC<any>> = {
+  'Hexagons': Hexagons,
+  'Hip': Hip,
+  'Inferno': Inferno,
+  'Mandala': Mandala,
+  'Ocean': Ocean,
+  'PhantomStar': PhantomStar
+};
+
+const ProfileBannerMap: Record<string, React.FC<any>> = {
+  'InfernoBanner': InfernoBanner
+};
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
 
@@ -247,10 +267,29 @@ export default function ShopPage() {
                      {/* Preview area */}
                      <div className="h-32 bg-zinc-900 flex items-center justify-center relative overflow-hidden border-b border-zinc-800">
                         {item.type === 'PROFILE_BANNER' && (
-                          <div className={`absolute inset-0 ${item.image || 'bg-zinc-800'}`}></div>
+                          ProfileBannerMap[item.image] ? (
+                            <div className="absolute inset-0">
+                              {React.createElement(ProfileBannerMap[item.image], { isStatic: true })}
+                            </div>
+                          ) : (
+                            <div className={`absolute inset-0 ${item.image || 'bg-zinc-800'}`}></div>
+                          )
                         )}
                         {item.type === 'AVATAR_RING' && (
-                          <div className={`w-16 h-16 rounded-full border-4 ${item.image || 'border-zinc-500'} bg-zinc-800 z-10 flex items-center justify-center text-xs text-zinc-500`}>Avatar</div>
+                          <div className="relative w-16 h-16 flex items-center justify-center z-10">
+                            {AvatarBackgroundMap[item.image] ? (
+                               <>
+                                 <div className="absolute inset-0 rounded-full overflow-hidden">
+                                   {React.createElement(AvatarBackgroundMap[item.image], { isStatic: true })}
+                                 </div>
+                                 <div className="relative w-full h-full p-1.5">
+                                   <div className="w-full h-full rounded-full bg-zinc-800 flex items-center justify-center text-[10px] text-zinc-500 shadow-inner">Avatar</div>
+                                 </div>
+                               </>
+                            ) : (
+                              <div className={`w-16 h-16 rounded-full border-4 ${item.image || 'border-zinc-500'} bg-zinc-800 flex items-center justify-center text-xs text-zinc-500`}>Avatar</div>
+                            )}
+                          </div>
                         )}
                         {item.type === 'TITLE' && (
                           <div className="z-10 text-xl font-bold text-zinc-300 font-display px-4 py-2 bg-black/50 rounded-lg border border-zinc-700">{item.name}</div>
