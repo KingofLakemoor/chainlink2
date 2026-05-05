@@ -111,9 +111,9 @@
     "type": "AVATAR_RING",
     "active": true,
     "forSale": true,
-    "image": "border-red-600",
+    "image": "Inferno",
     "featured": false,
-    "preview": "border-red-600",
+    "preview": "Inferno",
     "order": 9
   },
   {
@@ -124,9 +124,9 @@
     "type": "AVATAR_RING",
     "active": true,
     "forSale": true,
-    "image": "border-blue-600",
+    "image": "Ocean",
     "featured": false,
-    "preview": "border-blue-600",
+    "preview": "Ocean",
     "order": 10
   },
   {
@@ -137,9 +137,9 @@
     "type": "AVATAR_RING",
     "active": true,
     "forSale": true,
-    "image": "border-zinc-300 border-dashed",
+    "image": "PhantomStar",
     "featured": false,
-    "preview": "border-zinc-300 border-dashed",
+    "preview": "PhantomStar",
     "order": 11
   },
   {
@@ -163,9 +163,9 @@
     "type": "PROFILE_BANNER",
     "active": true,
     "forSale": true,
-    "image": "bg-gradient-to-r from-red-700 to-orange-500",
+    "image": "InfernoBanner",
     "featured": false,
-    "preview": "bg-gradient-to-r from-red-700 to-orange-500",
+    "preview": "InfernoBanner",
     "order": 13
   },
   {
@@ -583,5 +583,57 @@
     "featured": false,
     "preview": "",
     "order": 45
+  },
+  {
+    "id": "banner_phantom_star",
+    "name": "Phantom Star",
+    "description": "Ethereal and distant.",
+    "cost": 3000,
+    "type": "PROFILE_BANNER",
+    "active": true,
+    "forSale": true,
+    "image": "PhantomStarBanner",
+    "featured": false,
+    "preview": "PhantomStarBanner",
+    "order": 46
+  },
+  {
+    "id": "ring_hexagons",
+    "name": "Hexagons Ring",
+    "description": "Geometric and precise.",
+    "cost": 2000,
+    "type": "AVATAR_RING",
+    "active": true,
+    "forSale": true,
+    "image": "Hexagons",
+    "featured": false,
+    "preview": "Hexagons",
+    "order": 47
+  },
+  {
+    "id": "ring_hip",
+    "name": "Hip Ring",
+    "description": "Modern and abstract.",
+    "cost": 2000,
+    "type": "AVATAR_RING",
+    "active": true,
+    "forSale": true,
+    "image": "Hip",
+    "featured": false,
+    "preview": "Hip",
+    "order": 48
+  },
+  {
+    "id": "ring_mandala",
+    "name": "Mandala Ring",
+    "description": "Intricate and balanced.",
+    "cost": 3000,
+    "type": "AVATAR_RING",
+    "active": true,
+    "forSale": true,
+    "image": "Mandala",
+    "featured": false,
+    "preview": "Mandala",
+    "order": 49
   }
 ]
