@@ -10,6 +10,9 @@ import CreateAchievementPage from './achievements/CreateAchievementPage';
 import AwardAchievementPage from './achievements/AwardAchievementPage';
 import AchievementsListPage from './achievements/AchievementsListPage';
 import EditAchievementPage from './achievements/EditAchievementPage';
+import ShopItemsListPage from './shopItems/ShopItemsListPage';
+import CreateShopItemPage from './shopItems/CreateShopItemPage';
+import EditShopItemPage from './shopItems/EditShopItemPage';
 import {
   Users, Gamepad2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
@@ -64,7 +67,15 @@ const ADMIN_MENU = [
   { id: 'squads', label: 'Squads', icon: Users, path: '/admin/squads' },
   { id: 'notifications', label: 'Notifications', icon: Bell, path: '/admin/notifications' },
   { id: 'actions', label: 'Actions', icon: Shield, path: '/admin/actions' },
-  { id: 'shopItems', label: 'Shop', icon: Coins, path: '/admin/shopItems' },
+  {
+    id: 'shopItems',
+    label: 'Shop',
+    icon: Coins,
+    subItems: [
+      { id: 'shopItems-all', label: 'All Shop Items', path: '/admin/shopItems' },
+      { id: 'shopItems-create', label: 'Create Shop Item', path: '/admin/shopItems/create' }
+    ]
+  },
 ];
 
 function AdminSidebar({ open, setOpen }: { open: boolean; setOpen: (val: boolean) => void }) {
@@ -1059,7 +1070,11 @@ export default function AdminDashboard() {
                 <Route path="squads" element={<GenericTable collectionName="squads" />} />
                 <Route path="notifications" element={<AdminPlaceholder title="Notifications System" />} />
                 <Route path="actions" element={<AdminPlaceholder title="Admin Actions Log" />} />
-                <Route path="shopItems" element={<GenericTable collectionName="shopItems" />} />
+
+                {/* Shop Items */}
+                <Route path="shopItems" element={<ShopItemsListPage />} />
+                <Route path="shopItems/create" element={<CreateShopItemPage />} />
+                <Route path="shopItems/edit/:id" element={<EditShopItemPage />} />
 
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="matchups" replace />} />
