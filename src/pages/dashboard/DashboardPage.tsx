@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { db } from '../../lib/firebase';
 import { collection, getDocs, query, where, documentId, onSnapshot } from 'firebase/firestore';
+import { DashboardPick, DashboardPickSkeleton } from '../../components/dashboard/dashboard-pick';
 
 import { Hexagons } from '../../components/ui/avatar-backgrounds/hexagons';
 import { Hip } from '../../components/ui/avatar-backgrounds/hip';
@@ -36,6 +37,7 @@ export default function DashboardPage() {
   const [picks, setPicks] = React.useState<any[]>([]);
   const [inventoryItems, setInventoryItems] = React.useState<any[]>([]);
   const [allFetchedMatchups, setAllFetchedMatchups] = React.useState<any[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {
     if (!user) return;
@@ -106,6 +108,7 @@ export default function DashboardPage() {
                 metadata: {}
             }
        ]);
+       setIsLoading(false);
        return;
     }
 
@@ -116,6 +119,7 @@ export default function DashboardPage() {
         const allMatchups = snap.docs.map(d => ({id: d.id, ...d.data()}));
         setAllFetchedMatchups(allMatchups);
       }
+      setIsLoading(false);
     });
 
     return () => {
@@ -285,53 +289,11 @@ export default function DashboardPage() {
 
           {/* Active Pick / Main Content */}
           <div className="md:col-span-2">
-             <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6 h-full">
-                 <div className="flex items-center justify-between mb-6">
-                     <h2 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
-                         <Gamepad2 className="w-5 h-5 text-cyan-400" /> My Active Pick
-                     </h2>
-                     <Link to="/play" className="text-sm text-cyan-500 hover:text-cyan-400 font-medium flex items-center gap-1">
-                         View Games <ChevronRight className="w-4 h-4" />
-                     </Link>
-                 </div>
-
-                 {activeMatchup ? (
-                     <div className="bg-[#161d2b] rounded-xl border border-[#27272a] overflow-hidden bg-gradient-to-r from-[#111f38] to-[#121212]">
-                         <div className="p-5 flex flex-col items-center text-center">
-                             <div className="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-2">{activeMatchup.league}</div>
-                             <div className="text-lg font-bold text-zinc-100 mb-6">{activeMatchup.title}</div>
-
-                             <div className="flex items-center justify-center gap-8 w-full">
-                                 <div className={cn("flex flex-col items-center gap-3 p-4 rounded-xl border", activePick.pick?.id === activeMatchup.awayTeam.id ? 'border-green-500 bg-green-500/10' : 'border-zinc-800 opacity-50')}>
-                                     <img src={activeMatchup.awayTeam.image} className="w-16 h-16 object-contain" alt={activeMatchup.awayTeam.name} />
-                                     <span className="text-sm font-bold text-zinc-200">{activeMatchup.awayTeam.name}</span>
-                                     {activePick.pick?.id === activeMatchup.awayTeam.id && <span className="text-xs bg-green-500 text-green-950 px-2 py-0.5 rounded font-bold mt-1">YOUR PICK</span>}
-                                 </div>
-                                 <div className="text-zinc-500 font-bold text-xl">VS</div>
-                                 <div className={cn("flex flex-col items-center gap-3 p-4 rounded-xl border", activePick.pick?.id === activeMatchup.homeTeam.id ? 'border-green-500 bg-green-500/10' : 'border-zinc-800 opacity-50')}>
-                                     <img src={activeMatchup.homeTeam.image} className="w-16 h-16 object-contain" alt={activeMatchup.homeTeam.name} />
-                                     <span className="text-sm font-bold text-zinc-200">{activeMatchup.homeTeam.name}</span>
-                                     {activePick.pick?.id === activeMatchup.homeTeam.id && <span className="text-xs bg-green-500 text-green-950 px-2 py-0.5 rounded font-bold mt-1">YOUR PICK</span>}
-                                 </div>
-                             </div>
-                         </div>
-                         <div className="bg-[#111111] px-5 py-3 border-t border-[#27272a] flex justify-between items-center text-sm">
-                             <span className="text-zinc-400 font-medium">{activeMatchup.status === 'STATUS_SCHEDULED' ? 'Upcoming' : 'In Progress'}</span>
-                             <span className="text-zinc-300 flex items-center gap-1 font-medium">Reward: <Link2 className="w-4 h-4 text-cyan-400" /> <span className="text-cyan-400 font-bold">{activeMatchup.reward ?? 10}</span></span>
-                         </div>
-                     </div>
-                 ) : (
-                     <div className="flex flex-col items-center justify-center py-16 bg-[#18181a] rounded-xl border border-zinc-800 border-dashed">
-                         <Link2 className="w-12 h-12 text-zinc-600 mb-4" />
-                         <p className="text-zinc-400 mb-4 font-medium">You don't have an active pick right now.</p>
-                         <Link to="/play">
-                             <Button className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold">
-                                 Make a Pick
-                             </Button>
-                         </Link>
-                     </div>
-                 )}
-             </div>
+             {isLoading ? (
+                <DashboardPickSkeleton />
+             ) : (
+                <DashboardPick activePick={activePick} activeMatchup={activeMatchup} />
+             )}
           </div>
       </div>
 
