@@ -16,8 +16,10 @@ import EditShopItemPage from './shopItems/EditShopItemPage';
 import {
   Users, Gamepad2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
-  FileText, Diamond, Target, Bell, Shield, Coins, Menu, X
+  FileText, Diamond, Target, Bell, Shield, Coins, Menu, X, Settings
 } from 'lucide-react';
+
+import ScraperSettingsPage from './settings/ScraperSettingsPage';
 
 const ADMIN_MENU = [
   { id: 'leagues', label: 'Leagues', icon: Target, path: '/admin/leagues' },
@@ -74,6 +76,14 @@ const ADMIN_MENU = [
     subItems: [
       { id: 'shopItems-all', label: 'All Shop Items', path: '/admin/shopItems' },
       { id: 'shopItems-create', label: 'Create Shop Item', path: '/admin/shopItems/create' }
+    ]
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    icon: Settings,
+    subItems: [
+      { id: 'settings-scraper', label: 'Scraper Settings', path: '/admin/settings/scraper' }
     ]
   },
 ];
@@ -199,13 +209,24 @@ function AdminMatchups() {
   const handleSync = async () => {
     setSyncing(true);
     try {
+      let scraperConfig: { maxMoneylineOdds?: number } = {};
+      try {
+        const scraperSnap = await getDocs(query(collection(db, 'systemSettings')));
+        const scraperDoc = scraperSnap.docs.find(d => d.id === 'scraper')?.data();
+        if (scraperDoc) {
+          scraperConfig = scraperDoc as any;
+        }
+      } catch (e) {
+        console.error("Error fetching system settings", e);
+      }
+
       const leagues = ["MLB", "NBA", "NHL", "PGA", "WNBA", "NFL", "WBB", "MBB", "MLS", "EPL", "NWSL", "COLLEGE-FOOTBALL", "FIFA"];
 
       let totalImported = 0;
 
       for (const league of leagues) {
         try {
-          const result = await scrapeLeagueSchedules(league);
+          const result = await scrapeLeagueSchedules(league, false, scraperConfig);
           const scrapedMatchups = result.data;
 
           if (scrapedMatchups && scrapedMatchups.length > 0) {
@@ -1075,6 +1096,9 @@ export default function AdminDashboard() {
                 <Route path="shopItems" element={<ShopItemsListPage />} />
                 <Route path="shopItems/create" element={<CreateShopItemPage />} />
                 <Route path="shopItems/edit/:id" element={<EditShopItemPage />} />
+
+                {/* Settings */}
+                <Route path="settings/scraper" element={<ScraperSettingsPage />} />
 
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="matchups" replace />} />
