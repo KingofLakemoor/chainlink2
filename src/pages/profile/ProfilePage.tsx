@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
-import { Trophy, Coins, Calendar, Mail, CheckCircle2, XCircle, MinusCircle, Medal, BarChart3 } from 'lucide-react';
+import { Trophy, Coins, Calendar, Mail, CheckCircle2, XCircle, MinusCircle, Medal, BarChart3, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import { db } from '../../lib/firebase';
-import { collection, getDocs, orderBy, query, where, documentId } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, where, documentId, doc, updateDoc } from 'firebase/firestore';
+import { Modal } from '../../components/ui/modal';
+import { Input } from '../../components/ui/input';
 import { Link } from 'react-router-dom';
 import { Hexagons } from '../../components/ui/avatar-backgrounds/hexagons';
 import { Hip } from '../../components/ui/avatar-backgrounds/hip';
@@ -37,6 +39,10 @@ export default function ProfilePage() {
   const [inventoryItems, setInventoryItems] = useState<any[]>([]);
   const [inventoryLoading, setInventoryLoading] = useState(true);
   const [equipLoading, setEquipLoading] = useState<string | null>(null);
+
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [avatarUrlInput, setAvatarUrlInput] = useState('');
+  const [avatarUpdateLoading, setAvatarUpdateLoading] = useState(false);
 
   useEffect(() => {
     const fetchAchievements = async () => {
@@ -142,6 +148,23 @@ export default function ProfilePage() {
     };
     fetchPicks();
   }, [user]);
+
+  const handleUpdateAvatar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setAvatarUpdateLoading(true);
+    try {
+      await updateDoc(doc(db, 'users', user.uid), {
+        image: avatarUrlInput,
+        updatedAt: Date.now()
+      });
+      setIsAvatarModalOpen(false);
+    } catch (e) {
+      console.error("Failed to update avatar", e);
+    } finally {
+      setAvatarUpdateLoading(false);
+    }
+  };
 
   const handleEquip = async (itemId: string | null, type: string) => {
     if (!user) return;
@@ -305,14 +328,23 @@ export default function ProfilePage() {
                      <RingComponent isStatic={false} />
                   </div>
                )}
-               <div className={`relative z-10 w-full h-full rounded-full overflow-hidden ${RingComponent ? 'border-2 border-black/50' : ''}`}>
+               <div
+                 className={`relative z-10 w-full h-full rounded-full overflow-hidden group cursor-pointer ${RingComponent ? 'border-2 border-black/50' : ''}`}
+                 onClick={() => {
+                   setAvatarUrlInput(profile.image || '');
+                   setIsAvatarModalOpen(true);
+                 }}
+               >
                  {profile.image ? (
-                   <img src={profile.image} alt={profile.username || profile.name} className="w-full h-full object-cover" />
+                   <img src={profile.image} alt={profile.username || profile.name} className="w-full h-full object-cover transition-opacity group-hover:opacity-50" />
                  ) : (
-                   <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-4xl font-bold text-zinc-400">
+                   <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-4xl font-bold text-zinc-400 transition-opacity group-hover:opacity-50">
                      {(profile.username || profile.name)?.charAt(0) || user.email?.charAt(0) || '?'}
                    </div>
                  )}
+                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                   <Pencil className="w-6 h-6 text-white drop-shadow-md" />
+                 </div>
                </div>
             </div>
             {profile.role === 'ADMIN' && (
@@ -581,6 +613,35 @@ export default function ProfilePage() {
          )}
       </div>
 
+      {/* Edit Avatar Modal */}
+      <Modal isOpen={isAvatarModalOpen} onClose={() => setIsAvatarModalOpen(false)}>
+        <div className="p-6">
+          <h2 className="text-xl font-bold text-zinc-100 mb-4">Edit Profile Avatar</h2>
+          <form onSubmit={handleUpdateAvatar} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-1">Image URL</label>
+              <Input
+                type="url"
+                placeholder="https://example.com/my-avatar.png"
+                value={avatarUrlInput}
+                onChange={(e) => setAvatarUrlInput(e.target.value)}
+                className="w-full"
+              />
+              <p className="text-xs text-zinc-500 mt-2">
+                Provide a direct link to an image (PNG, JPG, GIF).
+              </p>
+            </div>
+            <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800">
+              <Button type="button" variant="outline" onClick={() => setIsAvatarModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={avatarUpdateLoading}>
+                {avatarUpdateLoading ? 'Saving...' : 'Save Avatar'}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </Modal>
     </div>
   );
 }
