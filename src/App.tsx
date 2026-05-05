@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
+import html2canvas from 'html2canvas';
 import { AuthProvider, useAuth } from './lib/auth-context';
 import { loginWithGoogle, loginWithEmail, signupWithEmail, logout, db } from './lib/firebase';
 import { collection, getDocs, doc, setDoc, deleteDoc, query, where, onSnapshot } from 'firebase/firestore';
@@ -263,6 +264,7 @@ function PlayDashboard() {
   const [userPicks, setUserPicks] = useState<Record<string, any>>({});
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<'all' | 'available' | 'chain'>('all');
+  const [sharingMatchupId, setSharingMatchupId] = useState<string | null>(null);
 
   const [allFetchedMatchups, setAllFetchedMatchups] = useState<any[]>([]);
   const [globalUpcomingPicks, setGlobalUpcomingPicks] = useState<any[]>([]);
@@ -535,6 +537,32 @@ function PlayDashboard() {
     }
   };
 
+  const handleShareMatchup = async (gameId: string) => {
+    setSharingMatchupId(gameId);
+
+    // Wait for React to re-render with the updated footer
+    setTimeout(async () => {
+      const element = document.getElementById(`matchup-card-${gameId}`);
+      if (element) {
+        try {
+          const canvas = await html2canvas(element, {
+            backgroundColor: '#131415',
+            scale: 2, // High resolution
+            useCORS: true // Allow loading external images
+          });
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          const link = document.createElement('a');
+          link.download = `chainlink-matchup-${gameId}.jpg`;
+          link.href = dataUrl;
+          link.click();
+        } catch (error) {
+          console.error("Failed to share matchup", error);
+        }
+      }
+      setSharingMatchupId(null);
+    }, 100);
+  };
+
   const renderMatchupCard = (m: any, isMyPick: boolean = false) => {
     const hasActivePickAnywhere = Object.values(userPicks).some((p: any) => p.status === 'PENDING');
     const hasPicked = !!userPicks[m.gameId];
@@ -547,7 +575,7 @@ function PlayDashboard() {
     const isScheduled = m.status === 'STATUS_SCHEDULED';
 
     return (
-      <div key={isMyPick ? `my-pick-${m.gameId}` : m.gameId} className="bg-[#131415] border border-[#27272a] rounded-xl overflow-hidden hover:border-zinc-700 transition-colors shadow-sm relative group">
+      <div id={`matchup-card-${m.gameId}`} key={isMyPick ? `my-pick-${m.gameId}` : m.gameId} className="bg-[#131415] border border-[#27272a] rounded-xl overflow-hidden hover:border-zinc-700 transition-colors shadow-sm relative group">
         {/* Header info */}
         <div className="bg-[#161d2b] px-4 py-2 border-b border-[#27272a] flex justify-between items-center bg-gradient-to-r from-[#111f38] to-[#121212]">
           <div className="flex items-center gap-2 font-bold text-sm text-zinc-200 tracking-tight">
@@ -650,37 +678,43 @@ function PlayDashboard() {
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 border-t border-[#27272a] flex items-center justify-between bg-[#111111]">
-           <button className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-1">
-             <span className="text-[10px]">↓</span> Share Matchup
-           </button>
+        {sharingMatchupId === m.gameId ? (
+          <div className="px-5 py-3 border-t border-[#27272a] flex items-center justify-center bg-[#111111] h-[52px]">
+            <span className="text-sm font-bold text-zinc-500 uppercase tracking-wider">ChainLink</span>
+          </div>
+        ) : (
+          <div className="px-5 py-3 border-t border-[#27272a] flex items-center justify-between bg-[#111111] min-h-[52px]">
+             <button onClick={() => handleShareMatchup(m.gameId)} className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-1">
+               <span className="text-[10px]">↓</span> Share Matchup
+             </button>
 
-           <div className="flex flex-col items-center">
-             {m.cost > 0 && (
+             <div className="flex flex-col items-center">
+               {m.cost > 0 && (
+                 <span className="text-xs text-zinc-400 flex items-center gap-1 font-medium">
+                   Wager: <Link2 className="w-3.5 h-3.5 text-cyan-400 ml-0.5" /> <span className="text-cyan-400 font-mono tracking-wide">{m.cost}</span>
+                 </span>
+               )}
                <span className="text-xs text-zinc-400 flex items-center gap-1 font-medium">
-                 Wager: <Link2 className="w-3.5 h-3.5 text-cyan-400 ml-0.5" /> <span className="text-cyan-400 font-mono tracking-wide">{m.cost}</span>
+                 Reward: <Link2 className="w-3.5 h-3.5 text-cyan-400 ml-0.5" /> <span className="text-cyan-400 font-mono tracking-wide">{m.reward ?? 10}</span>
                </span>
-             )}
-             <span className="text-xs text-zinc-400 flex items-center gap-1 font-medium">
-               Reward: <Link2 className="w-3.5 h-3.5 text-cyan-400 ml-0.5" /> <span className="text-cyan-400 font-mono tracking-wide">{m.reward ?? 10}</span>
-             </span>
-           </div>
+             </div>
 
-           {!hasPicked ? (
-              <div className="w-[88px]"></div>
-           ) : (
-              (m.status === 'STATUS_SCHEDULED' || m.status === 'STATUS_POSTPONED') && m.active !== false ? (
-                <button
-                  onClick={() => handleCancelPick(m)}
-                  className="text-xs font-bold text-red-500 hover:text-red-400 transition-colors uppercase tracking-wide border border-red-500/30 hover:border-red-400/50 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded"
-                >
-                  Cancel Pick
-                </button>
-              ) : (
-                <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
-              )
-           )}
-        </div>
+             {!hasPicked ? (
+                <div className="w-[88px]"></div>
+             ) : (
+                (m.status === 'STATUS_SCHEDULED' || m.status === 'STATUS_POSTPONED') && m.active !== false ? (
+                  <button
+                    onClick={() => handleCancelPick(m)}
+                    className="text-xs font-bold text-red-500 hover:text-red-400 transition-colors uppercase tracking-wide border border-red-500/30 hover:border-red-400/50 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded"
+                  >
+                    Cancel Pick
+                  </button>
+                ) : (
+                  <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
+                )
+             )}
+          </div>
+        )}
       </div>
     );
   };

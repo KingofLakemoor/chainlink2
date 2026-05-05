@@ -226,6 +226,7 @@ function AdminMatchups() {
 
       for (const league of leagues) {
         try {
+          // @ts-ignore
           const result = await scrapeLeagueSchedules(league, false, scraperConfig);
           const scrapedMatchups = result.data;
 
