@@ -2,8 +2,144 @@ import express from 'express';
 import { adminAuth, adminDb } from './lib/firebase-admin.js';
 import { scrapeLeagueSchedules } from './services/scheduleProcessor.js';
 import { gradeMatchups } from './services/grader.js';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
+  apiVersion: '2025-02-24.acacia' as any, // Cast to any to bypass TS error for newer stripe versions
+});
 
 export const apiRouter = express.Router();
+
+apiRouter.post('/stripe/create-checkout-session', async (req, res) => {
+  try {
+    const { itemType, amount } = req.body;
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const idToken = authHeader.split('Bearer ')[1];
+    if (!adminAuth || !adminDb) return res.status(500).json({ success: false, error: "admin tools not initialized" });
+
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    let priceData: any | undefined;
+    let metadata: Record<string, string> = { uid, itemType };
+
+    if (itemType === 'links') {
+      let priceInCents = 0;
+      let title = '';
+      if (amount === 1000) {
+        priceInCents = 499;
+        title = '1000 Links';
+      } else if (amount === 5000) {
+        priceInCents = 1999;
+        title = '5000 Links';
+      } else {
+        return res.status(400).json({ success: false, error: 'Invalid links amount' });
+      }
+
+      priceData = {
+        currency: 'usd',
+        product_data: {
+          name: title,
+          description: `Purchase ${amount} Links for use in the app`,
+        },
+        unit_amount: priceInCents,
+      };
+      metadata.amount = amount.toString();
+    } else if (itemType === 'premium') {
+      priceData = {
+        currency: 'usd',
+        product_data: {
+          name: 'Premium Subscription',
+          description: 'Unlock Premium features',
+        },
+        unit_amount: 999, // Example price for premium
+      };
+    } else {
+      return res.status(400).json({ success: false, error: 'Invalid item type' });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: priceData,
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      metadata,
+      success_url: `${req.headers.origin}/shop?success=true`,
+      cancel_url: `${req.headers.origin}/shop?canceled=true`,
+    });
+
+    res.json({ success: true, id: session.id });
+  } catch (e: any) {
+    console.error("Create checkout session error:", e.message, e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+apiRouter.post('/stripe/webhook', express.raw({type: 'application/json'}), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  let event;
+
+  try {
+    if (!sig || !endpointSecret) {
+      throw new Error('Missing stripe signature or endpoint secret');
+    }
+
+    // Express must use express.raw to get raw body
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err: any) {
+    console.error('Webhook signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session;
+
+    const uid = session.metadata?.uid;
+    const itemType = session.metadata?.itemType;
+
+    if (uid && adminDb) {
+      try {
+        const userRef = adminDb.collection('users').doc(uid);
+
+        await adminDb.runTransaction(async (transaction: any) => {
+          const userDoc = await transaction.get(userRef);
+          if (!userDoc.exists) return;
+
+          const profile = userDoc.data()!;
+          const updateData: any = { updatedAt: Date.now() };
+
+          if (itemType === 'links') {
+            const amountStr = session.metadata?.amount;
+            if (amountStr) {
+               const amount = parseInt(amountStr, 10);
+               updateData.coins = (profile.coins || 0) + amount;
+            }
+          } else if (itemType === 'premium') {
+             updateData.premium = true;
+          }
+
+          transaction.update(userRef, updateData);
+        });
+        console.log(`Successfully processed payment for user ${uid}`);
+      } catch (e: any) {
+         console.error(`Error updating user ${uid} after payment:`, e.message);
+      }
+    }
+  }
+
+  res.send();
+});
 
 apiRouter.post("/picks/cancel-pick", async (req, res) => {
   try {

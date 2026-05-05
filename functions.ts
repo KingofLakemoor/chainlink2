@@ -168,6 +168,11 @@ export const monthlyShopRefresh = onSchedule({ schedule: "0 0 1 * *", timeoutSec
 
 const app = express();
 app.use(cors({ origin: true }));
+
+// We need the raw body for the webhook endpoint to verify the Stripe signature
+app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
+app.use('/stripe/webhook', express.raw({ type: 'application/json' })); // Also handle stripped prefix
+
 app.use(express.json());
 
 // Mount the API router to both /api and / to handle Firebase Hosting rewrite stripping behavior
