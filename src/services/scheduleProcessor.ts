@@ -52,7 +52,13 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               existingData.startTime !== scrapedMatchup.startTime ||
               existingData.homeTeam?.score !== scrapedMatchup.homeTeam?.score ||
               existingData.awayTeam?.score !== scrapedMatchup.awayTeam?.score ||
-              existingData.title !== newTitle;
+              existingData.title !== newTitle ||
+              existingData.homeTeam?.name !== scrapedMatchup.homeTeam?.name ||
+              existingData.homeTeam?.image !== scrapedMatchup.homeTeam?.image ||
+              existingData.homeTeam?.id !== scrapedMatchup.homeTeam?.id ||
+              existingData.awayTeam?.name !== scrapedMatchup.awayTeam?.name ||
+              existingData.awayTeam?.image !== scrapedMatchup.awayTeam?.image ||
+              existingData.awayTeam?.id !== scrapedMatchup.awayTeam?.id;
 
           if (needsUpdate || existingDoc.id !== gameId) {
             const updateData: any = {
@@ -63,10 +69,16 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               startTime: scrapedMatchup.startTime,
               homeTeam: {
                   ...(existingData.homeTeam || {}),
+                  id: scrapedMatchup.homeTeam?.id || existingData.homeTeam?.id,
+                  name: scrapedMatchup.homeTeam?.name || existingData.homeTeam?.name,
+                  image: scrapedMatchup.homeTeam?.image || existingData.homeTeam?.image,
                   score: scrapedMatchup.homeTeam?.score || existingData.homeTeam?.score || 0
               },
               awayTeam: {
                   ...(existingData.awayTeam || {}),
+                  id: scrapedMatchup.awayTeam?.id || existingData.awayTeam?.id,
+                  name: scrapedMatchup.awayTeam?.name || existingData.awayTeam?.name,
+                  image: scrapedMatchup.awayTeam?.image || existingData.awayTeam?.image,
                   score: scrapedMatchup.awayTeam?.score || existingData.awayTeam?.score || 0
               },
               metadata: {
@@ -84,7 +96,13 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               status: updateData.status,
               statusDesc: updateData.statusDesc,
               startTime: updateData.startTime,
+              'homeTeam.id': updateData.homeTeam.id,
+              'homeTeam.name': updateData.homeTeam.name,
+              'homeTeam.image': updateData.homeTeam.image,
               'homeTeam.score': updateData.homeTeam.score,
+              'awayTeam.id': updateData.awayTeam.id,
+              'awayTeam.name': updateData.awayTeam.name,
+              'awayTeam.image': updateData.awayTeam.image,
               'awayTeam.score': updateData.awayTeam.score,
               'metadata.overUnder': updateData.metadata.overUnder,
               'metadata.spread': updateData.metadata.spread,

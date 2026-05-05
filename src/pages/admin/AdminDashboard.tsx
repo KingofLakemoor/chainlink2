@@ -233,24 +233,39 @@ function AdminMatchups() {
                if (existingDoc) {
                  // Check if it needs update or migration
                  const existingData = existingDoc.data();
+                 const newTitle = existingData.hasCustomTitle ? existingData.title : scrapedMatchup.title;
                  const needsUpdate = existingData.status !== scrapedMatchup.status ||
                      existingData.startTime !== scrapedMatchup.startTime ||
                      existingData.homeTeam?.score !== scrapedMatchup.homeTeam?.score ||
-                     existingData.awayTeam?.score !== scrapedMatchup.awayTeam?.score;
+                     existingData.awayTeam?.score !== scrapedMatchup.awayTeam?.score ||
+                     existingData.title !== newTitle ||
+                     existingData.homeTeam?.name !== scrapedMatchup.homeTeam?.name ||
+                     existingData.homeTeam?.image !== scrapedMatchup.homeTeam?.image ||
+                     existingData.homeTeam?.id !== scrapedMatchup.homeTeam?.id ||
+                     existingData.awayTeam?.name !== scrapedMatchup.awayTeam?.name ||
+                     existingData.awayTeam?.image !== scrapedMatchup.awayTeam?.image ||
+                     existingData.awayTeam?.id !== scrapedMatchup.awayTeam?.id;
 
                  if (existingDoc.id !== gameId) {
                    // Migrate to use gameId as the document ID
                    const newDocRef = doc(db, 'matchups', gameId);
                    const updateData = {
                      ...existingData,
+                     title: newTitle,
                      status: scrapedMatchup.status,
                      startTime: scrapedMatchup.startTime,
                      homeTeam: {
                          ...(existingData.homeTeam || {}),
+                         id: scrapedMatchup.homeTeam?.id || existingData.homeTeam?.id,
+                         name: scrapedMatchup.homeTeam?.name || existingData.homeTeam?.name,
+                         image: scrapedMatchup.homeTeam?.image || existingData.homeTeam?.image,
                          score: scrapedMatchup.homeTeam?.score || existingData.homeTeam?.score || 0
                      },
                      awayTeam: {
                          ...(existingData.awayTeam || {}),
+                         id: scrapedMatchup.awayTeam?.id || existingData.awayTeam?.id,
+                         name: scrapedMatchup.awayTeam?.name || existingData.awayTeam?.name,
+                         image: scrapedMatchup.awayTeam?.image || existingData.awayTeam?.image,
                          score: scrapedMatchup.awayTeam?.score || existingData.awayTeam?.score || 0
                      },
                      metadata: {
@@ -267,9 +282,16 @@ function AdminMatchups() {
                    existingMap.set(gameId, { id: gameId, data: () => updateData } as any);
                  } else if (needsUpdate) {
                    batch.update(doc(db, 'matchups', existingDoc.id), {
+                     title: newTitle,
                      status: scrapedMatchup.status,
                      startTime: scrapedMatchup.startTime,
+                     'homeTeam.id': scrapedMatchup.homeTeam?.id || existingData.homeTeam?.id,
+                     'homeTeam.name': scrapedMatchup.homeTeam?.name || existingData.homeTeam?.name,
+                     'homeTeam.image': scrapedMatchup.homeTeam?.image || existingData.homeTeam?.image,
                      'homeTeam.score': scrapedMatchup.homeTeam?.score || 0,
+                     'awayTeam.id': scrapedMatchup.awayTeam?.id || existingData.awayTeam?.id,
+                     'awayTeam.name': scrapedMatchup.awayTeam?.name || existingData.awayTeam?.name,
+                     'awayTeam.image': scrapedMatchup.awayTeam?.image || existingData.awayTeam?.image,
                      'awayTeam.score': scrapedMatchup.awayTeam?.score || 0,
                      'metadata.overUnder': scrapedMatchup.metadata?.overUnder,
                      'metadata.spread': scrapedMatchup.metadata?.spread,
