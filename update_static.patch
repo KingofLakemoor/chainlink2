@@ -1,0 +1,12 @@
+--- src/components/ui/profile-banners/inferno/index.js
++++ src/components/ui/profile-banners/inferno/index.js
+@@ -316,7 +316,8 @@
+         const mesh = new Mesh(gl, { geometry, program });
+         let animateId;
+
+         if (isStatic) {
+-            program.uniforms.uTime.value = 5.0;
++            program.uniforms.uTime.value = 2.0; // A nice looking frame
++            program.uniforms.uBurnProgress.value = 0.5; // Show halfway burned in static
+             if (mounted) renderer.render({ scene: mesh });
+         } else {
