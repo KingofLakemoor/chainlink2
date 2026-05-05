@@ -1,8 +1,5 @@
-
-
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
-import html2canvas from 'html2canvas';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth-context';
 import { loginWithGoogle, loginWithEmail, signupWithEmail, logout, db } from './lib/firebase';
 import { collection, getDocs, doc, setDoc, deleteDoc, query, where, onSnapshot } from 'firebase/firestore';
@@ -16,9 +13,10 @@ import {
   MdOutlineSportsSoccer, MdOutlineSportsBasketball, MdOutlineSportsHockey, MdOutlineSportsBaseball
 } from 'react-icons/md';
 
-function Sidebar({ open, setOpen }: { open: boolean; setOpen: (val: boolean) => void }) {
+
+function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
+  const { user, profile } = useAuth();
   const location = useLocation();
-  const { profile } = useAuth();
 
   const NavItem = ({ icon: Icon, label, path }: { icon: any, label: string, path: string }) => {
     const active = location.pathname === path;
@@ -34,20 +32,20 @@ function Sidebar({ open, setOpen }: { open: boolean; setOpen: (val: boolean) => 
     <>
       {/* Mobile overlay */}
       {open && (
-        <div
-          className="fixed inset-0 bg-black/60 z-40 md:hidden"
-          onClick={() => setOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/80 z-40 md:hidden" onClick={() => setOpen(false)} />
       )}
 
-      <div className={`fixed md:relative top-0 left-0 h-full z-50 w-64 border-r border-[#27272a] bg-[#121212] flex flex-col flex-shrink-0 transition-transform duration-300 ease-in-out ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
-        <div className="h-[4.5rem] flex items-center justify-between px-6 border-b border-[#27272a]">
-          <div className="font-display font-extrabold text-2xl text-[#22c55e] flex items-center gap-2 tracking-wide">
-            <img src="/logo.png" alt="ChainLink" className="h-8 max-w-[120px] object-contain" onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
-            <Link2 className="w-6 h-6 stroke-[2.5] hidden" />
-            ChainLink
+      {/* Sidebar */}
+      <div className={cn(
+        "fixed md:static inset-y-0 left-0 w-[240px] bg-[#121212] border-r border-[#27272a] z-50 flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0",
+        open ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="h-16 flex items-center justify-between px-6 border-b border-[#27272a] bg-[#121212] shrink-0">
+          <div className="flex items-center gap-2">
+            <Link2 className="w-6 h-6 text-[#22c55e]" />
+            <span className="font-bold text-xl font-display text-zinc-100">ChainLink</span>
           </div>
-          <button className="md:hidden text-zinc-400 hover:text-white" onClick={() => setOpen(false)}>
+          <button className="md:hidden text-zinc-400" onClick={() => setOpen(false)}>
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -86,34 +84,6 @@ function Sidebar({ open, setOpen }: { open: boolean; setOpen: (val: boolean) => 
   );
 }
 
-function TopStats() {
-  const { profile, chain } = useAuth();
-
-  return (
-    <div className="flex items-center gap-2 sm:gap-5">
-      <div className="flex items-center gap-1.5 text-sm">
-         <Link2 className="w-4 h-4 text-cyan-400" />
-         <span className="font-mono text-cyan-400 font-medium tracking-wide">{profile?.coins?.toLocaleString() || 0}</span>
-      </div>
-      <div className="w-px h-4 bg-zinc-700"></div>
-      <div className="flex items-center gap-3 text-sm">
-         {(chain?.chain || 0) < 0 ? (
-           <span className="text-red-500 font-bold tracking-tight">L{Math.abs(chain?.chain || 0)}</span>
-         ) : (
-           <span className="text-[#22c55e] font-bold tracking-tight">W{chain?.chain || 0}</span>
-         )}
-         <span className="hidden sm:inline text-zinc-400 font-mono text-xs tracking-wider">
-           {profile?.stats?.wins || 0} - {profile?.stats?.losses || 0} - {profile?.stats?.pushes || 0}
-         </span>
-      </div>
-      <div className="w-px h-4 bg-zinc-700"></div>
-      <div className="w-8 h-8 rounded-full border border-zinc-700 overflow-hidden bg-zinc-800">
-        <img src={profile?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.id || 'guest'}`} className="w-full h-full object-cover" referrerPolicy="no-referrer" alt="Avatar" />
-      </div>
-    </div>
-  );
-}
-
 function Landing() {
   const { user, loading } = useAuth();
   const [email, setEmail] = useState('');
@@ -138,83 +108,96 @@ function Landing() {
         await loginWithEmail(email, password);
       }
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'An error occurred during authentication.');
+      setError(err.message || 'Authentication failed');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a0a0a] text-center px-4 relative z-10">
-      <div className="flex items-center gap-4 text-[#22c55e] mb-8 animate-in slide-in-from-top-4 duration-500 fade-in">
-        <img src="/logo.png" alt="ChainLink" className="h-14 max-w-[200px] object-contain drop-shadow-[0_0_15px_rgba(34,197,94,0.3)]" onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
-        <Link2 className="w-14 h-14 stroke-[2.5] hidden" />
-        <h1 className="font-display text-6xl font-extrabold tracking-wide">ChainLink</h1>
+    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#22c55e]/10 rounded-full blur-[128px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[128px]" />
       </div>
-      <p className="text-xl text-zinc-400 mb-10 max-w-2xl font-light">
-        Build the highest chain of correct guesses to sports matchups and challenges. <br/>Wager your Links and climb the leaderboard.
-      </p>
 
-      <div className="w-full max-w-sm bg-[#121212] border border-[#27272a] rounded-xl p-6 shadow-xl z-20">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 text-left">
-          {error && <div className="text-red-500 text-sm p-2 bg-red-500/10 rounded">{error}</div>}
+      <div className="w-full max-w-md z-10">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#22c55e]/10 mb-6 border border-[#22c55e]/20 shadow-[0_0_30px_rgba(34,197,94,0.2)]">
+            <Link2 className="w-8 h-8 text-[#22c55e]" />
+          </div>
+          <h1 className="text-4xl font-bold text-zinc-100 mb-3 font-display">ChainLink</h1>
+          <p className="text-zinc-400 text-lg">Build your streak. Earn Links. Climb the ranks.</p>
+        </div>
 
-          {isSignUp && (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Username</label>
+        <div className="bg-[#121212] border border-[#27272a] rounded-2xl p-8 shadow-xl">
+          <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+            {error && (
+              <div className="p-3 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            {isSignUp && (
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1.5">Username</label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full bg-[#1a1a1a] border border-[#3f3f46] rounded-lg px-4 py-2.5 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#22c55e]/50 focus:border-[#22c55e]"
+                  placeholder="cooluser123"
+                  required={isSignUp}
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-1.5">Email</label>
               <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="bg-[#1a1a1a] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all"
-                required={isSignUp}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-[#1a1a1a] border border-[#3f3f46] rounded-lg px-4 py-2.5 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#22c55e]/50 focus:border-[#22c55e]"
+                placeholder="you@example.com"
+                required
               />
             </div>
-          )}
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="bg-[#1a1a1a] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all"
-              required
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-1.5">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-[#1a1a1a] border border-[#3f3f46] rounded-lg px-4 py-2.5 text-zinc-100 focus:outline-none focus:ring-2 focus:ring-[#22c55e]/50 focus:border-[#22c55e]"
+                placeholder="••••••••"
+                required
+              />
+            </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="bg-[#1a1a1a] border border-[#27272a] rounded-lg px-3 py-2 text-zinc-200 focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all"
-              required
-            />
-          </div>
+            <Button type="submit" size="lg" className="w-full h-12 mt-2 font-bold shadow-[0_0_15px_rgba(34,197,94,0.2)]" disabled={isLoading}>
+              {isLoading ? 'Processing...' : isSignUp ? 'Sign Up' : 'Login'}
+            </Button>
 
-          <Button type="submit" size="lg" className="w-full h-12 mt-2 font-bold shadow-[0_0_15px_rgba(34,197,94,0.2)]" disabled={isLoading}>
-            {isLoading ? 'Processing...' : isSignUp ? 'Sign Up' : 'Login'}
-          </Button>
+            <div className="relative py-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-[#3f3f46]"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-[#121212] text-zinc-500">or</span>
+              </div>
+            </div>
 
-          <div className="relative flex items-center py-2">
-             <div className="flex-grow border-t border-[#27272a]"></div>
-             <span className="flex-shrink-0 mx-4 text-zinc-500 text-xs">OR</span>
-             <div className="flex-grow border-t border-[#27272a]"></div>
-          </div>
+          </form>
 
-          <Button type="button" variant="outline" size="lg" className="w-full h-12 border-[#27272a] text-zinc-300 hover:bg-[#1a1a1a] hover:text-white" onClick={async (e) => {
-            e.preventDefault();
-            setError('');
-            try {
-              await loginWithGoogle();
-            } catch (err: any) {
-              setError(err.message || 'Google sign-in failed.');
-            }
-          }}>
-            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full h-12 border-[#3f3f46] hover:bg-zinc-800/50 flex items-center justify-center gap-2"
+            onClick={loginWithGoogle}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
@@ -229,29 +212,33 @@ function Landing() {
               {isSignUp ? 'Login' : 'Sign up'}
             </button>
           </p>
-        </form>
-      </div>
+        </div>
 
-      {/* Visual embellishment */}
-      <div className="absolute inset-0 max-w-full overflow-hidden pointer-events-none opacity-10 flex justify-center mt-32 z-0">
-        <div className="w-full h-[500px] bg-[#22c55e] blur-[150px] rounded-full scale-150 translate-y-1/2"></div>
+        {import.meta.env.DEV && (
+          <div className="mt-8 text-center">
+            <Button variant="ghost" className="text-zinc-500 hover:text-zinc-300" onClick={() => window.dispatchEvent(new Event('mock-login'))}>
+               Bypass Auth (Dev Only)
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-const formatUpcomingTime = (startTime: number) => {
-  const date = new Date(startTime);
+const formatUpcomingTime = (timestamp: number) => {
+  const date = new Date(timestamp);
   const now = new Date();
 
-  const isToday = date.getDate() === now.getDate() &&
-                  date.getMonth() === now.getMonth() &&
-                  date.getFullYear() === now.getFullYear();
+  const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+  const isTomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000).getDate() === date.getDate() && new Date(now.getTime() + 24 * 60 * 60 * 1000).getMonth() === date.getMonth();
 
   const timeString = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
   if (isToday) {
-    return timeString;
+    return `Today @ ${timeString}`;
+  } else if (isTomorrow) {
+    return `Tomorrow @ ${timeString}`;
   } else {
     const dayString = date.toLocaleDateString([], { weekday: 'short' });
     return `${dayString} ${timeString}`;
@@ -296,26 +283,22 @@ function PlayDashboard() {
                 startTime: Date.now() - 3600000,
                 statusDesc: 'In Progress',
                 cost: 0,
-                awayTeam: { id: 'teamC', name: 'Mock Live Away', image: 'https://via.placeholder.com/150', score: 2 },
-                homeTeam: { id: 'teamD', name: 'Mock Live Home', image: 'https://via.placeholder.com/150', score: 1 },
+                awayTeam: { id: 'liveA', name: 'Mock Live Away', image: 'https://via.placeholder.com/150', score: 1 },
+                homeTeam: { id: 'liveH', name: 'Mock Live Home', image: 'https://via.placeholder.com/150', score: 2 },
                 metadata: {}
             }
-        ];
+       ];
 
        const handleMockMatchups = (e: any) => {
-         if (e.detail && e.detail.matchups) {
-           setAllFetchedMatchups(e.detail.matchups);
-         }
+          setAllFetchedMatchups(e.detail);
        };
+
        window.addEventListener('mock-matchups', handleMockMatchups);
-
        setAllFetchedMatchups(mockMatchups);
-
-       // Mock upcoming picks for hot rating visual
        setGlobalUpcomingPicks([
-         { matchupId: 'mock-1', pick: { id: 'teamA' }, status: 'PENDING' },
-         { matchupId: 'mock-1', pick: { id: 'teamA' }, status: 'PENDING' },
-         { matchupId: 'mock-1', pick: { id: 'teamB' }, status: 'PENDING' }
+          { matchupId: 'mock-1', pick: { id: 'teamA' } },
+          { matchupId: 'mock-1', pick: { id: 'teamA' } },
+          { matchupId: 'mock-1', pick: { id: 'teamB' } },
        ]);
 
        return () => window.removeEventListener('mock-matchups', handleMockMatchups);
@@ -425,63 +408,32 @@ function PlayDashboard() {
     if (!user || !profile) return;
     try {
       const pickId = user.uid + "_" + matchup.gameId;
-
-      if (import.meta.env.DEV && !user.getIdToken) {
-          // Mock local flow
-          try {
-            await deleteDoc(doc(db, 'picks', pickId));
-          } catch (e) {
-            console.warn("Mock local flow: Failed to delete from Firestore. Skipping...");
-          }
-          const updatedPicks = { ...userPicks };
-          delete updatedPicks[matchup.gameId];
-          setUserPicks(updatedPicks);
-          return;
-      }
-
-      const idToken = await user.getIdToken();
-      const res = await fetch('/api/picks/cancel-pick', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`
-        },
-        body: JSON.stringify({ matchupId: matchup.gameId })
-      });
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        const rawText = await res.text();
-        throw new Error(`Server returned an invalid response (${res.status}). The backend API may not be running.\nResponse: ${rawText.substring(0, 100)}`);
-      }
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error);
-
-      // Successfully removed by backend, real-time listener will update local state,
-      // but we enthusiastically update locally
-      const updatedPicks = { ...userPicks };
-      delete updatedPicks[matchup.gameId];
-      setUserPicks(updatedPicks);
-
-    } catch (e: any) {
-      console.error(e);
-      alert(`Failed to cancel pick. ${e.message}`);
+      await deleteDoc(doc(db, 'picks', pickId));
+    } catch (error) {
+      console.error("Failed to cancel pick", error);
+      alert("Failed to cancel pick.");
     }
   };
 
   const handleMakePick = async (matchup: any, team: any) => {
-    if (!user || !profile) return;
+    if (!user || !profile || !chain) return;
 
-    const hasActivePick = Object.values(userPicks).some((p: any) => p.status === 'PENDING');
-    if (hasActivePick) {
-      alert("You already have an active pick! Wait for it to finish before making another.");
-      return;
+    if (matchup.status !== 'STATUS_SCHEDULED') {
+        alert("This game has already started.");
+        return;
     }
 
-    const matchCost = matchup.cost ?? 0;
-    if (profile.coins < matchCost) {
-      alert("Not enough links!");
-      return;
+    const hasActivePickAnywhere = Object.values(userPicks).some((p: any) => p.status === 'PENDING');
+
+    if (hasActivePickAnywhere && (!userPicks[matchup.gameId] || userPicks[matchup.gameId].status !== 'PENDING')) {
+       alert("You already have an active pending pick.");
+       return;
     }
+
+    if (userPicks[matchup.gameId]) {
+      return; // Already picked
+    }
+
     try {
       const pickId = user.uid + "_" + matchup.gameId;
       const pickDoc = {
@@ -490,69 +442,39 @@ function PlayDashboard() {
         pick: {
           id: team.id,
           name: team.name,
-          image: team.image || ""
+          image: team.image
         },
         status: 'PENDING',
-        coins: matchCost,
-        active: true,
-        createdAt: Date.now(),
-        updatedAt: Date.now()
+        createdAt: Date.now()
       };
 
-      if (import.meta.env.DEV && !user.getIdToken) {
-          // Mock local flow
-          try {
-            await setDoc(doc(db, 'picks', pickId), pickDoc);
-          } catch (e) {
-            console.warn("Mock local flow: Failed to save to Firestore. Skipping...");
-          }
-          setUserPicks(prev => ({...prev, [matchup.gameId]: pickDoc}));
-          return;
+      if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
+         setUserPicks(prev => ({ ...prev, [matchup.gameId]: pickDoc }));
+         return;
       }
 
-      const idToken = await user.getIdToken();
-      const res = await fetch('/api/picks/make-pick', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`
-        },
-        body: JSON.stringify({ matchupId: matchup.gameId, team: { id: team.id, name: team.name, image: team.image || "" } })
-      });
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        const rawText = await res.text();
-        throw new Error(`Server returned an invalid response (${res.status}). The backend API may not be running.\nResponse: ${rawText.substring(0, 100)}`);
-      }
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error);
-
-      // Successfully saved by backend, real-time listener will update local state,
-      // but we can enthusiastically update locally if we want, or just wait for the listener.
-      setUserPicks(prev => ({...prev, [matchup.gameId]: pickDoc}));
-
-    } catch (e: any) {
-      console.error(e);
-      alert(`Failed to save pick. Ensure your rules allow this write. Error: ${e.message}`);
+      await setDoc(doc(db, 'picks', pickId), pickDoc);
+    } catch (error) {
+      console.error("Failed to save pick", error);
+      alert("Failed to save pick.");
     }
   };
 
-  const handleShareMatchup = async (gameId: string) => {
-    setSharingMatchupId(gameId);
-
-    // Wait for React to re-render with the updated footer
+  const handleShareMatchup = (matchupId: string) => {
+    setSharingMatchupId(matchupId);
     setTimeout(async () => {
-      const element = document.getElementById(`matchup-card-${gameId}`);
-      if (element) {
+      const el = document.getElementById(`matchup-card-${matchupId}`);
+      if (el) {
         try {
-          const canvas = await html2canvas(element, {
-            backgroundColor: '#131415',
-            scale: 2, // High resolution
-            useCORS: true // Allow loading external images
+          const html2canvas = (await import('html2canvas')).default;
+          const canvas = await html2canvas(el, {
+              backgroundColor: '#0a0a0a',
+              scale: 2,
+              useCORS: true
           });
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          const dataUrl = canvas.toDataURL('image/png');
           const link = document.createElement('a');
-          link.download = `chainlink-matchup-${gameId}.jpg`;
+          link.download = `chainlink-matchup-${matchupId}.png`;
           link.href = dataUrl;
           link.click();
         } catch (error) {
@@ -714,16 +636,17 @@ function PlayDashboard() {
                </span>
              </div>
 
-             {!hasPicked ? (
-                <div className="w-[88px]"></div>
-             ) : (
-                (m.status === 'STATUS_SCHEDULED' || m.status === 'STATUS_POSTPONED') && m.active !== false ? (
-                  <button
-                    onClick={() => handleCancelPick(m)}
-                    className="text-xs font-bold text-red-500 hover:text-red-400 transition-colors uppercase tracking-wide border border-red-500/30 hover:border-red-400/50 bg-red-500/10 hover:bg-red-500/20 px-3 py-1.5 rounded"
-                  >
-                    Cancel Pick
+             {hasPicked ? (
+                pickData?.pick?.id === m.awayTeam.id || pickData?.pick?.id === m.homeTeam.id ? (
+                  <button onClick={() => handleCancelPick(m)} className="text-xs font-bold text-red-500 uppercase tracking-wide flex items-center gap-1 hover:text-red-400">
+                     <X className="w-3 h-3" /> Cancel
                   </button>
+                ) : (
+                  <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
+                )
+             ) : (
+                !isPickDisabled ? (
+                  <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity">Select Team</span>
                 ) : (
                   <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
                 )
@@ -810,18 +733,27 @@ function MainLayout({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen bg-[#0a0a0a] text-zinc-50 font-sans overflow-hidden">
        <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
        <div className="flex-1 flex flex-col h-screen overflow-hidden w-full relative">
-         <header className="h-[4.5rem] flex items-center justify-between px-4 md:px-8 border-b border-[#27272a] bg-[#0a0a0a]">
-            <div className="flex items-center gap-4">
-              <button className="md:hidden text-zinc-400 hover:text-white" onClick={() => setSidebarOpen(true)}>
-                <Menu className="w-6 h-6" />
-              </button>
-              <h2 className="font-display text-xl md:text-2xl font-bold tracking-wide text-zinc-100">{pageTitle}</h2>
-            </div>
-            <TopStats />
-         </header>
-         <main className="flex-1 overflow-y-auto bg-[#0a0a0a]">
+         {/* Mobile Header */}
+         <div className="md:hidden h-16 border-b border-[#27272a] bg-[#121212]/80 backdrop-blur-xl flex items-center justify-between px-4 shrink-0 sticky top-0 z-30">
+           <div className="flex items-center gap-2">
+             <Link2 className="w-6 h-6 text-[#22c55e]" />
+             <span className="font-bold text-lg font-display text-zinc-100">{pageTitle}</span>
+           </div>
+           <button className="p-2 -mr-2 text-zinc-400" onClick={() => setSidebarOpen(true)}>
+             <Menu className="w-6 h-6" />
+           </button>
+         </div>
+
+         {/* Desktop Header */}
+         <div className="hidden md:flex h-20 items-center justify-between px-8 bg-gradient-to-b from-[#0a0a0a] to-transparent sticky top-0 z-30 pointer-events-none">
+           <div className="pointer-events-auto flex items-center gap-3">
+             <h1 className="text-2xl font-bold font-display text-zinc-100 tracking-tight">{pageTitle}</h1>
+           </div>
+         </div>
+
+         <div className="flex-1 overflow-y-auto custom-scrollbar relative z-10 w-full max-w-full">
             {children}
-         </main>
+         </div>
        </div>
     </div>
   );

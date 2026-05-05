@@ -8,3 +8,9 @@ coverage/
 !.env.example
 chainlink/
 *firebase-adminsdk*.json
+
+# Playwright Test Results
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
