@@ -83,7 +83,7 @@ export default function ShopPage() {
         <div>
           <h1 className="text-3xl font-bold text-zinc-100 font-display flex items-center gap-2">
             <ShoppingCart className="w-8 h-8 text-[#22c55e]" />
-            Link Store
+            Link Shop
           </h1>
           <p className="text-zinc-400 mt-1">Spend your links on cosmetics, merch, and gift cards.</p>
         </div>

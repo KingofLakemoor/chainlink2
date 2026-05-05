@@ -322,8 +322,10 @@ export default function ProfilePage() {
                    {profile.coins?.toLocaleString() || 0}
                  </div>
               </div>
-              <Button className="w-full bg-cyan-500 hover:bg-cyan-600 text-white" variant="default">
-                 Link Shop (Coming Soon)
+              <Button asChild className="w-full bg-cyan-500 hover:bg-cyan-600 text-white" variant="default">
+                 <Link to="/shop">
+                    Link Shop
+                 </Link>
               </Button>
            </div>
         </div>
