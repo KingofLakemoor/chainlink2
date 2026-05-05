@@ -188,60 +188,99 @@ export default function ShopPage() {
             <Zap className="w-6 h-6 text-yellow-500" />
             Buy Links & Premium
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* 1000 Links */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Starter */}
             <div className="bg-[#121212] border border-zinc-800 rounded-xl p-6 flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center mb-4">
                 <Coins className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-zinc-100 mb-2">1,000 Links</h3>
-              <p className="text-zinc-400 text-sm mb-6 flex-1">Boost your balance and make more picks!</p>
+              <h3 className="text-xl font-bold text-zinc-100 mb-2">150 Links</h3>
+              <p className="text-zinc-400 text-sm mb-6 flex-1">A quick refill to keep your streak alive.</p>
               <div className="w-full">
                 <Button
-                  onClick={() => handleStripeCheckout('links', 1000)}
-                  disabled={buyLoading === 'links-1000' || !user}
+                  onClick={() => handleStripeCheckout('links', 150)}
+                  disabled={buyLoading === 'links-150' || !user}
                   className="w-full bg-cyan-600 hover:bg-cyan-500 text-white"
                 >
-                  {buyLoading === 'links-1000' ? 'Loading...' : '$4.99'}
+                  {buyLoading === 'links-150' ? 'Loading...' : '$5.25'}
                 </Button>
               </div>
             </div>
 
-            {/* 5000 Links */}
+            {/* Monthly */}
+            <div className="bg-[#121212] border border-zinc-800 rounded-xl p-6 flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center mb-4">
+                <Coins className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-zinc-100 mb-2">350 Links</h3>
+              <p className="text-zinc-400 text-sm mb-6 flex-1">Standard boost for your bankroll.</p>
+              <div className="w-full">
+                <Button
+                  onClick={() => handleStripeCheckout('links', 350)}
+                  disabled={buyLoading === 'links-350' || !user}
+                  className="w-full bg-cyan-600 hover:bg-cyan-500 text-white"
+                >
+                  {buyLoading === 'links-350' ? 'Loading...' : '$10.49'}
+                </Button>
+              </div>
+            </div>
+
+            {/* Merch Tier */}
             <div className="bg-[#121212] border border-zinc-800 rounded-xl p-6 flex flex-col items-center text-center relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-bl-lg">
+              <div className="absolute top-0 right-0 bg-yellow-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">
+                POPULAR
+              </div>
+              <div className="w-16 h-16 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center mb-4 mt-2">
+                <Coins className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-zinc-100 mb-2">1,050 Links</h3>
+              <p className="text-zinc-400 text-sm mb-6 flex-1">Enough for a merch redemption.</p>
+              <div className="w-full">
+                <Button
+                  onClick={() => handleStripeCheckout('links', 1050)}
+                  disabled={buyLoading === 'links-1050' || !user}
+                  className="w-full bg-cyan-600 hover:bg-cyan-500 text-white"
+                >
+                  {buyLoading === 'links-1050' ? 'Loading...' : '$29.99'}
+                </Button>
+              </div>
+            </div>
+
+            {/* Bulk Tier */}
+            <div className="bg-[#121212] border border-zinc-800 rounded-xl p-6 flex flex-col items-center text-center relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-yellow-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">
                 BEST VALUE
               </div>
               <div className="w-16 h-16 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center mb-4 mt-2">
                 <Coins className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-zinc-100 mb-2">5,000 Links</h3>
-              <p className="text-zinc-400 text-sm mb-6 flex-1">A massive boost for serious players.</p>
+              <h3 className="text-xl font-bold text-zinc-100 mb-2">1,800 Links</h3>
+              <p className="text-zinc-400 text-sm mb-6 flex-1">Massive boost for serious players.</p>
               <div className="w-full">
                 <Button
-                  onClick={() => handleStripeCheckout('links', 5000)}
-                  disabled={buyLoading === 'links-5000' || !user}
+                  onClick={() => handleStripeCheckout('links', 1800)}
+                  disabled={buyLoading === 'links-1800' || !user}
                   className="w-full bg-cyan-600 hover:bg-cyan-500 text-white"
                 >
-                  {buyLoading === 'links-5000' ? 'Loading...' : '$19.99'}
+                  {buyLoading === 'links-1800' ? 'Loading...' : '$49.99'}
                 </Button>
               </div>
             </div>
 
             {/* Premium Subscription */}
-            <div className="bg-gradient-to-b from-purple-900/40 to-[#121212] border border-purple-500/30 rounded-xl p-6 flex flex-col items-center text-center">
+            <div className="bg-gradient-to-b from-purple-900/40 to-[#121212] border border-purple-500/30 rounded-xl p-6 flex flex-col items-center text-center sm:col-span-2 lg:col-span-4 max-w-2xl mx-auto w-full">
               <div className="w-16 h-16 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center mb-4">
                 <Crown className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Premium</h3>
-              <p className="text-purple-200/70 text-sm mb-6 flex-1">Unlock exclusive stats, custom avatars, and ad-free experience.</p>
+              <h3 className="text-xl font-bold text-white mb-2">ChainLink Pro</h3>
+              <p className="text-purple-200/70 text-sm mb-6 flex-1">Get 10 Links daily, unlock exclusive stats, and access pro features.</p>
               <div className="w-full">
                 <Button
                   onClick={() => handleStripeCheckout('premium')}
                   disabled={buyLoading === 'premium-undefined' || !user || profile?.premium}
                   className="w-full bg-purple-600 hover:bg-purple-500 text-white"
                 >
-                  {profile?.premium ? 'Active' : buyLoading === 'premium-undefined' ? 'Loading...' : '$9.99 / mo'}
+                  {profile?.premium ? 'Active' : buyLoading === 'premium-undefined' ? 'Loading...' : '$10.49 / mo'}
                 </Button>
               </div>
             </div>
@@ -325,15 +364,25 @@ export default function ShopPage() {
 
         <section>
           <h2 className="text-2xl font-bold text-zinc-200 mb-4 border-b border-zinc-800 pb-2">Merch</h2>
-          <div className="bg-[#121212] border border-zinc-800 rounded-xl p-8 text-center text-zinc-500">
-            Merch items coming soon...
-          </div>
-        </section>
-
-        <section>
-          <h2 className="text-2xl font-bold text-zinc-200 mb-4 border-b border-zinc-800 pb-2">Gift Cards</h2>
-          <div className="bg-[#121212] border border-zinc-800 rounded-xl p-8 text-center text-zinc-500">
-            Gift Cards coming soon...
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* T-Shirt */}
+            <div className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
+              <div className="h-40 bg-zinc-900 flex items-center justify-center relative overflow-hidden border-b border-zinc-800">
+                <div className="text-6xl">👕</div>
+              </div>
+              <div className="p-5 flex flex-col flex-1">
+                <h3 className="text-xl font-bold text-zinc-200 mb-2">ChainLink T-Shirt</h3>
+                <p className="text-sm text-zinc-400 flex-1 mb-6">Anchor for the entire economy. Rep your favorite predictions app in real life.</p>
+                <div className="flex items-center justify-between">
+                  <div className="font-mono font-bold text-cyan-400 flex items-center gap-1">
+                    <Coins className="w-4 h-4" /> 1,000
+                  </div>
+                  <Button variant="secondary" onClick={() => setMessage({ text: "Redemption system coming soon! Contact support.", type: 'error' })}>
+                    Coming Soon
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </div>
