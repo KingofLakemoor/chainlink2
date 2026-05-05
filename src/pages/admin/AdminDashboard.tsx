@@ -13,6 +13,9 @@ import EditAchievementPage from './achievements/EditAchievementPage';
 import ShopItemsListPage from './shopItems/ShopItemsListPage';
 import CreateShopItemPage from './shopItems/CreateShopItemPage';
 import EditShopItemPage from './shopItems/EditShopItemPage';
+import NotificationsListPage from './notifications/NotificationsListPage';
+import CreateNotificationPage from './notifications/CreateNotificationPage';
+import EditNotificationPage from './notifications/EditNotificationPage';
 import SponsorsListPage from './sponsors/SponsorsListPage';
 import CreateSponsorPage from './sponsors/CreateSponsorPage';
 import EditSponsorPage from './sponsors/EditSponsorPage';
@@ -1106,8 +1109,12 @@ export default function AdminDashboard() {
                 <Route path="challenges" element={<GenericTable collectionName="globalQuiz" />} />
                 <Route path="users" element={<GenericTable collectionName="users" />} />
                 <Route path="squads" element={<GenericTable collectionName="squads" />} />
-                <Route path="notifications" element={<AdminPlaceholder title="Notifications System" />} />
                 <Route path="actions" element={<AdminPlaceholder title="Admin Actions Log" />} />
+
+                {/* Notifications */}
+                <Route path="notifications" element={<NotificationsListPage />} />
+                <Route path="notifications/create" element={<CreateNotificationPage />} />
+                <Route path="notifications/edit/:id" element={<EditNotificationPage />} />
 
                 {/* Shop Items */}
                 <Route path="shopItems" element={<ShopItemsListPage />} />
