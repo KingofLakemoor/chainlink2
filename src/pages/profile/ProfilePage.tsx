@@ -359,13 +359,16 @@ export default function ProfilePage() {
          <div className="flex-1 text-center md:text-left z-10">
             <h1 className="text-3xl md:text-4xl font-bold text-zinc-100 mb-1 font-display drop-shadow-md">{profile.username || profile.name}</h1>
 
-            {profile?.equippedCosmetics?.TITLE && (
+            {profile?.equippedCosmetics?.TITLE && (() => {
+               const titleItem = inventoryItems.find(i => i.id === profile.equippedCosmetics.TITLE);
+               return (
                <div className="mb-3 inline-block">
-                  <span className="text-sm font-bold text-[#22c55e] px-2 py-0.5 rounded bg-black/40 border border-[#22c55e]/30 shadow-sm backdrop-blur-sm">
-                     {inventoryItems.find(i => i.id === profile.equippedCosmetics.TITLE)?.name || 'Title'}
+                  <span className={`text-sm font-bold text-[#22c55e] px-2 py-0.5 rounded bg-black/40 border border-[#22c55e]/30 shadow-sm backdrop-blur-sm ${titleItem?.image || ''}`}>
+                     {titleItem?.name || 'Title'}
                   </span>
                </div>
-            )}
+               );
+            })()}
 
             <div className="flex flex-col md:flex-row gap-2 md:gap-4 text-sm text-zinc-300 justify-center md:justify-start drop-shadow-md font-medium">
                <div className="flex items-center gap-1.5 justify-center md:justify-start">

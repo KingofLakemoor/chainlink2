@@ -1,0 +1,1 @@
+sed -i 's/export const shopItemTypes = \[/export const shopItemCategories = [\n  "Banners (static)",\n  "Banners (Dynamic)",\n  "Avatar background (static)",\n  "Avatar background (dynamic)",\n  "Title regular",\n  "Title glow",\n  "Merch",\n  "Gift Card",\n  "Uncategorized"\n] as const;\n\nexport const shopItemTypes = \[/g' src/pages/admin/shopItems/CreateShopItemPage.tsx

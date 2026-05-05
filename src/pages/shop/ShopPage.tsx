@@ -333,13 +333,18 @@ export default function ShopPage() {
                           </div>
                         )}
                         {item.type === 'TITLE' && (
-                          <div className="z-10 text-xl font-bold text-zinc-300 font-display px-4 py-2 bg-black/50 rounded-lg border border-zinc-700">{item.name}</div>
+                          <div className={`z-10 text-xl font-bold text-zinc-300 font-display px-4 py-2 bg-black/50 rounded-lg border border-zinc-700 ${item.image || ''}`}>{item.name}</div>
                         )}
                      </div>
-                     <div className="p-5 flex flex-col flex-1">
+                     <div className="p-5 flex flex-col flex-1 relative">
                         <div className="flex justify-between items-start mb-2">
-                           <h3 className="text-lg font-bold text-zinc-200">{item.name}</h3>
-                           <span className="text-xs px-2 py-1 bg-zinc-800 text-zinc-400 rounded uppercase font-bold tracking-wider">{item.type.replace('_', ' ')}</span>
+                           <div className="flex flex-col">
+                              <h3 className="text-lg font-bold text-zinc-200">{item.name}</h3>
+                              {item.premiumOnly && (
+                                <span className="text-[10px] uppercase font-bold tracking-wider text-purple-400 mt-1">ChainLink Pro Exclusive</span>
+                              )}
+                           </div>
+                           <span className="text-xs px-2 py-1 bg-zinc-800 text-zinc-400 rounded uppercase font-bold tracking-wider">{item.category || item.type.replace('_', ' ')}</span>
                         </div>
                         <p className="text-sm text-zinc-400 flex-1 mb-4">{item.description}</p>
 
@@ -347,14 +352,23 @@ export default function ShopPage() {
                            <div className="font-mono font-bold text-cyan-400 flex items-center gap-1">
                              <Coins className="w-4 h-4" /> {item.cost.toLocaleString()}
                            </div>
-                           <Button
-                             onClick={() => handleBuy(item.id, item.cost)}
-                             disabled={ownsItem || buyLoading === item.id || !user || (profile?.coins || 0) < item.cost}
-                             variant={ownsItem ? "secondary" : "default"}
-                             className={ownsItem ? "" : "bg-[#22c55e] hover:bg-[#16a34a] text-white"}
-                           >
-                             {buyLoading === item.id ? 'Processing...' : ownsItem ? 'Owned' : 'Buy Now'}
-                           </Button>
+                           {item.premiumOnly && !profile?.premium && !ownsItem ? (
+                             <Button
+                               disabled
+                               className="bg-purple-500/20 text-purple-300 border border-purple-500/30 cursor-not-allowed opacity-80"
+                             >
+                               Requires Pro
+                             </Button>
+                           ) : (
+                             <Button
+                               onClick={() => handleBuy(item.id, item.cost)}
+                               disabled={ownsItem || buyLoading === item.id || !user || (profile?.coins || 0) < item.cost}
+                               variant={ownsItem ? "secondary" : "default"}
+                               className={ownsItem ? "" : "bg-[#22c55e] hover:bg-[#16a34a] text-white"}
+                             >
+                               {buyLoading === item.id ? 'Processing...' : ownsItem ? 'Owned' : 'Buy Now'}
+                             </Button>
+                           )}
                         </div>
                      </div>
                   </div>
