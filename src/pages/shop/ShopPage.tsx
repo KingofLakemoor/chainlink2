@@ -12,6 +12,7 @@ import { Mandala } from '../../components/ui/avatar-backgrounds/mandala';
 import { Ocean } from '../../components/ui/avatar-backgrounds/ocean';
 import { PhantomStar } from '../../components/ui/avatar-backgrounds/phantomstar';
 import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
+import { OceanBanner } from '../../components/ui/profile-banners/ocean';
 
 const AvatarBackgroundMap: Record<string, React.FC<any>> = {
   'Hexagons': Hexagons,
@@ -23,7 +24,8 @@ const AvatarBackgroundMap: Record<string, React.FC<any>> = {
 };
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {
-  'InfernoBanner': InfernoBanner
+  'InfernoBanner': InfernoBanner,
+  'OceanBanner': OceanBanner
 };
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
