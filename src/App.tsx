@@ -574,12 +574,27 @@ function PlayDashboard() {
     const homeHotPct = mCounts.total > 0 ? Math.round((mCounts.home / mCounts.total) * 100) : 0;
     const isScheduled = m.status === 'STATUS_SCHEDULED';
 
+    let glowClass = "";
+    if (m.featured) {
+        if (m.featuredType === 'ChainBuilder') {
+            glowClass = "ring-2 ring-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.3)]";
+        } else {
+            glowClass = "ring-2 ring-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.3)]";
+        }
+    }
+
     return (
-      <div id={`matchup-card-${m.gameId}`} key={isMyPick ? `my-pick-${m.gameId}` : m.gameId} className="bg-[#131415] border border-[#27272a] rounded-xl overflow-hidden hover:border-zinc-700 transition-colors shadow-sm relative group">
+      <div id={`matchup-card-${m.gameId}`} key={isMyPick ? `my-pick-${m.gameId}` : m.gameId} className={cn("bg-[#131415] border border-[#27272a] rounded-xl overflow-hidden hover:border-zinc-700 transition-colors shadow-sm relative group", glowClass)}>
         {/* Header info */}
         <div className="bg-[#161d2b] px-4 py-2 border-b border-[#27272a] flex justify-between items-center bg-gradient-to-r from-[#111f38] to-[#121212]">
           <div className="flex items-center gap-2 font-bold text-sm text-zinc-200 tracking-tight">
              <Trophy className="w-3.5 h-3.5" /> {m.league}
+             {m.featured && (
+                <span className={cn("ml-2 px-1.5 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded",
+                   m.featuredType === 'ChainBuilder' ? "bg-yellow-500/20 text-yellow-400" : "bg-cyan-500/20 text-cyan-400")}>
+                   {m.featuredType === 'ChainBuilder' ? 'ChainBuilder' : 'Featured Sponsor'}
+                </span>
+             )}
           </div>
           <div className="flex flex-col items-end">
             {m.status !== 'STATUS_SCHEDULED' && m.statusDesc !== 'Upcoming' && <span className="text-[10px] text-zinc-500 uppercase">last update:</span>}
