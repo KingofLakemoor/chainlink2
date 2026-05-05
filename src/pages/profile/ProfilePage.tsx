@@ -6,6 +6,26 @@ import { format } from 'date-fns';
 import { db } from '../../lib/firebase';
 import { collection, getDocs, orderBy, query, where, documentId } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
+import { Hexagons } from '../../components/ui/avatar-backgrounds/hexagons';
+import { Hip } from '../../components/ui/avatar-backgrounds/hip';
+import { Inferno } from '../../components/ui/avatar-backgrounds/inferno';
+import { Mandala } from '../../components/ui/avatar-backgrounds/mandala';
+import { Ocean } from '../../components/ui/avatar-backgrounds/ocean';
+import { PhantomStar } from '../../components/ui/avatar-backgrounds/phantomstar';
+import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
+
+const AvatarBackgroundMap: Record<string, React.FC<any>> = {
+  'Hexagons': Hexagons,
+  'Hip': Hip,
+  'Inferno': Inferno,
+  'Mandala': Mandala,
+  'Ocean': Ocean,
+  'PhantomStar': PhantomStar
+};
+
+const ProfileBannerMap: Record<string, React.FC<any>> = {
+  'InfernoBanner': InfernoBanner
+};
 
 export default function ProfilePage() {
   const { user, profile, loading } = useAuth();
@@ -249,33 +269,51 @@ export default function ProfilePage() {
       .map(Number)
       .sort((a, b) => b - a);
 
+  const equippedBannerItem = inventoryItems.find(i => i.id === profile?.equippedCosmetics?.PROFILE_BANNER);
+  const equippedBannerImage = equippedBannerItem?.image;
+  const BannerComponent = ProfileBannerMap[equippedBannerImage || ''];
+
+  const equippedRingItem = inventoryItems.find(i => i.id === profile?.equippedCosmetics?.AVATAR_RING);
+  const equippedRingImage = equippedRingItem?.image;
+  const RingComponent = AvatarBackgroundMap[equippedRingImage || ''];
+
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
 
       {/* Profile Header */}
       <div className={`bg-[#121212] border border-zinc-800 rounded-2xl p-6 md:p-10 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden ${
-        profile?.equippedCosmetics?.PROFILE_BANNER ?
-          inventoryItems.find(i => i.id === profile.equippedCosmetics.PROFILE_BANNER)?.image || ''
-          : ''
+        BannerComponent ? '' : (equippedBannerImage || '')
       }`}>
+         {/* Render WebGL banner if applicable */}
+         {BannerComponent && (
+            <div className="absolute inset-0 z-0">
+               <BannerComponent isStatic={false} />
+            </div>
+         )}
+
          {/* Only show default background if no banner is equipped */}
          {!profile?.equippedCosmetics?.PROFILE_BANNER && (
             <div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5 pointer-events-none"></div>
          )}
 
          <div className="relative">
-            <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 shadow-xl z-10 relative ${
-              profile?.equippedCosmetics?.AVATAR_RING ?
-                inventoryItems.find(i => i.id === profile.equippedCosmetics.AVATAR_RING)?.image || 'border-[#27272a]'
-                : 'border-[#27272a]'
+            <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full shadow-xl z-10 relative ${
+               RingComponent ? 'p-1.5 md:p-2 overflow-hidden' : `overflow-hidden border-4 ${equippedRingImage || 'border-[#27272a]'}`
             }`}>
-               {profile.image ? (
-                 <img src={profile.image} alt={profile.username || profile.name} className="w-full h-full object-cover" />
-               ) : (
-                 <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-4xl font-bold text-zinc-400">
-                   {(profile.username || profile.name)?.charAt(0) || user.email?.charAt(0) || '?'}
-                 </div>
+               {RingComponent && (
+                  <div className="absolute inset-0 z-0">
+                     <RingComponent isStatic={false} />
+                  </div>
                )}
+               <div className={`relative z-10 w-full h-full rounded-full overflow-hidden ${RingComponent ? 'border-2 border-black/50' : ''}`}>
+                 {profile.image ? (
+                   <img src={profile.image} alt={profile.username || profile.name} className="w-full h-full object-cover" />
+                 ) : (
+                   <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-4xl font-bold text-zinc-400">
+                     {(profile.username || profile.name)?.charAt(0) || user.email?.charAt(0) || '?'}
+                   </div>
+                 )}
+               </div>
             </div>
             {profile.role === 'ADMIN' && (
               <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-green-500 text-green-950 text-[10px] font-bold px-2 py-0.5 rounded-full z-20 shadow border border-green-400">
