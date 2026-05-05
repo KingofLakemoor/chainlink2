@@ -132,9 +132,38 @@ export async function gradeSingleMatchup(matchup: any) {
           active: true,
           updatedAt: Date.now()
         }, { merge: true });
+
+        // Queue notification
+        const notificationsRef = adminDb!.collection('notifications').doc();
+        const opponentName = pickData.pick?.id === matchup.homeTeam?.id ? matchup.awayTeam?.name : matchup.homeTeam?.name;
+        const pickedName = pickData.pick?.id === matchup.homeTeam?.id ? matchup.homeTeam?.name : matchup.awayTeam?.name;
+
+        let notifTitle = '';
+        let notifBody = '';
+
+        if (pickStatus === 'WIN') {
+          notifTitle = 'Pick Won! 🎉';
+          notifBody = `Your pick on ${pickedName} vs ${opponentName} won! You earned ${wager + (matchup.reward ?? 10)} coins.`;
+        } else if (pickStatus === 'LOSS') {
+          notifTitle = 'Pick Lost 😢';
+          notifBody = `Your pick on ${pickedName} vs ${opponentName} lost. Better luck next time!`;
+        } else if (pickStatus === 'PUSH') {
+          notifTitle = 'Pick Pushed 🤝';
+          notifBody = `Your pick on ${pickedName} vs ${opponentName} was a push. Your wager of ${wager} coins was refunded.`;
+        }
+
+        transaction.set(notificationsRef, {
+          title: notifTitle,
+          body: notifBody,
+          audience: 'USER',
+          targetUserId: userId,
+          status: 'PENDING',
+          scheduledTime: Date.now(),
+          createdAt: Date.now()
+        });
       });
 
-      console.log(`[Grader] Pick ${pickDoc.id} graded as ${pickStatus}. User ${userId} updated.`);
+      console.log(`[Grader] Pick ${pickDoc.id} graded as ${pickStatus}. User ${userId} updated. Notification queued.`);
     } catch (err) {
       console.error(`[Grader] Failed to grade pick ${pickDoc.id}:`, err);
     }
