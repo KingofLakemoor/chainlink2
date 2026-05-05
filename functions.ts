@@ -56,6 +56,82 @@ export const frequentSync = onSchedule({ schedule: "every 2 minutes", timeoutSec
     console.error(`[Cron] Error in safety loop:`, e);
   }
 
+  // Process notifications bundle
+  console.log(`[Cron] Processing pending notifications...`);
+  try {
+    const { adminDb, adminAuth } = await import("./src/lib/firebase-admin.js");
+    const { getMessaging } = await import("firebase-admin/messaging");
+    if (adminDb) {
+      const pendingNotifsSnap = await adminDb.collection('notifications')
+        .where('status', '==', 'PENDING')
+        .where('scheduledTime', '<=', Date.now())
+        .get();
+
+      if (!pendingNotifsSnap.empty) {
+        console.log(`[Cron] Found ${pendingNotifsSnap.size} pending notifications to send.`);
+        const batch = adminDb.batch();
+
+        for (const doc of pendingNotifsSnap.docs) {
+          const notifData = doc.data();
+          let tokens: string[] = [];
+
+          if (notifData.audience === 'GLOBAL') {
+            // Fetch all users with fcmTokens
+            const usersSnap = await adminDb.collection('users').where('fcmTokens', '!=', []).get();
+            usersSnap.docs.forEach((uDoc: any) => {
+              const uData = uDoc.data();
+              if (uData.fcmTokens && Array.isArray(uData.fcmTokens)) {
+                tokens.push(...uData.fcmTokens);
+              }
+            });
+          } else if (notifData.audience === 'USER' && notifData.targetUserId) {
+            const userSnap = await adminDb.collection('users').doc(notifData.targetUserId).get();
+            if (userSnap.exists) {
+              const uData = userSnap.data()!;
+              if (uData.fcmTokens && Array.isArray(uData.fcmTokens)) {
+                tokens = uData.fcmTokens;
+              }
+            }
+          }
+
+          if (tokens.length > 0) {
+            const message = {
+              notification: {
+                title: notifData.title,
+                body: notifData.body,
+              },
+              tokens: tokens
+            };
+
+            try {
+              const response = await getMessaging().sendEachForMulticast(message);
+              console.log(`[Cron] Successfully sent message to ${response.successCount} devices. Failed: ${response.failureCount}`);
+
+              if (response.failureCount > 0) {
+                const failedTokens: string[] = [];
+                response.responses.forEach((resp: any, idx: number) => {
+                  if (!resp.success) {
+                    failedTokens.push(tokens[idx]);
+                  }
+                });
+                // In a robust implementation, you might want to remove these failed tokens from the users.
+              }
+            } catch (err) {
+              console.error(`[Cron] Error sending multicast message for notification ${doc.id}:`, err);
+            }
+          }
+
+          batch.update(doc.ref, { status: 'SENT', sentAt: Date.now() });
+        }
+
+        await batch.commit();
+        console.log(`[Cron] Notifications processing complete.`);
+      }
+    }
+  } catch (e) {
+    console.error(`[Cron] Error processing notifications:`, e);
+  }
+
   console.log(`[Cron] Frequent sync cycle complete.`);
 });
 
