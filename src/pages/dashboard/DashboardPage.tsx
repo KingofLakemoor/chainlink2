@@ -1,0 +1,349 @@
+import React from 'react';
+import { useAuth } from '../../lib/auth-context';
+import { Button } from '../../components/ui/button';
+import { ShoppingCart, Trophy, Link2, Coins, ChevronRight, Mail, Calendar, Gamepad2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { format } from 'date-fns';
+import { db } from '../../lib/firebase';
+import { collection, getDocs, query, where, documentId, onSnapshot } from 'firebase/firestore';
+
+import { Hexagons } from '../../components/ui/avatar-backgrounds/hexagons';
+import { Hip } from '../../components/ui/avatar-backgrounds/hip';
+import { Inferno } from '../../components/ui/avatar-backgrounds/inferno';
+import { Mandala } from '../../components/ui/avatar-backgrounds/mandala';
+import { Ocean } from '../../components/ui/avatar-backgrounds/ocean';
+import { PhantomStar } from '../../components/ui/avatar-backgrounds/phantomstar';
+import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
+import { OceanBanner } from '../../components/ui/profile-banners/ocean';
+import { cn } from '../../lib/utils';
+
+const AvatarBackgroundMap: Record<string, React.FC<any>> = {
+  'Hexagons': Hexagons,
+  'Hip': Hip,
+  'Inferno': Inferno,
+  'Mandala': Mandala,
+  'Ocean': Ocean,
+  'PhantomStar': PhantomStar
+};
+
+const ProfileBannerMap: Record<string, React.FC<any>> = {
+  'InfernoBanner': InfernoBanner,
+  'OceanBanner': OceanBanner
+};
+
+export default function DashboardPage() {
+  const { user, profile } = useAuth();
+  const [picks, setPicks] = React.useState<any[]>([]);
+  const [inventoryItems, setInventoryItems] = React.useState<any[]>([]);
+  const [allFetchedMatchups, setAllFetchedMatchups] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    if (!user) return;
+    const fetchPicks = async () => {
+      try {
+        if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
+          setPicks([
+            { id: '1', status: 'WIN', updatedAt: new Date('2024-01-10').getTime(), matchupId: 'mock-1' },
+            { id: '2', status: 'PENDING', updatedAt: new Date('2024-02-15').getTime(), matchupId: 'mock-1' },
+          ]);
+          return;
+        }
+
+        const q = query(collection(db, 'picks'), where('userId', '==', user.uid));
+        const snap = await getDocs(q);
+        const fetchedPicks = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setPicks(fetchedPicks);
+      } catch (e) {
+        console.error("Error fetching picks", e);
+      }
+    };
+    fetchPicks();
+  }, [user]);
+
+  React.useEffect(() => {
+    const fetchInventory = async () => {
+      if (!profile?.inventory || profile.inventory.length === 0) {
+        setInventoryItems([]);
+        return;
+      }
+
+      try {
+        if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
+          setInventoryItems([
+            { id: 'item1', name: 'Inferno Banner', type: 'PROFILE_BANNER', image: 'InfernoBanner' },
+            { id: 'item2', name: 'Ocean Ring', type: 'AVATAR_RING', image: 'Ocean' },
+          ]);
+          return;
+        }
+
+        const q = query(collection(db, 'shopItems'), where(documentId(), 'in', profile.inventory));
+        const snap = await getDocs(q);
+        const items = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setInventoryItems(items);
+      } catch (e) {
+        console.error("Error fetching inventory", e);
+      }
+    };
+    fetchInventory();
+  }, [profile?.inventory]);
+
+  React.useEffect(() => {
+    if (!user) return;
+
+    if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
+       setAllFetchedMatchups([
+            {
+                id: 'mock-1',
+                gameId: 'mock-1',
+                title: 'Who will win? Mock Team A @ Mock Team B',
+                league: 'EPL',
+                status: 'STATUS_SCHEDULED',
+                startTime: Date.now() + 1000000,
+                statusDesc: 'Upcoming',
+                cost: 0,
+                awayTeam: { id: 'teamA', name: 'Mock Team A', image: 'https://via.placeholder.com/150', score: 0 },
+                homeTeam: { id: 'teamB', name: 'Mock Team B', image: 'https://via.placeholder.com/150', score: 0 },
+                metadata: {}
+            }
+       ]);
+       return;
+    }
+
+    const unsubMatchups = onSnapshot(collection(db, 'matchups'), (snap) => {
+      if (snap.empty) {
+        setAllFetchedMatchups([]);
+      } else {
+        const allMatchups = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        setAllFetchedMatchups(allMatchups);
+      }
+    });
+
+    return () => {
+      unsubMatchups();
+    };
+  }, [user]);
+
+  const currentMonthStats = React.useMemo(() => {
+    if (!picks || picks.length === 0) return { wins: 0, losses: 0, pushes: 0, longestWinChain: 0, longestLossChain: 0, streak: 0 };
+
+    const sortedPicks = [...picks].sort((a, b) => (a.updatedAt || 0) - (b.updatedAt || 0));
+    const now = new Date();
+    const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    let stats = { wins: 0, losses: 0, pushes: 0, longestWinChain: 0, longestLossChain: 0, streak: 0 };
+    let currentChain = 0;
+
+    sortedPicks.forEach(pick => {
+      if (pick.status === 'PENDING') return;
+
+      const date = new Date(pick.updatedAt || Date.now());
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+      if (monthKey === currentMonthKey) {
+        if (pick.status === 'WIN') {
+          stats.wins += 1;
+          currentChain = currentChain < 0 ? 1 : currentChain + 1;
+          stats.longestWinChain = Math.max(stats.longestWinChain, currentChain);
+        } else if (pick.status === 'LOSS') {
+          stats.losses += 1;
+          currentChain = currentChain > 0 ? -1 : (currentChain === 0 ? -1 : currentChain - 1);
+          stats.longestLossChain = Math.max(stats.longestLossChain, Math.abs(currentChain));
+        } else if (pick.status === 'PUSH') {
+          stats.pushes += 1;
+        }
+        stats.streak = currentChain;
+      }
+    });
+
+    return stats;
+  }, [picks]);
+
+  const equippedBannerItem = inventoryItems.find(i => i.id === profile?.equippedCosmetics?.PROFILE_BANNER);
+  const equippedBannerImage = equippedBannerItem?.image;
+  const BannerComponent = ProfileBannerMap[equippedBannerImage || ''];
+
+  const equippedRingItem = inventoryItems.find(i => i.id === profile?.equippedCosmetics?.AVATAR_RING);
+  const equippedRingImage = equippedRingItem?.image;
+  const RingComponent = AvatarBackgroundMap[equippedRingImage || ''];
+
+  const activePick = picks.find(p => p.status === 'PENDING');
+  const activeMatchup = activePick ? allFetchedMatchups.find(m => m.gameId === activePick.matchupId) : null;
+
+  if (!profile || !user) {
+    return <div className="p-8 text-center text-zinc-400">Loading Dashboard...</div>;
+  }
+
+  const joinDate = user?.metadata?.creationTime ? format(new Date(user.metadata.creationTime), 'MMM d, yyyy') : 'Unknown';
+
+  return (
+    <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-8">
+      {/* Profile Header */}
+      <div className={`bg-[#121212] border border-zinc-800 rounded-2xl p-6 md:p-10 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden ${
+        BannerComponent ? '' : (equippedBannerImage || '')
+      }`}>
+         {BannerComponent && (
+            <div className="absolute inset-0 z-0">
+               <BannerComponent isStatic={false} />
+            </div>
+         )}
+         {!profile?.equippedCosmetics?.PROFILE_BANNER && (
+            <div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5 pointer-events-none"></div>
+         )}
+
+         <div className="relative">
+            <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full shadow-xl z-10 relative ${
+               RingComponent ? 'p-1.5 md:p-2 overflow-hidden' : `overflow-hidden border-4 ${equippedRingImage || 'border-[#27272a]'}`
+            }`}>
+               {RingComponent && (
+                  <div className="absolute inset-0 z-0">
+                     <RingComponent isStatic={false} />
+                  </div>
+               )}
+               <div className={`relative z-10 w-full h-full rounded-full overflow-hidden ${RingComponent ? 'border-2 border-black/50' : ''}`}>
+                 {profile.image ? (
+                   <img src={profile.image} alt={profile.username || profile.name} className="w-full h-full object-cover" />
+                 ) : (
+                   <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-4xl font-bold text-zinc-400">
+                     {(profile.username || profile.name)?.charAt(0) || user.email?.charAt(0) || '?'}
+                   </div>
+                 )}
+               </div>
+            </div>
+         </div>
+
+         <div className="flex-1 text-center md:text-left z-10">
+            <h1 className="text-3xl md:text-4xl font-bold text-zinc-100 mb-1 font-display drop-shadow-md">{profile.username || profile.name}</h1>
+            {profile?.equippedCosmetics?.TITLE && (
+               <div className="mb-3 inline-block">
+                  <span className="text-sm font-bold text-[#22c55e] px-2 py-0.5 rounded bg-black/40 border border-[#22c55e]/30 shadow-sm backdrop-blur-sm">
+                     {inventoryItems.find(i => i.id === profile.equippedCosmetics.TITLE)?.name || 'Title'}
+                  </span>
+               </div>
+            )}
+            <div className="flex flex-col md:flex-row gap-2 md:gap-4 text-sm text-zinc-300 justify-center md:justify-start drop-shadow-md font-medium">
+               <div className="flex items-center gap-1.5 justify-center md:justify-start">
+                 <Mail className="w-4 h-4 opacity-70" />
+                 {user.email}
+               </div>
+               <div className="flex items-center gap-1.5 justify-center md:justify-start">
+                 <Calendar className="w-4 h-4 opacity-70" />
+                 Joined {joinDate}
+               </div>
+            </div>
+         </div>
+
+         <div className="z-10 flex flex-col gap-3">
+             <div className="bg-black/40 backdrop-blur-md border border-zinc-700/50 rounded-xl p-4 flex flex-col items-center justify-center min-w-[140px]">
+                 <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1"><Coins className="w-3.5 h-3.5" /> Links Balance</span>
+                 <span className="text-3xl font-display font-bold text-cyan-400 drop-shadow-md">{profile.coins?.toLocaleString() || 0}</span>
+             </div>
+             <Link to="/shop" className="w-full">
+                 <Button className="w-full bg-zinc-100 text-zinc-950 hover:bg-white font-bold h-10 flex items-center gap-2">
+                     <ShoppingCart className="w-4 h-4" />
+                     Visit Store
+                 </Button>
+             </Link>
+         </div>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-6">
+          {/* Stats Column */}
+          <div className="md:col-span-1 space-y-6">
+              <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6">
+                  <h2 className="text-lg font-bold text-zinc-100 mb-4 flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-yellow-500" /> Current Month Stats
+                  </h2>
+                  <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-[#18181a] rounded-xl p-4 border border-zinc-800 flex flex-col items-center">
+                          <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider mb-1">Wins</span>
+                          <span className="text-2xl font-bold text-green-500">{currentMonthStats.wins}</span>
+                      </div>
+                      <div className="bg-[#18181a] rounded-xl p-4 border border-zinc-800 flex flex-col items-center">
+                          <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider mb-1">Losses</span>
+                          <span className="text-2xl font-bold text-red-500">{currentMonthStats.losses}</span>
+                      </div>
+                      <div className="bg-[#18181a] rounded-xl p-4 border border-zinc-800 flex flex-col items-center">
+                          <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider mb-1">Pushes</span>
+                          <span className="text-2xl font-bold text-zinc-300">{currentMonthStats.pushes}</span>
+                      </div>
+                      <div className="bg-[#18181a] rounded-xl p-4 border border-zinc-800 flex flex-col items-center">
+                          <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider mb-1">Streak</span>
+                          <span className={cn("text-2xl font-bold", currentMonthStats.streak > 0 ? "text-green-500" : currentMonthStats.streak < 0 ? "text-red-500" : "text-zinc-500")}>
+                             {currentMonthStats.streak > 0 ? `W${currentMonthStats.streak}` : currentMonthStats.streak < 0 ? `L${Math.abs(currentMonthStats.streak)}` : '-'}
+                          </span>
+                      </div>
+                  </div>
+              </div>
+
+              <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6">
+                  <h2 className="text-lg font-bold text-zinc-100 mb-4">Announcements</h2>
+                  <div className="bg-[#18181a] rounded-xl p-4 border border-zinc-800">
+                      <p className="text-sm text-zinc-400">Welcome to ChainLink Dashboard! Stay tuned for upcoming events and features.</p>
+                  </div>
+              </div>
+          </div>
+
+          {/* Active Pick / Main Content */}
+          <div className="md:col-span-2">
+             <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6 h-full">
+                 <div className="flex items-center justify-between mb-6">
+                     <h2 className="text-lg font-bold text-zinc-100 flex items-center gap-2">
+                         <Gamepad2 className="w-5 h-5 text-cyan-400" /> My Active Pick
+                     </h2>
+                     <Link to="/play" className="text-sm text-cyan-500 hover:text-cyan-400 font-medium flex items-center gap-1">
+                         View Games <ChevronRight className="w-4 h-4" />
+                     </Link>
+                 </div>
+
+                 {activeMatchup ? (
+                     <div className="bg-[#161d2b] rounded-xl border border-[#27272a] overflow-hidden bg-gradient-to-r from-[#111f38] to-[#121212]">
+                         <div className="p-5 flex flex-col items-center text-center">
+                             <div className="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-2">{activeMatchup.league}</div>
+                             <div className="text-lg font-bold text-zinc-100 mb-6">{activeMatchup.title}</div>
+
+                             <div className="flex items-center justify-center gap-8 w-full">
+                                 <div className={cn("flex flex-col items-center gap-3 p-4 rounded-xl border", activePick.pick?.id === activeMatchup.awayTeam.id ? 'border-green-500 bg-green-500/10' : 'border-zinc-800 opacity-50')}>
+                                     <img src={activeMatchup.awayTeam.image} className="w-16 h-16 object-contain" alt={activeMatchup.awayTeam.name} />
+                                     <span className="text-sm font-bold text-zinc-200">{activeMatchup.awayTeam.name}</span>
+                                     {activePick.pick?.id === activeMatchup.awayTeam.id && <span className="text-xs bg-green-500 text-green-950 px-2 py-0.5 rounded font-bold mt-1">YOUR PICK</span>}
+                                 </div>
+                                 <div className="text-zinc-500 font-bold text-xl">VS</div>
+                                 <div className={cn("flex flex-col items-center gap-3 p-4 rounded-xl border", activePick.pick?.id === activeMatchup.homeTeam.id ? 'border-green-500 bg-green-500/10' : 'border-zinc-800 opacity-50')}>
+                                     <img src={activeMatchup.homeTeam.image} className="w-16 h-16 object-contain" alt={activeMatchup.homeTeam.name} />
+                                     <span className="text-sm font-bold text-zinc-200">{activeMatchup.homeTeam.name}</span>
+                                     {activePick.pick?.id === activeMatchup.homeTeam.id && <span className="text-xs bg-green-500 text-green-950 px-2 py-0.5 rounded font-bold mt-1">YOUR PICK</span>}
+                                 </div>
+                             </div>
+                         </div>
+                         <div className="bg-[#111111] px-5 py-3 border-t border-[#27272a] flex justify-between items-center text-sm">
+                             <span className="text-zinc-400 font-medium">{activeMatchup.status === 'STATUS_SCHEDULED' ? 'Upcoming' : 'In Progress'}</span>
+                             <span className="text-zinc-300 flex items-center gap-1 font-medium">Reward: <Link2 className="w-4 h-4 text-cyan-400" /> <span className="text-cyan-400 font-bold">{activeMatchup.reward ?? 10}</span></span>
+                         </div>
+                     </div>
+                 ) : (
+                     <div className="flex flex-col items-center justify-center py-16 bg-[#18181a] rounded-xl border border-zinc-800 border-dashed">
+                         <Link2 className="w-12 h-12 text-zinc-600 mb-4" />
+                         <p className="text-zinc-400 mb-4 font-medium">You don't have an active pick right now.</p>
+                         <Link to="/play">
+                             <Button className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold">
+                                 Make a Pick
+                             </Button>
+                         </Link>
+                     </div>
+                 )}
+             </div>
+          </div>
+      </div>
+
+      {/* Sponsor Badges */}
+      <div className="pt-6 border-t border-zinc-800/50 mt-8">
+          <p className="text-center text-xs text-zinc-500 uppercase font-bold tracking-wider mb-4">Sponsored By</p>
+          <div className="flex flex-wrap items-center justify-center gap-8 opacity-50 grayscale hover:grayscale-0 transition-all duration-300">
+             <div className="text-zinc-400 font-bold text-lg font-display tracking-tight">SponsorOne</div>
+             <div className="text-zinc-400 font-bold text-lg font-display tracking-tight">BrandCo</div>
+             <div className="text-zinc-400 font-bold text-lg font-display tracking-tight">GlobalSports</div>
+          </div>
+      </div>
+    </div>
+  );
+}
