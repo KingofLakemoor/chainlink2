@@ -16,6 +16,7 @@ import EditShopItemPage from './shopItems/EditShopItemPage';
 import SponsorsListPage from './sponsors/SponsorsListPage';
 import CreateSponsorPage from './sponsors/CreateSponsorPage';
 import EditSponsorPage from './sponsors/EditSponsorPage';
+import PickEmAdminPage from './pickem/PickEmAdminPage';
 import {
   Users, Gamepad2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
@@ -1102,7 +1103,7 @@ export default function AdminDashboard() {
                 <Route path="achievements/edit/:id" element={<EditAchievementPage />} />
 
                 {/* Flat routes */}
-                <Route path="pickem" element={<GenericTable collectionName="pickemCampaigns" />} />
+                <Route path="pickem/*" element={<PickEmAdminPage />} />
                 <Route path="challenges" element={<GenericTable collectionName="globalQuiz" />} />
                 <Route path="users" element={<GenericTable collectionName="users" />} />
                 <Route path="squads" element={<GenericTable collectionName="squads" />} />
