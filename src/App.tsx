@@ -778,8 +778,8 @@ function PlayDashboard() {
         </div>
       ) : (
         <div className="grid lg:grid-cols-2 gap-5">
-          {filteredMatchups.map(m => (
-            <React.Fragment key={m.gameId}>
+          {filteredMatchups.map((m, index) => (
+            <React.Fragment key={m.gameId || index}>
               {renderMatchupCard(m)}
             </React.Fragment>
           ))}
