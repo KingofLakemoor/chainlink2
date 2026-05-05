@@ -16,6 +16,9 @@ import EditShopItemPage from './shopItems/EditShopItemPage';
 import NotificationsListPage from './notifications/NotificationsListPage';
 import CreateNotificationPage from './notifications/CreateNotificationPage';
 import EditNotificationPage from './notifications/EditNotificationPage';
+import SponsorsListPage from './sponsors/SponsorsListPage';
+import CreateSponsorPage from './sponsors/CreateSponsorPage';
+import EditSponsorPage from './sponsors/EditSponsorPage';
 import {
   Users, Gamepad2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
@@ -826,10 +829,22 @@ function AdminEditMatchup() {
                 <input type="checkbox" checked={matchup.active || false} onChange={(e) => handleChange('active', e.target.checked)} className="w-4 h-4 rounded border-zinc-700 bg-zinc-900 text-green-500 focus:ring-green-500/20" />
                 <span className="text-sm font-medium text-zinc-300">Active</span>
             </label>
-            <label className="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" checked={matchup.featured || false} onChange={(e) => handleChange('featured', e.target.checked)} className="w-4 h-4 rounded border-zinc-700 bg-zinc-900 text-green-500 focus:ring-green-500/20" />
-                <span className="text-sm font-medium text-zinc-300">Featured</span>
-            </label>
+            <div className="flex items-center gap-3">
+                <label className="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" checked={matchup.featured || false} onChange={(e) => handleChange('featured', e.target.checked)} className="w-4 h-4 rounded border-zinc-700 bg-zinc-900 text-green-500 focus:ring-green-500/20" />
+                    <span className="text-sm font-medium text-zinc-300">Featured</span>
+                </label>
+                {matchup.featured && (
+                    <select
+                        value={matchup.featuredType || 'Featured'}
+                        onChange={(e) => handleChange('featuredType', e.target.value)}
+                        className="bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1 text-xs text-zinc-200 focus:outline-none focus:border-zinc-700"
+                    >
+                        <option value="Featured">Featured</option>
+                        <option value="ChainBuilder">ChainBuilder</option>
+                    </select>
+                )}
+            </div>
         </div>
 
         {/* Actions */}
@@ -1078,8 +1093,9 @@ export default function AdminDashboard() {
                 <Route path="announcements/create" element={<AdminPlaceholder title="Create Announcement" />} />
 
                 {/* Sponsors */}
-                <Route path="sponsors" element={<GenericTable collectionName="sponsors" />} />
-                <Route path="sponsors/create" element={<AdminPlaceholder title="Create Sponsor" />} />
+                <Route path="sponsors" element={<SponsorsListPage />} />
+                <Route path="sponsors/create" element={<CreateSponsorPage />} />
+                <Route path="sponsors/edit/:id" element={<EditSponsorPage />} />
                 <Route path="sponsors/featured" element={<AdminPlaceholder title="Featured Sponsors" />} />
 
                 {/* Achievements */}

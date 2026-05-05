@@ -13,6 +13,18 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { ArrowLeftIcon } from "lucide-react";
 
+export const shopItemCategories = [
+  "Banners (static)",
+  "Banners (Dynamic)",
+  "Avatar background (static)",
+  "Avatar background (dynamic)",
+  "Title regular",
+  "Title glow",
+  "Merch",
+  "Gift Card",
+  "Uncategorized"
+] as const;
+
 export const shopItemTypes = [
   "PROFILE_BANNER",
   "AVATAR_RING",
@@ -25,9 +37,11 @@ const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().min(1, "Description is required"),
   type: z.enum(shopItemTypes),
+  category: z.enum(shopItemCategories).optional(),
   cost: z.coerce.number().min(0, "Cost must be a positive number"),
   active: z.boolean().default(true),
   forSale: z.boolean().default(true),
+  premiumOnly: z.boolean().default(false),
   image: z.string().optional(),
   preview: z.string().optional(),
   order: z.coerce.number().optional()
@@ -43,9 +57,11 @@ export default function CreateShopItemPage() {
       name: "",
       description: "",
       type: "PROFILE_BANNER",
+      category: "Uncategorized",
       cost: 0,
       active: true,
       forSale: true,
+      premiumOnly: false,
       image: "",
       preview: "",
       order: 0
@@ -96,29 +112,54 @@ export default function CreateShopItemPage() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Type</FormLabel>
-                    <FormControl>
-                      <Select
-                        onChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <option value="" disabled>Select item type</option>
-                        {shopItemTypes.map((type) => (
-                          <option key={type} value={type}>
-                            {type}
-                          </option>
-                        ))}
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="flex gap-4">
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>Type (Internal System ID)</FormLabel>
+                      <FormControl>
+                        <Select
+                          onChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <option value="" disabled>Select item type</option>
+                          {shopItemTypes.map((type) => (
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>Category (Display Only)</FormLabel>
+                      <FormControl>
+                        <Select
+                          onChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <option value="" disabled>Select category</option>
+                          {shopItemCategories.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               <FormField
                 control={form.control}
                 name="description"
@@ -168,6 +209,19 @@ export default function CreateShopItemPage() {
                         <input type="checkbox" checked={field.value} onChange={field.onChange} className="w-4 h-4 rounded border-zinc-700 bg-zinc-900 text-green-500 focus:ring-green-500/20" />
                       </FormControl>
                       <FormLabel>For Sale (Can be shown in shop)</FormLabel>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="premiumOnly"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-2 space-y-0">
+                      <FormControl>
+                        <input type="checkbox" checked={field.value} onChange={field.onChange} className="w-4 h-4 rounded border-zinc-700 bg-zinc-900 text-green-500 focus:ring-green-500/20" />
+                      </FormControl>
+                      <FormLabel>Premium Only (Requires ChainLink Pro)</FormLabel>
                       <FormMessage />
                     </FormItem>
                   )}
