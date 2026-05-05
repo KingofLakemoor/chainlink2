@@ -10,6 +10,9 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(cors({ origin: true }));
+
+  // We need the raw body for the webhook endpoint to verify the Stripe signature
+  app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
   app.use(express.json());
 
   // Global middleware to set Cross-Origin-Opener-Policy

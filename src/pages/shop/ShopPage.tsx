@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingCart, Coins } from 'lucide-react';
+import { ShoppingCart, Coins, Crown, Zap } from 'lucide-react';
 import { db } from '../../lib/firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
 
 export default function ShopPage() {
   const { user, profile } = useAuth();
@@ -36,7 +39,61 @@ export default function ShopPage() {
       }
     };
     fetchItems();
+
+    // Check for Stripe success/cancel params
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get('success')) {
+      setMessage({ text: 'Payment successful! Your account has been updated.', type: 'success' });
+      // Remove query params from URL
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+    if (searchParams.get('canceled')) {
+      setMessage({ text: 'Payment was canceled.', type: 'error' });
+      // Remove query params from URL
+      window.history.replaceState(null, '', window.location.pathname);
+    }
   }, []);
+
+  const handleStripeCheckout = async (itemType: string, amount?: number) => {
+    if (!user) {
+      setMessage({ text: "You must be logged in to make purchases.", type: 'error' });
+      return;
+    }
+
+    setBuyLoading(`${itemType}-${amount}`);
+    setMessage(null);
+
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/stripe/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ itemType, amount })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.id) {
+        const stripe = await stripePromise;
+        if (!stripe) throw new Error("Stripe failed to initialize");
+
+        const { error } = await (stripe as any).redirectToCheckout({
+          sessionId: data.id
+        });
+
+        if (error) throw error;
+      } else {
+        setMessage({ text: data.error || "Failed to initiate checkout.", type: 'error' });
+      }
+    } catch (e: any) {
+      console.error("Stripe checkout error:", e);
+      setMessage({ text: "An error occurred during checkout.", type: 'error' });
+    } finally {
+      setBuyLoading(null);
+    }
+  };
 
   const handleBuy = async (itemId: string, cost: number) => {
     if (!user) {
@@ -105,6 +162,72 @@ export default function ShopPage() {
       )}
 
       <div className="space-y-12">
+
+        <section>
+          <h2 className="text-2xl font-bold text-zinc-200 mb-4 border-b border-zinc-800 pb-2 flex items-center gap-2">
+            <Zap className="w-6 h-6 text-yellow-500" />
+            Buy Links & Premium
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* 1000 Links */}
+            <div className="bg-[#121212] border border-zinc-800 rounded-xl p-6 flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center mb-4">
+                <Coins className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-zinc-100 mb-2">1,000 Links</h3>
+              <p className="text-zinc-400 text-sm mb-6 flex-1">Boost your balance and make more picks!</p>
+              <div className="w-full">
+                <Button
+                  onClick={() => handleStripeCheckout('links', 1000)}
+                  disabled={buyLoading === 'links-1000' || !user}
+                  className="w-full bg-cyan-600 hover:bg-cyan-500 text-white"
+                >
+                  {buyLoading === 'links-1000' ? 'Loading...' : '$4.99'}
+                </Button>
+              </div>
+            </div>
+
+            {/* 5000 Links */}
+            <div className="bg-[#121212] border border-zinc-800 rounded-xl p-6 flex flex-col items-center text-center relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-bl-lg">
+                BEST VALUE
+              </div>
+              <div className="w-16 h-16 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center mb-4 mt-2">
+                <Coins className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-zinc-100 mb-2">5,000 Links</h3>
+              <p className="text-zinc-400 text-sm mb-6 flex-1">A massive boost for serious players.</p>
+              <div className="w-full">
+                <Button
+                  onClick={() => handleStripeCheckout('links', 5000)}
+                  disabled={buyLoading === 'links-5000' || !user}
+                  className="w-full bg-cyan-600 hover:bg-cyan-500 text-white"
+                >
+                  {buyLoading === 'links-5000' ? 'Loading...' : '$19.99'}
+                </Button>
+              </div>
+            </div>
+
+            {/* Premium Subscription */}
+            <div className="bg-gradient-to-b from-purple-900/40 to-[#121212] border border-purple-500/30 rounded-xl p-6 flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center mb-4">
+                <Crown className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Premium</h3>
+              <p className="text-purple-200/70 text-sm mb-6 flex-1">Unlock exclusive stats, custom avatars, and ad-free experience.</p>
+              <div className="w-full">
+                <Button
+                  onClick={() => handleStripeCheckout('premium')}
+                  disabled={buyLoading === 'premium-undefined' || !user || profile?.premium}
+                  className="w-full bg-purple-600 hover:bg-purple-500 text-white"
+                >
+                  {profile?.premium ? 'Active' : buyLoading === 'premium-undefined' ? 'Loading...' : '$9.99 / mo'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section>
           <h2 className="text-2xl font-bold text-zinc-200 mb-4 border-b border-zinc-800 pb-2">Cosmetics</h2>
 
