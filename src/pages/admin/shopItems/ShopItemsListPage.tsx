@@ -52,8 +52,10 @@ export default function ShopItemsListPage() {
               <tr>
                 <th className="px-4 py-3 font-medium">Actions</th>
                 <th className="px-4 py-3 font-medium">Name</th>
+                <th className="px-4 py-3 font-medium">Category</th>
                 <th className="px-4 py-3 font-medium">Type</th>
                 <th className="px-4 py-3 font-medium">Cost</th>
+                <th className="px-4 py-3 font-medium">Premium Only</th>
                 <th className="px-4 py-3 font-medium">Active</th>
                 <th className="px-4 py-3 font-medium">For Sale</th>
               </tr>
@@ -82,8 +84,16 @@ export default function ShopItemsListPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3 font-medium text-zinc-200">{item.name}</td>
+                  <td className="px-4 py-3 text-zinc-400">{item.category || 'N/A'}</td>
                   <td className="px-4 py-3 text-zinc-400">{item.type}</td>
                   <td className="px-4 py-3 text-zinc-400">{item.cost || 0}</td>
+                  <td className="px-4 py-3 text-zinc-400">
+                    {item.premiumOnly ? (
+                      <span className="px-2 py-0.5 rounded text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20">Yes</span>
+                    ) : (
+                      <span className="text-zinc-600">No</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-zinc-400">{item.active ? 'Yes' : 'No'}</td>
                   <td className="px-4 py-3 text-zinc-400">{item.forSale ? 'Yes' : 'No'}</td>
                 </tr>

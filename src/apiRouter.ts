@@ -311,6 +311,10 @@ apiRouter.post("/shop/buy", async (req, res) => {
       const profile = userDoc.data()!;
       const cost = item.cost ?? 0;
 
+      if (item.premiumOnly && !profile.premium) {
+        throw new Error("This item requires ChainLink Pro.");
+      }
+
       if (profile.coins < cost) {
         throw new Error("Not enough links!");
       }
