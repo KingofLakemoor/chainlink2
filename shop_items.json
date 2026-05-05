@@ -189,9 +189,9 @@
     "type": "PROFILE_BANNER",
     "active": true,
     "forSale": true,
-    "image": "bg-gradient-to-br from-blue-900 to-blue-700",
+    "image": "OceanBanner",
     "featured": false,
-    "preview": "bg-gradient-to-br from-blue-900 to-blue-700",
+    "preview": "OceanBanner",
     "order": 15
   },
   {
