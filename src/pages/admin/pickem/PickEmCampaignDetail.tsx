@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, doc, getDoc, query, where, updateDoc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, where, updateDoc, writeBatch } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
@@ -87,11 +87,14 @@ export default function PickEmCampaignDetail() {
       }
 
       let count = 0;
+      let batch = writeBatch(db);
+      let batchCount = 0;
+
       for (const m of res.data) {
         const pickemMatchupId = `${id}_${selectedWeek}_${m.gameId}`;
         const docRef = doc(db, 'pickemMatchups', pickemMatchupId);
 
-        await setDoc(docRef, {
+        batch.set(docRef, {
           campaignId: id,
           week: selectedWeek,
           gameId: m.gameId,
@@ -103,7 +106,19 @@ export default function PickEmCampaignDetail() {
           awayTeam: m.awayTeam,
           createdAt: Date.now()
         }, { merge: true });
+
         count++;
+        batchCount++;
+
+        if (batchCount === 500) {
+          await batch.commit();
+          batch = writeBatch(db);
+          batchCount = 0;
+        }
+      }
+
+      if (batchCount > 0) {
+        await batch.commit();
       }
 
       alert(`Synced ${count} matchups successfully!`);
