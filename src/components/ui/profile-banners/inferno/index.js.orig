@@ -317,8 +317,7 @@ function InfernoBanner({ isStatic = false, ...props }) {
         let animateId;
 
         if (isStatic) {
-            program.uniforms.uTime.value = 2.0; // A nice looking frame
-            program.uniforms.uBurnProgress.value = 0.5; // Show halfway burned in static
+            program.uniforms.uTime.value = 5.0;
             if (mounted) renderer.render({ scene: mesh });
         } else {
             animateId = requestAnimationFrame(update);
