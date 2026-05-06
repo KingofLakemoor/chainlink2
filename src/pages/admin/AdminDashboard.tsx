@@ -632,6 +632,14 @@ function AdminEditMatchup() {
             current = current[keys[i]];
         }
         current[keys[keys.length - 1]] = value;
+
+        if (field === 'type' && value === 'SPREAD') {
+            const awayName = newData.awayTeam?.name || 'Away';
+            const homeName = newData.homeTeam?.name || 'Home';
+            newData.title = `${awayName} @ ${homeName} - ATS`;
+            newData.hasCustomTitle = true;
+        }
+
         return newData;
     });
   };
@@ -810,6 +818,12 @@ function AdminEditMatchup() {
                 <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Type Details</label>
                 <input type="text" value={matchup.typeDetails || ''} onChange={(e) => handleChange('typeDetails', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
             </div>
+            {matchup.type === 'SPREAD' && (
+                <div className="space-y-2">
+                    <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Spread</label>
+                    <input type="number" step="0.5" value={matchup.metadata?.spread || ''} onChange={(e) => handleChange('metadata.spread', parseFloat(e.target.value) || 0)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+                </div>
+            )}
             <div className="space-y-2">
                 <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Cost</label>
                 <input type="number" value={matchup.cost || 0} onChange={(e) => handleChange('cost', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />

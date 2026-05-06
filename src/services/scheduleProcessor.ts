@@ -84,7 +84,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               metadata: {
                   ...(existingData.metadata || {}),
                   overUnder: scrapedMatchup.metadata?.overUnder,
-                  spread: scrapedMatchup.metadata?.spread,
+                  spread: existingData.type === 'SPREAD' ? existingData.metadata?.spread : scrapedMatchup.metadata?.spread,
                   network: scrapedMatchup.metadata?.network
               },
               updatedAt: Date.now()

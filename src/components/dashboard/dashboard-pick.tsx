@@ -28,16 +28,26 @@ export function DashboardPick({ activePick, activeMatchup }: DashboardPickProps)
             <div className="text-lg font-bold text-zinc-100 mb-6">{activeMatchup.title}</div>
 
             <div className="flex items-center justify-center gap-8 w-full">
-              <div className={cn("flex flex-col items-center gap-3 p-4 rounded-xl border", activePick?.pick?.id === activeMatchup.awayTeam.id ? 'border-green-500 bg-green-500/10' : 'border-zinc-800 opacity-50')}>
+              <div className={cn("flex flex-col items-center gap-3 p-4 rounded-xl border relative", activePick?.pick?.id === activeMatchup.awayTeam.id ? 'border-green-500 bg-green-500/10' : 'border-zinc-800 opacity-50')}>
                 <img src={activeMatchup.awayTeam.image} className="w-16 h-16 object-contain" alt={activeMatchup.awayTeam.name} />
                 <span className="text-sm font-bold text-zinc-200">{activeMatchup.awayTeam.name}</span>
                 {activePick?.pick?.id === activeMatchup.awayTeam.id && <span className="text-xs bg-green-500 text-green-950 px-2 py-0.5 rounded font-bold mt-1">YOUR PICK</span>}
+                {activeMatchup.type === 'SPREAD' && activeMatchup.metadata?.spread !== undefined && (
+                   <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#1f1f22] text-zinc-300 text-[11px] font-bold px-2 py-0.5 rounded-md border border-[#3f3f46] shadow-sm">
+                     {activeMatchup.metadata.spread > 0 ? `-${activeMatchup.metadata.spread}` : `+${Math.abs(activeMatchup.metadata.spread)}`}
+                   </div>
+                 )}
               </div>
               <div className="text-zinc-500 font-bold text-xl">VS</div>
-              <div className={cn("flex flex-col items-center gap-3 p-4 rounded-xl border", activePick?.pick?.id === activeMatchup.homeTeam.id ? 'border-green-500 bg-green-500/10' : 'border-zinc-800 opacity-50')}>
+              <div className={cn("flex flex-col items-center gap-3 p-4 rounded-xl border relative", activePick?.pick?.id === activeMatchup.homeTeam.id ? 'border-green-500 bg-green-500/10' : 'border-zinc-800 opacity-50')}>
                 <img src={activeMatchup.homeTeam.image} className="w-16 h-16 object-contain" alt={activeMatchup.homeTeam.name} />
                 <span className="text-sm font-bold text-zinc-200">{activeMatchup.homeTeam.name}</span>
                 {activePick?.pick?.id === activeMatchup.homeTeam.id && <span className="text-xs bg-green-500 text-green-950 px-2 py-0.5 rounded font-bold mt-1">YOUR PICK</span>}
+                {activeMatchup.type === 'SPREAD' && activeMatchup.metadata?.spread !== undefined && (
+                   <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#1f1f22] text-zinc-300 text-[11px] font-bold px-2 py-0.5 rounded-md border border-[#3f3f46] shadow-sm">
+                     {activeMatchup.metadata.spread > 0 ? `+${activeMatchup.metadata.spread}` : `-${Math.abs(activeMatchup.metadata.spread)}`}
+                   </div>
+                 )}
               </div>
             </div>
           </div>
