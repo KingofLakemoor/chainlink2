@@ -60,10 +60,7 @@ function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) =>
         <NavItem icon={Trophy} label="Brackets" path="/brackets" />
         <NavItem icon={Users} label="Squads" path="/squads" />
         <NavItem icon={Trophy} label="Leaderboards" path="/leaderboards" />
-
-        <div className="mt-6 mb-2 px-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Other</div>
         <NavItem icon={ShoppingCart} label="Link Shop" path="/shop" />
-        <NavItem icon={Gamepad2} label="Games" path="/games" />
         <NavItem icon={Settings} label="Settings" path="/settings" />
 
         {profile?.role === "ADMIN" && (
