@@ -531,13 +531,13 @@ function PlayDashboard() {
           <div className="text-base font-bold text-zinc-100 mb-6">{m.title}</div>
 
           <div className="flex items-center justify-between">
-             <div className="flex flex-col items-center gap-3 w-[120px]">
+             <div className="flex flex-col items-center gap-3 w-[140px]">
                <span className="text-sm font-semibold text-zinc-200">{m.awayTeam.name}</span>
                <div className="relative">
                  <button
                    disabled={isPickDisabled}
                    onClick={() => !isPickDisabled && handleMakePick(m, m.awayTeam)}
-                   className={cn("w-20 h-20 rounded-xl border flex items-center justify-center p-2 bg-[#1a1a1a] transition-all", pickData?.pick?.id === m.awayTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
+                   className={cn("w-28 h-28 rounded-xl border flex items-center justify-center p-1.5 bg-[#1a1a1a] transition-all", pickData?.pick?.id === m.awayTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
                  >
                     <img src={m.awayTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.awayTeam.name} />
                  </button>
@@ -594,13 +594,13 @@ function PlayDashboard() {
                 )}
              </div>
 
-             <div className="flex flex-col items-center gap-3 w-[120px]">
+             <div className="flex flex-col items-center gap-3 w-[140px]">
                <span className="text-sm font-semibold text-zinc-200">@{m.homeTeam.name}</span>
                <div className="relative">
                  <button
                    disabled={isPickDisabled}
                    onClick={() => !isPickDisabled && handleMakePick(m, m.homeTeam)}
-                   className={cn("w-20 h-20 rounded-xl border flex items-center justify-center p-2 bg-[#1a1a1a] transition-all", pickData?.pick?.id === m.homeTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
+                   className={cn("w-28 h-28 rounded-xl border flex items-center justify-center p-1.5 bg-[#1a1a1a] transition-all", pickData?.pick?.id === m.homeTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
                  >
                     <img src={m.homeTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.homeTeam.name} />
                  </button>
