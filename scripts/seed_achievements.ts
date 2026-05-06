@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { adminDb } from '../src/lib/firebase-admin.ts';
 import fs from 'fs';
 import path from 'path';
@@ -13,29 +14,32 @@ async function seed() {
   }
 
   const catalogPath = path.resolve(__dirname, '../achievements.json');
-  const achievements = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
+  const items = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
 
   let count = 0;
-  for (const a of achievements) {
-    // Try to find if achievement with same type and threshold exists
-    const snapshot = await adminDb.collection("achievements")
-        .where("type", "==", a.type)
-        .where("threshold", "==", a.threshold)
-        .limit(1)
-        .get();
+  for (const item of items) {
+    const { imageStorageId, ...data } = item;
 
-    if (snapshot.empty) {
-        const docRef = adminDb.collection("achievements").doc();
-        await docRef.set(a);
-        console.log(`Created achievement: ${a.name}`);
-        count++;
+    // Create an ID that matches the ones typically expected or generate a stable one
+    const id = `${item.type}_${item.threshold}_${item.name.replace(/\s+/g, '_').toLowerCase()}`;
+    const docRef = adminDb.collection("achievements").doc(id);
+    const doc = await docRef.get();
+
+    const timestamp = Date.now();
+    const itemData = {
+        ...data,
+        createdAt: doc.exists ? doc.data()?.createdAt : timestamp,
+        updatedAt: timestamp
+    };
+
+    if (doc.exists) {
+        await docRef.update(itemData);
+        console.log(`Updated achievement: ${item.name} (${id})`);
     } else {
-        console.log(`Achievement already exists: ${a.name} (type: ${a.type}, threshold: ${a.threshold})`);
-        const docId = snapshot.docs[0].id;
-        await adminDb.collection("achievements").doc(docId).update(a);
-        console.log(`Updated achievement: ${a.name}`);
-        count++;
+        await docRef.set(itemData);
+        console.log(`Created achievement: ${item.name} (${id})`);
     }
+    count++;
   }
 
   console.log(`Successfully seeded/updated ${count} achievements.`);
