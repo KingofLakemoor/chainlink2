@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, doc, getDoc, query, where, updateDoc, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, where, updateDoc, writeBatch, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
 import { scrapeLeagueSchedules } from '../../../services/espnScraper';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Trash2 } from 'lucide-react';
 
 export default function PickEmCampaignDetail() {
   const { id } = useParams();
@@ -131,6 +131,18 @@ export default function PickEmCampaignDetail() {
     }
   };
 
+  const handleDeleteMatchup = async (matchupId: string) => {
+    if (!confirm('Are you sure you want to remove this matchup from the pool?')) return;
+
+    try {
+      await deleteDoc(doc(db, 'pickemMatchups', matchupId));
+      setMatchups(prev => prev.filter(m => m.id !== matchupId));
+    } catch (err) {
+      console.error(err);
+      alert('Failed to remove matchup');
+    }
+  };
+
   if (loading) return <div className="p-8">Loading...</div>;
   if (!campaign) return <div className="p-8">Campaign not found</div>;
 
@@ -185,6 +197,7 @@ export default function PickEmCampaignDetail() {
                   <th className="px-4 py-3 font-medium">Game Title</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Start Time</th>
+                  <th className="px-4 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/50">
@@ -193,6 +206,11 @@ export default function PickEmCampaignDetail() {
                     <td className="px-4 py-3 font-medium text-zinc-200">{m.title}</td>
                     <td className="px-4 py-3 text-zinc-400">{m.statusDesc || m.status}</td>
                     <td className="px-4 py-3 text-zinc-400">{new Date(m.startTime).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right">
+                      <button onClick={() => handleDeleteMatchup(m.id)} className="text-red-500/70 hover:text-red-500 p-2" title="Remove Matchup">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
