@@ -445,7 +445,10 @@ function PlayDashboard() {
           image: team.image
         },
         status: 'PENDING',
-        createdAt: Date.now()
+        coins: matchup.cost ?? 0,
+        active: true,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
       };
 
       if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
