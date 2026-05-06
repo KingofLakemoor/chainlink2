@@ -407,6 +407,7 @@ function PlayDashboard() {
 
     const filteredMatchups = allFetchedMatchups.filter((m: any) => {
       if (m.abandoned) return false;
+      if (m.active === false) return false;
 
       const isFinal = m.status === 'STATUS_FINAL' || m.statusDesc?.toLowerCase().includes('final');
       const isLive = m.status !== 'STATUS_SCHEDULED' && !isFinal && m.status !== 'STATUS_POSTPONED' && m.status !== 'STATUS_CANCELED';
