@@ -168,11 +168,18 @@ export default function PickEmPage() {
 
             return (
               <div key={m.id} className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
-                <div className="p-3 bg-[#18181A] border-b border-zinc-800 text-xs text-zinc-400 font-medium flex justify-between">
+                <div className="p-3 bg-[#18181A] border-b border-zinc-800 text-xs text-zinc-400 font-medium flex justify-between items-center">
                   <span>{new Date(m.startTime).toLocaleString()}</span>
-                  <span className={isLocked ? "text-red-400" : "text-green-400"}>
-                    {m.statusDesc || (isLocked ? 'Locked' : 'Open')}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {isSpread && (
+                      <span className="px-2 py-1 text-[10px] uppercase tracking-wider rounded-md font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                        ATS
+                      </span>
+                    )}
+                    <span className={isLocked ? "text-red-400" : "text-green-400"}>
+                      {m.statusDesc || (isLocked ? 'Locked' : 'Open')}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="p-4 flex-1 flex flex-col gap-3">
@@ -191,7 +198,7 @@ export default function PickEmPage() {
                       <div className="flex flex-row items-baseline gap-2">
                         <span className="font-bold text-white">{m.awayTeam.name}</span>
                         {isSpread && (
-                           <span className="text-xs text-zinc-400 font-medium">{spread > 0 ? `+${spread}` : `-${Math.abs(spread)}`}</span>
+                           <span className="text-base text-zinc-400 font-medium">{spread > 0 ? `+${spread}` : `-${Math.abs(spread)}`}</span>
                         )}
                       </div>
                     </div>
@@ -215,7 +222,7 @@ export default function PickEmPage() {
                       <div className="flex flex-row items-baseline gap-2">
                         <span className="font-bold text-white">{m.homeTeam.name}</span>
                         {isSpread && (
-                           <span className="text-xs text-zinc-400 font-medium">{spread > 0 ? `-${spread}` : `+${Math.abs(spread)}`}</span>
+                           <span className="text-base text-zinc-400 font-medium">{spread > 0 ? `-${spread}` : `+${Math.abs(spread)}`}</span>
                         )}
                       </div>
                     </div>
