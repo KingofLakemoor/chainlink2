@@ -188,7 +188,7 @@ export default function PickEmPage() {
                   >
                     <div className="flex items-center gap-3">
                       <img src={m.awayTeam.image} alt={m.awayTeam.name} className="w-8 h-8 object-contain" />
-                      <div className="flex flex-col">
+                      <div className="flex flex-row items-baseline gap-2">
                         <span className="font-bold text-white">{m.awayTeam.name}</span>
                         {isSpread && (
                            <span className="text-xs text-zinc-400 font-medium">{spread > 0 ? `+${spread}` : `-${Math.abs(spread)}`}</span>
@@ -212,7 +212,7 @@ export default function PickEmPage() {
                   >
                     <div className="flex items-center gap-3">
                       <img src={m.homeTeam.image} alt={m.homeTeam.name} className="w-8 h-8 object-contain" />
-                      <div className="flex flex-col">
+                      <div className="flex flex-row items-baseline gap-2">
                         <span className="font-bold text-white">{m.homeTeam.name}</span>
                         {isSpread && (
                            <span className="text-xs text-zinc-400 font-medium">{spread > 0 ? `-${spread}` : `+${Math.abs(spread)}`}</span>
