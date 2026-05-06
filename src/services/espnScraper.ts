@@ -74,7 +74,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
     return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/basketball/womens-college-basketball/scoreboard?groups=50&dates=${date}&limit=500`);
   }
   if (league === "PGA") {
-    return ['https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard'];
+    return ['https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga'];
   }
 
   // If scoreboardOnly is true, use scoreboard endpoints to save bandwidth
@@ -228,6 +228,9 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
 
                   const getTeeTime = (c: any, period: number) => {
                      const ls = c.linescores?.find((ls: any) => ls.period === period);
+                     if (ls?.teeTime) {
+                         return new Date(ls.teeTime).getTime();
+                     }
                      if (ls?.statistics?.categories?.[0]?.stats) {
                          for (const stat of ls.statistics.categories[0].stats) {
                              if (stat.displayValue && typeof stat.displayValue === 'string') {
