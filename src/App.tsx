@@ -5,6 +5,7 @@ import { loginWithGoogle, loginWithEmail, signupWithEmail, logout, db } from './
 import { collection, getDocs, doc, setDoc, deleteDoc, query, where, onSnapshot } from 'firebase/firestore';
 import { Button } from './components/ui/button';
 import { cn } from './lib/utils';
+import { useNotifications } from './hooks/useNotifications';
 import {
   Link2, LayoutDashboard, User as UserIcon, PlayCircle, Layers, Trophy,
   ShoppingCart, Gamepad2, Settings, Users, LogOut, ShieldAlert, Menu, X, Flame
@@ -763,6 +764,7 @@ function TopStats() {
 
 function MainLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  useNotifications();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
