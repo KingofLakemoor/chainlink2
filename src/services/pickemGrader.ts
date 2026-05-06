@@ -55,6 +55,15 @@ export async function gradeSinglePickemMatchup(matchup: any) {
 
   if (isPostponed) {
     isTie = true; // Treats postponed as a push
+  } else if (matchup.type === 'OVER_UNDER' && typeof matchup.metadata?.overUnder === 'number') {
+    const combinedScore = homeScore + awayScore;
+    if (combinedScore === matchup.metadata.overUnder) {
+      isTie = true;
+    } else if (combinedScore > matchup.metadata.overUnder) {
+      winnerId = 'OVER';
+    } else {
+      winnerId = 'UNDER';
+    }
   } else if (adjustedHomeScore === awayScore) {
     isTie = true;
   } else if (lowerScoreWins) {
