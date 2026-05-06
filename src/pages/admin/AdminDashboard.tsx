@@ -20,10 +20,11 @@ import SponsorsListPage from './sponsors/SponsorsListPage';
 import CreateSponsorPage from './sponsors/CreateSponsorPage';
 import EditSponsorPage from './sponsors/EditSponsorPage';
 import PickEmAdminPage from './pickem/PickEmAdminPage';
+import BracketsAdminPage from './brackets/BracketsAdminPage';
 import {
   Users, Gamepad2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
-  FileText, Diamond, Target, Bell, Shield, Coins, Menu, X, Settings
+  FileText, Diamond, Target, Bell, Shield, Coins, Menu, X, Settings, GitMerge
 } from 'lucide-react';
 
 import ScraperSettingsPage from './settings/ScraperSettingsPage';
@@ -42,6 +43,7 @@ const ADMIN_MENU = [
     ]
   },
   { id: 'pickem', label: "Pick'em", icon: Layers, path: '/admin/pickem' },
+  { id: 'brackets', label: 'Brackets', icon: GitMerge, path: '/admin/brackets' },
   {
     id: 'announcements',
     label: 'Announcements',
@@ -1132,6 +1134,7 @@ export default function AdminDashboard() {
 
                 {/* Flat routes */}
                 <Route path="pickem/*" element={<PickEmAdminPage />} />
+                <Route path="brackets/*" element={<BracketsAdminPage />} />
                 <Route path="challenges" element={<GenericTable collectionName="globalQuiz" />} />
                 <Route path="users" element={<GenericTable collectionName="users" />} />
                 <Route path="squads" element={<GenericTable collectionName="squads" />} />
