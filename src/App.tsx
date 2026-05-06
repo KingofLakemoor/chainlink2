@@ -546,6 +546,11 @@ function PlayDashboard() {
                      <Link2 className="w-3 h-3 text-zinc-950 stroke-[3]" />
                    </div>
                  )}
+                 {m.type === 'SPREAD' && m.metadata?.spread !== undefined && (
+                   <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#1f1f22] text-zinc-300 text-[11px] font-bold px-2 py-0.5 rounded-md border border-[#3f3f46] shadow-sm">
+                     {m.metadata.spread > 0 ? `-${m.metadata.spread}` : `+${Math.abs(m.metadata.spread)}`}
+                   </div>
+                 )}
                </div>
              </div>
 
@@ -607,6 +612,11 @@ function PlayDashboard() {
                  {pickData?.pick?.id === m.homeTeam.id && (
                    <div className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-[#22c55e] flex items-center justify-center shadow-lg">
                      <Link2 className="w-3 h-3 text-zinc-950 stroke-[3]" />
+                   </div>
+                 )}
+                 {m.type === 'SPREAD' && m.metadata?.spread !== undefined && (
+                   <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#1f1f22] text-zinc-300 text-[11px] font-bold px-2 py-0.5 rounded-md border border-[#3f3f46] shadow-sm">
+                     {m.metadata.spread > 0 ? `+${m.metadata.spread}` : `-${Math.abs(m.metadata.spread)}`}
                    </div>
                  )}
                </div>
