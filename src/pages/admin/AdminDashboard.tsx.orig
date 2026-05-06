@@ -568,7 +568,6 @@ function AdminEditMatchup() {
   const navigate = useNavigate();
   const [matchup, setMatchup] = useState<any>(null);
   const [picks, setPicks] = useState<any[]>([]);
-  const [sponsors, setSponsors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -590,13 +589,6 @@ function AdminEditMatchup() {
             }
 
             setMatchup({ ...mData, id: docSnap.docs[0].id, formStartTime: formattedDate });
-        }
-
-        // Fetch active sponsors
-        const sponsorsSnap = await getDocs(query(collection(db, 'sponsors'), where('active', '==', true)));
-        if (!sponsorsSnap.empty) {
-            const activeSponsors = sponsorsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-            setSponsors(activeSponsors);
         }
 
         const picksSnap = await getDocs(query(collection(db, 'picks'), where('matchupId', '==', id)));
@@ -865,9 +857,6 @@ function AdminEditMatchup() {
                     >
                         <option value="Featured">Featured</option>
                         <option value="ChainBuilder">ChainBuilder</option>
-                        {sponsors.map(s => (
-                            <option key={s.id} value={s.id}>{s.name}</option>
-                        ))}
                     </select>
                 )}
             </div>

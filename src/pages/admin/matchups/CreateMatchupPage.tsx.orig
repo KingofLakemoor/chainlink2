@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { doc, setDoc, getDocs, collection, query, where } from 'firebase/firestore';
+import React, { useState } from 'react';
+import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Gamepad2 } from 'lucide-react';
@@ -27,21 +27,6 @@ export default function CreateMatchupPage() {
     awayTeamId: '',
     awayTeamImage: '',
   });
-  const [sponsors, setSponsors] = useState<any[]>([]);
-
-  useEffect(() => {
-    const fetchSponsors = async () => {
-      try {
-        const sponsorsSnap = await getDocs(query(collection(db, 'sponsors'), where('active', '==', true)));
-        if (!sponsorsSnap.empty) {
-            setSponsors(sponsorsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-        }
-      } catch (error) {
-        console.error("Error fetching sponsors", error);
-      }
-    };
-    fetchSponsors();
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,17 +217,6 @@ export default function CreateMatchupPage() {
               <input type="checkbox" name="featured" id="featured-cb" checked={formData.featured} onChange={handleChange} className="rounded bg-zinc-950 border-zinc-800 text-indigo-500 focus:ring-indigo-500" />
               <label htmlFor="featured-cb" className="text-sm font-medium text-white">Featured</label>
             </div>
-            {formData.featured && (
-                <div className="flex items-center gap-2">
-                  <select name="featuredType" value={formData.featuredType} onChange={handleChange} className="bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1 text-sm text-white focus:outline-none focus:border-indigo-500">
-                      <option value="">Featured</option>
-                      <option value="ChainBuilder">ChainBuilder</option>
-                      {sponsors.map(s => (
-                          <option key={s.id} value={s.id}>{s.name}</option>
-                      ))}
-                  </select>
-                </div>
-            )}
           </div>
 
           <Button type="submit" disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 text-white">
