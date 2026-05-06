@@ -20,7 +20,7 @@ export default function PickEmPage() {
     const fetchCampaigns = async () => {
       try {
         const snap = await getDocs(collection(db, 'pickemCampaigns'));
-        const camps = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const camps = snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
         setCampaigns(camps);
         if (camps.length > 0) {
           setSelectedCampaign(camps[0]);
@@ -163,6 +163,9 @@ export default function PickEmPage() {
             const pick = userPicks[m.id];
             const isLocked = m.status !== 'STATUS_SCHEDULED';
 
+            const isSpread = m.type === 'SPREAD' && m.metadata?.spread !== undefined;
+            const spread = m.metadata?.spread || 0;
+
             return (
               <div key={m.id} className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
                 <div className="p-3 bg-[#18181A] border-b border-zinc-800 text-xs text-zinc-400 font-medium flex justify-between">
@@ -185,7 +188,12 @@ export default function PickEmPage() {
                   >
                     <div className="flex items-center gap-3">
                       <img src={m.awayTeam.image} alt={m.awayTeam.name} className="w-8 h-8 object-contain" />
-                      <span className="font-bold text-white">{m.awayTeam.name}</span>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-white">{m.awayTeam.name}</span>
+                        {isSpread && (
+                           <span className="text-xs text-zinc-400 font-medium">{spread > 0 ? `+${spread}` : `-${Math.abs(spread)}`}</span>
+                        )}
+                      </div>
                     </div>
                     {pick?.pick.teamId === m.awayTeam.id && <CheckCircle className="w-5 h-5 text-[#22c55e]" />}
                   </button>
@@ -204,7 +212,12 @@ export default function PickEmPage() {
                   >
                     <div className="flex items-center gap-3">
                       <img src={m.homeTeam.image} alt={m.homeTeam.name} className="w-8 h-8 object-contain" />
-                      <span className="font-bold text-white">{m.homeTeam.name}</span>
+                      <div className="flex flex-col">
+                        <span className="font-bold text-white">{m.homeTeam.name}</span>
+                        {isSpread && (
+                           <span className="text-xs text-zinc-400 font-medium">{spread > 0 ? `-${spread}` : `+${Math.abs(spread)}`}</span>
+                        )}
+                      </div>
                     </div>
                     {pick?.pick.teamId === m.homeTeam.id && <CheckCircle className="w-5 h-5 text-[#22c55e]" />}
                   </button>
