@@ -1,0 +1,33 @@
+24
+Annexe C of these Regulations includes the 495 different possible combinations
+of the eight best‑ranked third‑placed teams and their next match ‑up for the
+round of 32, at the completion of the group stage.
+12.7 The 16 teams that qualify from the round of 32 will contest the round of 16
+as follows:
+Match no. Team A v. Team B Winner
+(17) M89(2) Winner M74
+(W74)v.(5) Winner M77
+(W77)= Winner (17) M89 (W89)
+(18) M90(1) Winner M73
+(W73)v.(3) Winner M75
+(W75)= Winner (18) M90 (W90)
+(19) M91(4) Winner M76
+(W76)v.(6) Winner M78
+(W78)= Winner (19) M91 (W91)
+(20) M92(7) Winner M79
+(W79)v.(8) Winner M80
+(W80)= Winner (20) M92 (W92)
+(21) M93(11) Winner M83
+(W83)v.(12) Winner M84
+(W84)= Winner (21) M93 (W93)
+(22) M94(9) Winner M81
+(W81)v.(10) Winner M82
+(W82)= Winner (22) M94 (W94)
+(23) M95(14) Winner M86
+(W86)v.(16) Winner M88
+(W88)= Winner (23) M95 (W95)
+(24) M96(13) Winner M85
+(W85)v.(15) Winner M87
+(W87)= Winner (24) M96 (W96)
+Note: the above configuration does not necessarily represent the chronological
+order in which the matches will be played.
