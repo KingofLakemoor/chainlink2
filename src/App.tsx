@@ -780,6 +780,7 @@ import LeaderboardsPage from './pages/leaderboards/LeaderboardsPage';
 import ShopPage from './pages/shop/ShopPage';
 import { BracketsPage } from './pages/Brackets';
 import PickEmPage from './pages/pickem/PickEmPage';
+import SponsorPage from './pages/SponsorPage';
 
 export default function App() {
   return (
@@ -798,6 +799,7 @@ export default function App() {
           <Route path="/shop" element={<PrivateRoute><MainLayout><ShopPage /></MainLayout></PrivateRoute>} />
           <Route path="/games" element={<PrivateRoute><MainLayout><PlaceholderPage title="Games" /></MainLayout></PrivateRoute>} />
           <Route path="/settings" element={<PrivateRoute><MainLayout><PlaceholderPage title="Settings" /></MainLayout></PrivateRoute>} />
+          <Route path="/sponsor" element={<SponsorPage />} />
           {/* Catch all route back to play */}
           <Route path="*" element={<Navigate to="/play" replace />} />
         </Routes>
