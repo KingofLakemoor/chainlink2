@@ -166,7 +166,7 @@ export default function ShopPage() {
             <ShoppingCart className="w-8 h-8 text-[#22c55e]" />
             Link Shop
           </h1>
-          <p className="text-zinc-400 mt-1">Spend your links on cosmetics, merch, and gift cards.</p>
+          <p className="text-zinc-400 mt-1">Spend your links on cosmetics and merch.</p>
         </div>
         {profile && (
           <div className="bg-[#121212] border border-zinc-800 rounded-xl p-4 flex items-center gap-3">
