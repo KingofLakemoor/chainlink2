@@ -1,5 +1,6 @@
 import { adminDb } from '../lib/firebase-admin.js';
 import { gradeMatchups } from './grader.js';
+import { gradePickemMatchups } from './pickemGrader.js';
 import { League, LeagueResponse, scrapeLeagueSchedules } from './espnScraper.js';
 
 export { scrapeLeagueSchedules } from './espnScraper.js';
@@ -221,6 +222,40 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
       if (matchupsToGrade.length > 0) {
         await gradeMatchups(matchupsToGrade);
+
+        const pickemMatchupsToGrade: any[] = [];
+        for (const matchup of matchupsToGrade) {
+          try {
+            const pickemSnaps = await adminDb.collection('pickemMatchups').where('gameId', '==', matchup.gameId).get();
+            for (const doc of pickemSnaps.docs) {
+              const pData = doc.data();
+              // Sync standard matchup score and status into the pickem matchup
+              const updateData = {
+                status: matchup.status,
+                statusDesc: matchup.statusDesc,
+                'homeTeam.score': matchup.homeTeam?.score || 0,
+                'awayTeam.score': matchup.awayTeam?.score || 0,
+                updatedAt: Date.now()
+              };
+              await doc.ref.update(updateData);
+
+              pickemMatchupsToGrade.push({
+                ...pData,
+                status: matchup.status,
+                statusDesc: matchup.statusDesc,
+                homeTeam: { ...(pData.homeTeam || {}), score: matchup.homeTeam?.score || 0 },
+                awayTeam: { ...(pData.awayTeam || {}), score: matchup.awayTeam?.score || 0 },
+                id: doc.id
+              });
+            }
+          } catch (err) {
+            console.error(`[Sync] Error syncing pickem matchup for game ${matchup.gameId}:`, err);
+          }
+        }
+
+        if (pickemMatchupsToGrade.length > 0) {
+          await gradePickemMatchups(pickemMatchupsToGrade);
+        }
       }
 
       response.scoreMatchupsCreated = newCount;

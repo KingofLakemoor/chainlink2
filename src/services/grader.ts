@@ -46,17 +46,22 @@ export async function gradeSingleMatchup(matchup: any) {
   const lowerScoreWins = matchup.metadata?.lowerScoreWins;
   const isPostponed = matchup.status === 'STATUS_POSTPONED';
 
+  let adjustedHomeScore = homeScore;
+  if (matchup.type === 'SPREAD' && typeof matchup.metadata?.spread === 'number') {
+    adjustedHomeScore += matchup.metadata.spread;
+  }
+
   let winnerId: string | null = null;
   let isTie = false;
 
   if (isPostponed) {
     isTie = true; // Treats postponed as a push to refund
-  } else if (homeScore === awayScore) {
+  } else if (adjustedHomeScore === awayScore) {
     isTie = true;
   } else if (lowerScoreWins) {
-    winnerId = homeScore < awayScore ? matchup.homeTeam.id : matchup.awayTeam.id;
+    winnerId = adjustedHomeScore < awayScore ? matchup.homeTeam.id : matchup.awayTeam.id;
   } else {
-    winnerId = homeScore > awayScore ? matchup.homeTeam.id : matchup.awayTeam.id;
+    winnerId = adjustedHomeScore > awayScore ? matchup.homeTeam.id : matchup.awayTeam.id;
   }
 
   for (const pickDoc of pendingPicksSnap.docs) {
