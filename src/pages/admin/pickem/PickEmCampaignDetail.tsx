@@ -104,6 +104,8 @@ export default function PickEmCampaignDetail() {
           statusDesc: m.statusDesc,
           homeTeam: m.homeTeam,
           awayTeam: m.awayTeam,
+          type: campaign.defaultMatchType || "STANDARD",
+          metadata: m.metadata || null,
           createdAt: Date.now()
         }, { merge: true });
 
@@ -128,6 +130,37 @@ export default function PickEmCampaignDetail() {
       alert('Failed to sync matchups');
     } finally {
       setMatchupsLoading(false);
+    }
+  };
+
+
+  const handleToggleSpread = async (matchupId: string, currentType: string) => {
+    try {
+      const newType = currentType === "SPREAD" ? "STANDARD" : "SPREAD";
+      await updateDoc(doc(db, "pickemMatchups", matchupId), {
+        type: newType
+      });
+      setMatchups(prev => prev.map(m => m.id === matchupId ? { ...m, type: newType } : m));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to toggle matchup type");
+    }
+  };
+
+  const handleSetAllToSpread = async () => {
+    if (!confirm(`Set all Week ${selectedWeek} matchups to Against The Spread (ATS)?`)) return;
+
+    try {
+      const batch = writeBatch(db);
+      matchups.forEach(m => {
+        batch.update(doc(db, "pickemMatchups", m.id), { type: "SPREAD" });
+      });
+      await batch.commit();
+      setMatchups(prev => prev.map(m => ({ ...m, type: "SPREAD" })));
+      alert("All matchups set to ATS.");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update matchups");
     }
   };
 
@@ -197,6 +230,7 @@ export default function PickEmCampaignDetail() {
                   <th className="px-4 py-3 font-medium">Game Title</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Start Time</th>
+                  <th className="px-4 py-3 font-medium text-center">Type</th>
                   <th className="px-4 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
@@ -206,6 +240,14 @@ export default function PickEmCampaignDetail() {
                     <td className="px-4 py-3 font-medium text-zinc-200">{m.title}</td>
                     <td className="px-4 py-3 text-zinc-400">{m.statusDesc || m.status}</td>
                     <td className="px-4 py-3 text-zinc-400">{new Date(m.startTime).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-center">
+                      <button
+                        onClick={() => handleToggleSpread(m.id, m.type)}
+                        className={`px-2 py-1 text-xs rounded-md font-bold ${m.type === "SPREAD" ? "bg-purple-500/20 text-purple-400 border border-purple-500/30" : "bg-zinc-800 text-zinc-400 border border-zinc-700"}`}
+                      >
+                        {m.type === "SPREAD" ? "ATS" : "STD"}
+                      </button>
+                    </td>
                     <td className="px-4 py-3 text-right">
                       <button onClick={() => handleDeleteMatchup(m.id)} className="text-red-500/70 hover:text-red-500 p-2" title="Remove Matchup">
                         <Trash2 className="w-4 h-4" />

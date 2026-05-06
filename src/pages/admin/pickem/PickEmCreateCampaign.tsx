@@ -8,6 +8,7 @@ export default function PickEmCreateCampaign() {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [league, setLeague] = useState('COLLEGE-FOOTBALL');
+  const [defaultMatchType, setDefaultMatchType] = useState('STANDARD');
   const [loading, setLoading] = useState(false);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -20,6 +21,7 @@ export default function PickEmCreateCampaign() {
         name: name.trim(),
         league,
         type: 'STANDARD',
+        defaultMatchType,
         scoringType: 'WIN_LOSS',
         startDate: Date.now(),
         endDate: Date.now() + 1000 * 60 * 60 * 24 * 30 * 6, // ~6 months
@@ -67,6 +69,18 @@ export default function PickEmCreateCampaign() {
               <option value="COLLEGE-FOOTBALL">College Football</option>
               <option value="NFL">NFL</option>
               <option value="NBA">NBA</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-400 mb-1">Default Match Type</label>
+            <select
+              value={defaultMatchType}
+              onChange={e => setDefaultMatchType(e.target.value)}
+              className="w-full bg-[#18181A] border border-zinc-800 rounded-lg px-4 py-2 text-white"
+            >
+              <option value="STANDARD">Standard (Moneyline)</option>
+              <option value="SPREAD">Against the Spread (ATS)</option>
             </select>
           </div>
 
