@@ -387,6 +387,7 @@ function PlayDashboard() {
       if (!((isLive || isUpcomingWithin24Hours) && !isFinal)) return false;
 
       if (filterType === 'available' && m.status !== 'STATUS_SCHEDULED') return false;
+      if (filterType === 'chain' && !m.featured) return false;
 
       if (selectedSport === 'SOCCER' && !['MLS', 'EPL', 'NWSL', 'FIFA'].includes(m.league)) return false;
       if (selectedSport === 'BASKETBALL' && !['NBA', 'MBB', 'WBB', 'WNBA'].includes(m.league)) return false;
@@ -499,7 +500,7 @@ function PlayDashboard() {
     let glowClass = "";
     if (m.featured) {
         if (m.featuredType === 'ChainBuilder') {
-            glowClass = "ring-2 ring-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.3)]";
+            glowClass = "ring-2 ring-[#25D55F] shadow-[0_0_15px_rgba(37,213,95,0.3)]";
         } else {
             glowClass = "ring-2 ring-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.3)]";
         }
@@ -513,7 +514,7 @@ function PlayDashboard() {
              <Trophy className="w-3.5 h-3.5" /> {m.league}
              {m.featured && (
                 <span className={cn("ml-2 px-1.5 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded",
-                   m.featuredType === 'ChainBuilder' ? "bg-yellow-500/20 text-yellow-400" : "bg-cyan-500/20 text-cyan-400")}>
+                   m.featuredType === 'ChainBuilder' ? "bg-[#25D55F]/20 text-[#25D55F]" : "bg-cyan-500/20 text-cyan-400")}>
                    {m.featuredType === 'ChainBuilder' ? 'ChainBuilder' : 'Featured Sponsor'}
                 </span>
              )}
