@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { adminDb } from '../src/lib/firebase-admin.ts';
 import fs from 'fs';
 import path from 'path';
