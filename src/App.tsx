@@ -712,6 +712,31 @@ function PlayDashboard() {
   );
 }
 
+
+function TopStats() {
+  const { profile, chain } = useAuth();
+
+  return (
+    <div className="flex items-center gap-2 md:gap-5">
+      <div className="hidden md:flex items-center gap-1.5 text-sm">
+         <Link2 className="w-4 h-4 text-cyan-400" />
+         <span className="font-mono text-cyan-400 font-medium tracking-wide">{profile?.coins?.toLocaleString() || 0}</span>
+      </div>
+      <div className="hidden md:block w-px h-4 bg-zinc-700"></div>
+      <div className="flex items-center gap-2 md:gap-3 text-sm">
+         <span className="text-[#22c55e] font-bold tracking-tight">W{chain?.chain || 0}</span>
+         <span className="text-zinc-400 font-mono text-xs tracking-wider">
+           {profile?.stats?.wins || 0} - {profile?.stats?.losses || 0} - {profile?.stats?.pushes || 0}
+         </span>
+      </div>
+      <div className="w-px h-4 bg-zinc-700"></div>
+      <div className="w-8 h-8 rounded-full border border-zinc-700 overflow-hidden bg-zinc-800 shrink-0">
+        <img src={profile?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.id || 'guest'}`} className="w-full h-full object-cover" referrerPolicy="no-referrer" alt="Avatar" />
+      </div>
+    </div>
+  );
+}
+
 function MainLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -739,9 +764,9 @@ function MainLayout({ children }: { children: React.ReactNode }) {
              <Link2 className="w-6 h-6 text-[#22c55e]" />
              <span className="font-bold text-lg font-display text-zinc-100">{pageTitle}</span>
            </div>
-           <button className="p-2 -mr-2 text-zinc-400" onClick={() => setSidebarOpen(true)}>
+           <div className="flex items-center gap-3"><div className="pointer-events-auto"><TopStats /></div><button className="p-2 -mr-2 text-zinc-400 md:hidden" onClick={() => setSidebarOpen(true)}>
              <Menu className="w-6 h-6" />
-           </button>
+           </button></div>
          </div>
 
          {/* Desktop Header */}
@@ -749,6 +774,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
            <div className="pointer-events-auto flex items-center gap-3">
              <h1 className="text-2xl font-bold font-display text-zinc-100 tracking-tight">{pageTitle}</h1>
            </div>
+           <div className="pointer-events-auto"><TopStats /></div>
          </div>
 
          <div className="flex-1 overflow-y-auto custom-scrollbar relative z-10 w-full max-w-full">
