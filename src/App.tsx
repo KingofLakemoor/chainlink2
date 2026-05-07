@@ -579,16 +579,16 @@ function PlayDashboard() {
 
           <div className="flex items-center justify-between">
              <div className="flex flex-col items-center gap-2 sm:gap-3 w-[100px] sm:w-[140px]">
-               <span className="text-xs sm:text-sm font-semibold text-zinc-200 truncate w-full text-center px-1">{m.awayTeam.name}</span>
+               <span className="text-xs sm:text-sm font-semibold text-zinc-200 truncate w-full text-center px-1">{m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.name}</span>
                <div className="relative">
                  <button
                    disabled={isPickDisabled}
-                   onClick={() => !isPickDisabled && handleMakePick(m, m.awayTeam)}
-                   className={cn("w-20 h-20 sm:w-28 sm:h-28 rounded-xl border flex items-center justify-center p-1.5 bg-[#1a1a1a] transition-all", pickData?.pick?.id === m.awayTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
+                   onClick={() => !isPickDisabled && handleMakePick(m, m.type === 'OVER_UNDER' ? { id: 'OVER', name: 'OVER', image: '/images/over.png' } : m.awayTeam)}
+                   className={cn("w-20 h-20 sm:w-28 sm:h-28 rounded-xl border flex items-center justify-center p-1.5 bg-[#1a1a1a] transition-all", pickData?.pick?.id === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
                  >
-                    <img src={m.awayTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.awayTeam.name} />
+                    <img src={m.type === 'OVER_UNDER' ? '/images/over.png' : m.awayTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.name} />
                  </button>
-                 {pickData?.pick?.id === m.awayTeam.id && (
+                 {pickData?.pick?.id === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) && (
                    <div className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-[#22c55e] flex items-center justify-center shadow-lg">
                      <Link2 className="w-3 h-3 text-zinc-950 stroke-[3]" />
                    </div>
@@ -647,16 +647,16 @@ function PlayDashboard() {
              </div>
 
              <div className="flex flex-col items-center gap-2 sm:gap-3 w-[100px] sm:w-[140px]">
-               <span className="text-xs sm:text-sm font-semibold text-zinc-200 truncate w-full text-center px-1">@{m.homeTeam.name}</span>
+               <span className="text-xs sm:text-sm font-semibold text-zinc-200 truncate w-full text-center px-1">{m.type === 'OVER_UNDER' ? 'UNDER' : `@${m.homeTeam.name}`}</span>
                <div className="relative">
                  <button
                    disabled={isPickDisabled}
-                   onClick={() => !isPickDisabled && handleMakePick(m, m.homeTeam)}
-                   className={cn("w-20 h-20 sm:w-28 sm:h-28 rounded-xl border flex items-center justify-center p-1.5 bg-[#1a1a1a] transition-all", pickData?.pick?.id === m.homeTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
+                   onClick={() => !isPickDisabled && handleMakePick(m, m.type === 'OVER_UNDER' ? { id: 'UNDER', name: 'UNDER', image: '/images/under.png' } : m.homeTeam)}
+                   className={cn("w-20 h-20 sm:w-28 sm:h-28 rounded-xl border flex items-center justify-center p-1.5 bg-[#1a1a1a] transition-all", pickData?.pick?.id === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
                  >
-                    <img src={m.homeTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.homeTeam.name} />
+                    <img src={m.type === 'OVER_UNDER' ? '/images/under.png' : m.homeTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.name} />
                  </button>
-                 {pickData?.pick?.id === m.homeTeam.id && (
+                 {pickData?.pick?.id === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) && (
                    <div className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-[#22c55e] flex items-center justify-center shadow-lg">
                      <Link2 className="w-3 h-3 text-zinc-950 stroke-[3]" />
                    </div>
@@ -694,7 +694,7 @@ function PlayDashboard() {
              </div>
 
              {hasPicked ? (
-                pickData?.pick?.id === m.awayTeam.id || pickData?.pick?.id === m.homeTeam.id ? (
+                pickData?.pick?.id === m.awayTeam.id || pickData?.pick?.id === m.homeTeam.id || (m.type === 'OVER_UNDER' && (pickData?.pick?.id === 'OVER' || pickData?.pick?.id === 'UNDER')) ? (
                   <button onClick={() => handleCancelPick(m)} className="text-xs font-bold text-red-500 uppercase tracking-wide flex items-center gap-1 hover:text-red-400">
                      <X className="w-3 h-3" /> Cancel
                   </button>
