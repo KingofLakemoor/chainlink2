@@ -59,7 +59,6 @@ function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) =>
         <NavItem icon={PlayCircle} label="Play ChainLink" path="/play" />
         <NavItem icon={Layers} label="Pick'em" path="/pickem" />
         <NavItem icon={Trophy} label="Brackets" path="/brackets" />
-        <NavItem icon={Users} label="Squads" path="/squads" />
         <NavItem icon={Trophy} label="Leaderboards" path="/leaderboards" />
         <NavItem icon={ShoppingCart} label="Link Shop" path="/shop" />
         <NavItem icon={Settings} label="Settings" path="/settings" />
@@ -809,7 +808,6 @@ function MainLayout({ children }: { children: React.ReactNode }) {
     '/play': 'Play',
     '/profile': 'My Profile',
     '/pickem': "Pick'em",
-    '/squads': 'Squads',
     '/leaderboards': 'Leaderboards',
   }[location.pathname] || 'ChainLink';
 
