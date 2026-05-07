@@ -49,6 +49,17 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
           }
 
           const newTitle = existingData.hasCustomTitle ? existingData.title : scrapedMatchup.title;
+
+          let intendedActive = scrapedMatchup.active && defaultActive;
+          let finalActive = intendedActive;
+
+          if (existingData.active && !intendedActive) {
+            const picksSnap = await adminDb.collection('picks').where('matchupId', '==', gameId).limit(1).get();
+            if (!picksSnap.empty) {
+              finalActive = true;
+            }
+          }
+
           const needsUpdate = existingData.status !== scrapedMatchup.status || existingData.statusDesc !== scrapedMatchup.statusDesc ||
               existingData.startTime !== scrapedMatchup.startTime ||
               existingData.homeTeam?.score !== scrapedMatchup.homeTeam?.score ||
@@ -59,12 +70,14 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               existingData.homeTeam?.id !== scrapedMatchup.homeTeam?.id ||
               existingData.awayTeam?.name !== scrapedMatchup.awayTeam?.name ||
               existingData.awayTeam?.image !== scrapedMatchup.awayTeam?.image ||
-              existingData.awayTeam?.id !== scrapedMatchup.awayTeam?.id;
+              existingData.awayTeam?.id !== scrapedMatchup.awayTeam?.id ||
+              existingData.active !== finalActive;
 
           if (needsUpdate || existingDoc.id !== gameId) {
             const updateData: any = {
               ...existingData,
               title: newTitle,
+              active: finalActive,
               status: scrapedMatchup.status,
               statusDesc: scrapedMatchup.statusDesc,
               startTime: scrapedMatchup.startTime,
@@ -94,6 +107,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
             // Flatten update properties specifically for batch.update when NOT migrating
             const flattenedUpdate: any = {
               title: updateData.title,
+              active: updateData.active,
               status: updateData.status,
               statusDesc: updateData.statusDesc,
               startTime: updateData.startTime,
