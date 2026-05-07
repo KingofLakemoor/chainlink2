@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, doc, query, where, setDoc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, query, where, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
@@ -80,6 +80,18 @@ export default function PickEmPage() {
     try {
       const pickId = `${selectedCampaign.id}_${selectedWeek}_${matchup.id}_${user.uid}`;
       const pickRef = doc(db, 'pickemPicks', pickId);
+
+      const existingPick = userPicks[matchup.id];
+      if (existingPick?.pick.teamId === teamId) {
+        // Unselect if clicking the same team
+        await deleteDoc(pickRef);
+        setUserPicks(prev => {
+          const next = { ...prev };
+          delete next[matchup.id];
+          return next;
+        });
+        return;
+      }
 
       const newPick = {
         campaignId: selectedCampaign.id,
