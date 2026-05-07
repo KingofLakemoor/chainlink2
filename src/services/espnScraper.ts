@@ -350,8 +350,10 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
 
           const gameTime = new Date(game.date).getTime();
 
-          const overUnder = competition.odds?.[0]?.overUnder || null;
-          const spread = competition.odds?.[0]?.spread || null;
+          // Try fetching from the top-level odds or fall back to pointSpread/total directly for different sports (like MLB)
+          const overUnder = competition.odds?.[0]?.overUnder || competition.odds?.[0]?.total?.over?.close?.line?.replace('o', '') || competition.odds?.[0]?.total?.over?.open?.line?.replace('o', '') || null;
+          const spreadStr = competition.odds?.[0]?.spread || competition.odds?.[0]?.pointSpread?.home?.close?.line || competition.odds?.[0]?.pointSpread?.home?.open?.line || null;
+          const spread = spreadStr ? parseFloat(spreadStr) : null;
           const network = competition.geoBroadcasts?.[0]?.media?.shortName || "N/A";
 
           let active = true;
@@ -429,7 +431,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
              cost: 0,
              metadata: {
                network,
-               overUnder,
+               overUnder: overUnder ? parseFloat(overUnder) : null,
                spread
              }
           });

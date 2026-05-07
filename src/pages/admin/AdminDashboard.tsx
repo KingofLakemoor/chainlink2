@@ -649,6 +649,13 @@ function AdminEditMatchup() {
             newData.hasCustomTitle = true;
         }
 
+        if (field === 'type' && value === 'OVER_UNDER') {
+            const awayName = newData.awayTeam?.name || 'Away';
+            const homeName = newData.homeTeam?.name || 'Home';
+            newData.title = `${awayName} @ ${homeName} - O/U`;
+            newData.hasCustomTitle = true;
+        }
+
         return newData;
     });
   };
@@ -830,7 +837,13 @@ function AdminEditMatchup() {
             {matchup.type === 'SPREAD' && (
                 <div className="space-y-2">
                     <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Spread</label>
-                    <input type="number" step="0.5" value={matchup.metadata?.spread || ''} onChange={(e) => handleChange('metadata.spread', parseFloat(e.target.value) || 0)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+                    <input type="number" step="0.5" value={matchup.metadata?.spread ?? ''} onChange={(e) => handleChange('metadata.spread', parseFloat(e.target.value) || 0)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+                </div>
+            )}
+            {matchup.type === 'OVER_UNDER' && (
+                <div className="space-y-2">
+                    <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Total (Over/Under)</label>
+                    <input type="number" step="0.5" value={matchup.metadata?.overUnder ?? ''} onChange={(e) => handleChange('metadata.overUnder', parseFloat(e.target.value) || 0)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
                 </div>
             )}
             <div className="space-y-2">
