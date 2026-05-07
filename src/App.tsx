@@ -566,17 +566,17 @@ function PlayDashboard() {
         </div>
 
         {/* Matchup content */}
-        <div className="p-5">
+        <div className="p-3 sm:p-5">
           <div className="text-base font-bold text-zinc-100 mb-6">{m.title}</div>
 
           <div className="flex items-center justify-between">
-             <div className="flex flex-col items-center gap-3 w-[140px]">
-               <span className="text-sm font-semibold text-zinc-200">{m.awayTeam.name}</span>
+             <div className="flex flex-col items-center gap-2 sm:gap-3 w-[100px] sm:w-[140px]">
+               <span className="text-xs sm:text-sm font-semibold text-zinc-200 truncate w-full text-center px-1">{m.awayTeam.name}</span>
                <div className="relative">
                  <button
                    disabled={isPickDisabled}
                    onClick={() => !isPickDisabled && handleMakePick(m, m.awayTeam)}
-                   className={cn("w-28 h-28 rounded-xl border flex items-center justify-center p-1.5 bg-[#1a1a1a] transition-all", pickData?.pick?.id === m.awayTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
+                   className={cn("w-20 h-20 sm:w-28 sm:h-28 rounded-xl border flex items-center justify-center p-1.5 bg-[#1a1a1a] transition-all", pickData?.pick?.id === m.awayTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
                  >
                     <img src={m.awayTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.awayTeam.name} />
                  </button>
@@ -595,7 +595,7 @@ function PlayDashboard() {
 
              <div className="flex items-center gap-2">
                 {isScheduled ? (
-                  <div className="flex items-center justify-center gap-2 w-[140px]">
+                  <div className="flex items-center justify-center gap-2 w-[100px] sm:w-[140px]">
                     <div className="flex-1 flex justify-end">
                        <div className="w-12 h-1.5 bg-zinc-800 rounded-full overflow-hidden flex justify-end">
                          <div className="h-full bg-blue-500 rounded-full" style={{ width: `${awayHotPct}%` }}></div>
@@ -609,7 +609,7 @@ function PlayDashboard() {
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <div className={cn("w-16 h-10 rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden",
+                    <div className={cn("w-12 sm:w-16 h-10 rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden",
                       m.status === 'STATUS_IN_PROGRESS' ? "bg-[#27272a] text-white ring-1 ring-zinc-700" : "bg-[#1a1a1a]",
                       (m.metadata?.lowerScoreWins ? m.awayTeam.score < m.homeTeam.score : m.awayTeam.score > m.homeTeam.score) ? "text-zinc-100" : (m.status === 'STATUS_IN_PROGRESS' ? "text-zinc-200" : "text-zinc-500")
                     )}>
@@ -627,7 +627,7 @@ function PlayDashboard() {
                       </div>
                     )}
 
-                    <div className={cn("w-16 h-10 rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden",
+                    <div className={cn("w-12 sm:w-16 h-10 rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden",
                       m.status === 'STATUS_IN_PROGRESS' ? "bg-[#27272a] text-white ring-1 ring-zinc-700" : "bg-[#1a1a1a]",
                       (m.metadata?.lowerScoreWins ? m.homeTeam.score < m.awayTeam.score : m.homeTeam.score > m.awayTeam.score) ? "text-zinc-100" : (m.status === 'STATUS_IN_PROGRESS' ? "text-zinc-200" : "text-zinc-500")
                     )}>
@@ -638,13 +638,13 @@ function PlayDashboard() {
                 )}
              </div>
 
-             <div className="flex flex-col items-center gap-3 w-[140px]">
-               <span className="text-sm font-semibold text-zinc-200">@{m.homeTeam.name}</span>
+             <div className="flex flex-col items-center gap-2 sm:gap-3 w-[100px] sm:w-[140px]">
+               <span className="text-xs sm:text-sm font-semibold text-zinc-200 truncate w-full text-center px-1">@{m.homeTeam.name}</span>
                <div className="relative">
                  <button
                    disabled={isPickDisabled}
                    onClick={() => !isPickDisabled && handleMakePick(m, m.homeTeam)}
-                   className={cn("w-28 h-28 rounded-xl border flex items-center justify-center p-1.5 bg-[#1a1a1a] transition-all", pickData?.pick?.id === m.homeTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
+                   className={cn("w-20 h-20 sm:w-28 sm:h-28 rounded-xl border flex items-center justify-center p-1.5 bg-[#1a1a1a] transition-all", pickData?.pick?.id === m.homeTeam.id ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
                  >
                     <img src={m.homeTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.homeTeam.name} />
                  </button>
