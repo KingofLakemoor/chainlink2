@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, doc, query, where, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, query, where, setDoc, getDoc, deleteDoc, documentId } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
-import { Layers, CheckCircle } from 'lucide-react';
+import { Layers, CheckCircle, Trophy } from 'lucide-react';
 import { MATCHUP_FINAL_STATUSES } from '../../services/espnScraper';
 
 export default function PickEmPage() {
@@ -15,6 +15,9 @@ export default function PickEmPage() {
   const [userPicks, setUserPicks] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
   const [matchupsLoading, setMatchupsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'matchups' | 'leaderboard'>('matchups');
+  const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
 
   useEffect(() => {
     const fetchCampaigns = async () => {
@@ -73,6 +76,79 @@ export default function PickEmPage() {
     }
   }, [selectedCampaign, selectedWeek, user]);
 
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      if (!selectedCampaign || activeTab !== 'leaderboard') return;
+
+      setLeaderboardLoading(true);
+      try {
+        const pQuery = query(
+          collection(db, 'pickemPicks'),
+          where('campaignId', '==', selectedCampaign.id)
+        );
+        const pSnap = await getDocs(pQuery);
+
+        const participantStats: Record<string, { wins: number, losses: number, pushes: number, points: number }> = {};
+
+        pSnap.docs.forEach(d => {
+          const pick = d.data();
+          const pId = pick.participantId;
+          if (!participantStats[pId]) {
+            participantStats[pId] = { wins: 0, losses: 0, pushes: 0, points: 0 };
+          }
+
+          if (pick.status === 'WIN') {
+            participantStats[pId].wins += 1;
+            participantStats[pId].points += pick.pointsEarned || 1;
+          } else if (pick.status === 'LOSS') {
+            participantStats[pId].losses += 1;
+          } else if (pick.status === 'PUSH') {
+            participantStats[pId].pushes += 1;
+          }
+        });
+
+        const participantIds = Object.keys(participantStats);
+        if (participantIds.length > 0) {
+          // Chunk participant IDs to avoid 10-item limit in 'in' queries, or fetch all users and filter
+          // For simplicity and safety, we'll fetch the users directly or query if small
+          const usersMap: Record<string, any> = {};
+
+          // Firebase 'in' max is 10. If we have > 10, batching is needed.
+          // To be safe for potentially many participants, we will fetch users individually for now
+          // or all at once and map. Given this is a demo, let's try an all-users approach if no index exists,
+          // or chunking. Let's do a simple Promise.all for users.
+
+          const userPromises = participantIds.map(uid => getDoc(doc(db, 'users', uid)));
+          const userDocs = await Promise.all(userPromises);
+
+          userDocs.forEach(ud => {
+            if (ud.exists()) {
+               usersMap[ud.id] = ud.data();
+            }
+          });
+
+          const formattedLeaderboard = participantIds.map(uid => ({
+             uid,
+             name: usersMap[uid]?.username || usersMap[uid]?.displayName || 'Unknown User',
+             avatar: usersMap[uid]?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${uid}`,
+             ...participantStats[uid]
+          })).sort((a, b) => b.points - a.points); // Sort by points descending
+
+          setLeaderboardData(formattedLeaderboard);
+        } else {
+          setLeaderboardData([]);
+        }
+
+      } catch (err) {
+        console.error("Failed to fetch leaderboard", err);
+      } finally {
+        setLeaderboardLoading(false);
+      }
+    };
+
+    fetchLeaderboard();
+  }, [selectedCampaign, activeTab]);
+
   const handlePick = async (matchup: any, teamId: string) => {
     if (!user || !selectedCampaign) return;
     if (matchup.status !== 'STATUS_SCHEDULED') return;
@@ -91,6 +167,15 @@ export default function PickEmPage() {
           return next;
         });
         return;
+      }
+
+      // Check pick limit before adding a new pick (skip if replacing existing pick in same matchup)
+      if (!existingPick && selectedCampaign.pickLimit > 0) {
+        const currentPicksCount = Object.keys(userPicks).length;
+        if (currentPicksCount >= selectedCampaign.pickLimit) {
+          alert(`You have reached the maximum of ${selectedCampaign.pickLimit} picks for this week.`);
+          return;
+        }
       }
 
       const newPick = {
@@ -136,114 +221,216 @@ export default function PickEmPage() {
         <p className="text-zinc-400 text-lg">Make weekly picks and compete on the leaderboard.</p>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
-        <select
-          value={selectedCampaign?.id || ''}
-          onChange={e => {
-            const camp = campaigns.find(c => c.id === e.target.value);
-            setSelectedCampaign(camp);
-            setSelectedWeek(camp?.currentWeek || 1);
-          }}
-          className="bg-[#121212] border border-zinc-800 rounded-xl px-4 py-3 text-white text-lg font-medium"
-        >
-          {campaigns.map(c => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div className="flex flex-col md:flex-row gap-4">
+          <select
+            value={selectedCampaign?.id || ''}
+            onChange={e => {
+              const camp = campaigns.find(c => c.id === e.target.value);
+              setSelectedCampaign(camp);
+              setSelectedWeek(camp?.currentWeek || 1);
+            }}
+            className="bg-[#121212] border border-zinc-800 rounded-xl px-4 py-3 text-white text-lg font-medium min-w-[250px]"
+          >
+            {campaigns.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
 
-        <select
-          value={selectedWeek}
-          onChange={e => setSelectedWeek(Number(e.target.value))}
-          className="bg-[#121212] border border-zinc-800 rounded-xl px-4 py-3 text-white text-lg font-medium"
-        >
-          {[...Array(20)].map((_, i) => (
-            <option key={i+1} value={i+1}>Week {i+1}</option>
-          ))}
-        </select>
+          {activeTab === 'matchups' && (
+            <select
+              value={selectedWeek}
+              onChange={e => setSelectedWeek(Number(e.target.value))}
+              className="bg-[#121212] border border-zinc-800 rounded-xl px-4 py-3 text-white text-lg font-medium"
+            >
+              {[...Array(20)].map((_, i) => (
+                <option key={i+1} value={i+1}>Week {i+1}</option>
+              ))}
+            </select>
+          )}
+        </div>
+
+        <div className="flex bg-[#121212] p-1 rounded-xl border border-zinc-800">
+          <button
+            onClick={() => setActiveTab('matchups')}
+            className={`px-6 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 ${
+              activeTab === 'matchups'
+                ? 'bg-[#22c55e] text-black shadow-lg shadow-[#22c55e]/20'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+            }`}
+          >
+            <Layers className="w-4 h-4" />
+            Matchups
+          </button>
+          <button
+            onClick={() => setActiveTab('leaderboard')}
+            className={`px-6 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 ${
+              activeTab === 'leaderboard'
+                ? 'bg-[#22c55e] text-black shadow-lg shadow-[#22c55e]/20'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+            }`}
+          >
+            <Trophy className="w-4 h-4" />
+            Leaderboard
+          </button>
+        </div>
       </div>
 
-      {matchupsLoading ? (
-        <div className="text-center py-20 text-zinc-500">Loading matchups...</div>
-      ) : matchups.length === 0 ? (
+      {activeTab === 'matchups' && (
+        <>
+          {selectedCampaign?.pickLimit > 0 && (
+            <div className="mb-6 p-4 bg-[#18181A] border border-zinc-800 rounded-xl flex items-center justify-between">
+               <div>
+                  <h3 className="text-white font-bold">Weekly Pick Limit</h3>
+                  <p className="text-sm text-zinc-400">You can make up to {selectedCampaign.pickLimit} picks for this campaign per week.</p>
+               </div>
+               <div className="text-2xl font-black text-[#22c55e]">
+                 {Object.keys(userPicks).length} <span className="text-lg text-zinc-500">/ {selectedCampaign.pickLimit}</span>
+               </div>
+            </div>
+          )}
+
+          {matchupsLoading ? (
+            <div className="text-center py-20 text-zinc-500">Loading matchups...</div>
+          ) : matchups.length === 0 ? (
         <div className="text-center py-20 bg-[#121212] border border-zinc-800 rounded-xl">
           <Layers className="w-12 h-12 mx-auto mb-4 text-zinc-600" />
           <p className="text-zinc-400 text-lg">No matchups scheduled for Week {selectedWeek}.</p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {matchups.map(m => {
-            const pick = userPicks[m.id];
-            const isLocked = m.status !== 'STATUS_SCHEDULED';
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {matchups.map(m => {
+                const pick = userPicks[m.id];
+                const isLocked = m.status !== 'STATUS_SCHEDULED';
 
-            const isSpread = m.type === 'SPREAD' && m.metadata?.spread !== undefined;
-            const spread = m.metadata?.spread || 0;
+                const isSpread = m.type === 'SPREAD' && m.metadata?.spread !== undefined;
+                const spread = m.metadata?.spread || 0;
 
-            return (
-              <div key={m.id} className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
-                <div className="p-3 bg-[#18181A] border-b border-zinc-800 text-xs text-zinc-400 font-medium flex justify-between items-center">
-                  <span>{new Date(m.startTime).toLocaleString()}</span>
-                  <div className="flex items-center gap-2">
-                    {isSpread && (
-                      <span className="px-2 py-1 text-[10px] uppercase tracking-wider rounded-md font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30">
-                        ATS
-                      </span>
-                    )}
-                    <span className={isLocked ? "text-red-400" : "text-green-400"}>
-                      {m.statusDesc || (isLocked ? 'Locked' : 'Open')}
-                    </span>
+                return (
+                  <div key={m.id} className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
+                    <div className="p-3 bg-[#18181A] border-b border-zinc-800 text-xs text-zinc-400 font-medium flex justify-between items-center">
+                      <span>{new Date(m.startTime).toLocaleString()}</span>
+                      <div className="flex items-center gap-2">
+                        {isSpread && (
+                          <span className="px-2 py-1 text-[10px] uppercase tracking-wider rounded-md font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                            ATS
+                          </span>
+                        )}
+                        <span className={isLocked ? "text-red-400" : "text-green-400"}>
+                          {m.statusDesc || (isLocked ? 'Locked' : 'Open')}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-4 flex-1 flex flex-col gap-3">
+                      <button
+                        onClick={() => handlePick(m, m.awayTeam.id)}
+                        disabled={isLocked}
+                        className={`p-3 rounded-lg border text-left flex items-center justify-between transition-colors
+                          ${pick?.pick.teamId === m.awayTeam.id
+                            ? 'border-[#22c55e] bg-[#22c55e]/10'
+                            : 'border-zinc-800 hover:border-zinc-600 bg-[#18181A]'}
+                          ${isLocked && pick?.pick.teamId !== m.awayTeam.id ? 'opacity-50 cursor-not-allowed' : ''}
+                        `}
+                      >
+                        <div className="flex items-center gap-3">
+                          <img src={m.awayTeam.image} alt={m.awayTeam.name} className="w-8 h-8 object-contain" />
+                          <div className="flex flex-row items-baseline gap-2">
+                            <span className="font-bold text-white">{m.awayTeam.name}</span>
+                            {isSpread && (
+                               <span className="text-base text-zinc-400 font-medium">{spread > 0 ? `-${spread}` : `+${Math.abs(spread)}`}</span>
+                            )}
+                          </div>
+                        </div>
+                        {pick?.pick.teamId === m.awayTeam.id && <CheckCircle className="w-5 h-5 text-[#22c55e]" />}
+                      </button>
+
+                      <div className="text-center text-xs text-zinc-600 font-bold uppercase">@</div>
+
+                      <button
+                        onClick={() => handlePick(m, m.homeTeam.id)}
+                        disabled={isLocked}
+                        className={`p-3 rounded-lg border text-left flex items-center justify-between transition-colors
+                          ${pick?.pick.teamId === m.homeTeam.id
+                            ? 'border-[#22c55e] bg-[#22c55e]/10'
+                            : 'border-zinc-800 hover:border-zinc-600 bg-[#18181A]'}
+                          ${isLocked && pick?.pick.teamId !== m.homeTeam.id ? 'opacity-50 cursor-not-allowed' : ''}
+                        `}
+                      >
+                        <div className="flex items-center gap-3">
+                          <img src={m.homeTeam.image} alt={m.homeTeam.name} className="w-8 h-8 object-contain" />
+                          <div className="flex flex-row items-baseline gap-2">
+                            <span className="font-bold text-white">{m.homeTeam.name}</span>
+                            {isSpread && (
+                               <span className="text-base text-zinc-400 font-medium">{spread > 0 ? `+${spread}` : `-${Math.abs(spread)}`}</span>
+                            )}
+                          </div>
+                        </div>
+                        {pick?.pick.teamId === m.homeTeam.id && <CheckCircle className="w-5 h-5 text-[#22c55e]" />}
+                      </button>
+                    </div>
                   </div>
-                </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
 
-                <div className="p-4 flex-1 flex flex-col gap-3">
-                  <button
-                    onClick={() => handlePick(m, m.awayTeam.id)}
-                    disabled={isLocked}
-                    className={`p-3 rounded-lg border text-left flex items-center justify-between transition-colors
-                      ${pick?.pick.teamId === m.awayTeam.id
-                        ? 'border-[#22c55e] bg-[#22c55e]/10'
-                        : 'border-zinc-800 hover:border-zinc-600 bg-[#18181A]'}
-                      ${isLocked && pick?.pick.teamId !== m.awayTeam.id ? 'opacity-50 cursor-not-allowed' : ''}
-                    `}
-                  >
-                    <div className="flex items-center gap-3">
-                      <img src={m.awayTeam.image} alt={m.awayTeam.name} className="w-8 h-8 object-contain" />
-                      <div className="flex flex-row items-baseline gap-2">
-                        <span className="font-bold text-white">{m.awayTeam.name}</span>
-                        {isSpread && (
-                           <span className="text-base text-zinc-400 font-medium">{spread > 0 ? `-${spread}` : `+${Math.abs(spread)}`}</span>
-                        )}
-                      </div>
-                    </div>
-                    {pick?.pick.teamId === m.awayTeam.id && <CheckCircle className="w-5 h-5 text-[#22c55e]" />}
-                  </button>
-
-                  <div className="text-center text-xs text-zinc-600 font-bold uppercase">@</div>
-
-                  <button
-                    onClick={() => handlePick(m, m.homeTeam.id)}
-                    disabled={isLocked}
-                    className={`p-3 rounded-lg border text-left flex items-center justify-between transition-colors
-                      ${pick?.pick.teamId === m.homeTeam.id
-                        ? 'border-[#22c55e] bg-[#22c55e]/10'
-                        : 'border-zinc-800 hover:border-zinc-600 bg-[#18181A]'}
-                      ${isLocked && pick?.pick.teamId !== m.homeTeam.id ? 'opacity-50 cursor-not-allowed' : ''}
-                    `}
-                  >
-                    <div className="flex items-center gap-3">
-                      <img src={m.homeTeam.image} alt={m.homeTeam.name} className="w-8 h-8 object-contain" />
-                      <div className="flex flex-row items-baseline gap-2">
-                        <span className="font-bold text-white">{m.homeTeam.name}</span>
-                        {isSpread && (
-                           <span className="text-base text-zinc-400 font-medium">{spread > 0 ? `+${spread}` : `-${Math.abs(spread)}`}</span>
-                        )}
-                      </div>
-                    </div>
-                    {pick?.pick.teamId === m.homeTeam.id && <CheckCircle className="w-5 h-5 text-[#22c55e]" />}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+      {activeTab === 'leaderboard' && (
+        <div className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden">
+          {leaderboardLoading ? (
+            <div className="p-12 text-center text-zinc-500 font-medium">Loading leaderboard...</div>
+          ) : leaderboardData.length === 0 ? (
+            <div className="p-12 text-center text-zinc-500 font-medium">
+              <Trophy className="w-12 h-12 mx-auto mb-4 text-zinc-700" />
+              No picks have been graded for this campaign yet.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead className="bg-[#18181A] text-zinc-400 border-b border-zinc-800">
+                  <tr>
+                    <th className="px-6 py-4 font-medium w-16 text-center">Rank</th>
+                    <th className="px-6 py-4 font-medium">Participant</th>
+                    <th className="px-6 py-4 font-medium text-center">Points</th>
+                    <th className="px-6 py-4 font-medium text-center">W-L-P</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/50">
+                  {leaderboardData.map((participant, index) => (
+                    <tr
+                      key={participant.uid}
+                      className={`hover:bg-zinc-800/20 transition-colors ${participant.uid === user?.uid ? 'bg-[#22c55e]/5' : ''}`}
+                    >
+                      <td className="px-6 py-4 text-center">
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold ${
+                          index === 0 ? 'bg-yellow-500/20 text-yellow-500' :
+                          index === 1 ? 'bg-zinc-300/20 text-zinc-300' :
+                          index === 2 ? 'bg-orange-500/20 text-orange-500' :
+                          'text-zinc-500'
+                        }`}>
+                          {index + 1}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <img src={participant.avatar} alt={participant.name} className="w-8 h-8 rounded-full bg-zinc-800" />
+                          <span className="font-medium text-white">{participant.name} {participant.uid === user?.uid && '(You)'}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="text-[#22c55e] font-bold text-lg">{participant.points}</span>
+                      </td>
+                      <td className="px-6 py-4 text-center text-zinc-400 font-mono">
+                        {participant.wins}-{participant.losses}-{participant.pushes}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </div>
