@@ -7,19 +7,35 @@ import { Button } from '../../../components/ui/button';
 export default function PickEmCreateCampaign() {
   const navigate = useNavigate();
   const [name, setName] = useState('');
-  const [league, setLeague] = useState('COLLEGE-FOOTBALL');
+  const [leagues, setLeagues] = useState<string[]>(['COLLEGE-FOOTBALL']);
   const [defaultMatchType, setDefaultMatchType] = useState('STANDARD');
+  const [pickLimit, setPickLimit] = useState<number>(0);
   const [loading, setLoading] = useState(false);
+
+  const availableLeagues = ['COLLEGE-FOOTBALL', 'NFL', 'NBA'];
+
+  const handleLeagueToggle = (league: string) => {
+    setLeagues(prev =>
+      prev.includes(league)
+        ? prev.filter(l => l !== league)
+        : [...prev, league]
+    );
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || leagues.length === 0) {
+      alert("Please enter a name and select at least one league.");
+      return;
+    }
 
     setLoading(true);
     try {
       await addDoc(collection(db, 'pickemCampaigns'), {
         name: name.trim(),
-        league,
+        league: leagues[0], // Keep for backward compatibility if needed in old queries
+        leagues: leagues,
+        pickLimit: pickLimit,
         type: 'STANDARD',
         defaultMatchType,
         scoringType: 'WIN_LOSS',
@@ -60,16 +76,32 @@ export default function PickEmCreateCampaign() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-1">League</label>
-            <select
-              value={league}
-              onChange={e => setLeague(e.target.value)}
+            <label className="block text-sm font-medium text-zinc-400 mb-2">Leagues</label>
+            <div className="flex flex-wrap gap-4">
+              {availableLeagues.map(l => (
+                <label key={l} className="flex items-center gap-2 cursor-pointer text-white">
+                  <input
+                    type="checkbox"
+                    checked={leagues.includes(l)}
+                    onChange={() => handleLeagueToggle(l)}
+                    className="w-4 h-4 rounded border-zinc-800 bg-[#18181A] text-[#22c55e] focus:ring-[#22c55e]"
+                  />
+                  {l.replace('-', ' ')}
+                </label>
+              ))}
+            </div>
+            {leagues.length === 0 && <p className="text-red-500 text-sm mt-1">Please select at least one league.</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-zinc-400 mb-1">Weekly Pick Limit (0 for unlimited)</label>
+            <input
+              type="number"
+              min="0"
+              value={pickLimit}
+              onChange={e => setPickLimit(parseInt(e.target.value) || 0)}
               className="w-full bg-[#18181A] border border-zinc-800 rounded-lg px-4 py-2 text-white"
-            >
-              <option value="COLLEGE-FOOTBALL">College Football</option>
-              <option value="NFL">NFL</option>
-              <option value="NBA">NBA</option>
-            </select>
+            />
           </div>
 
           <div>

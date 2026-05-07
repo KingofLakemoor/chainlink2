@@ -76,46 +76,57 @@ export default function PickEmCampaignDetail() {
 
   const handleSyncMatchups = async () => {
     if (!campaign || !id) return;
-    if (!confirm(`Sync ${campaign.league} matchups for Week ${selectedWeek}?`)) return;
+    const leaguesToSync = campaign.leagues && campaign.leagues.length > 0
+      ? campaign.leagues
+      : (campaign.league ? [campaign.league] : []);
+
+    if (leaguesToSync.length === 0) {
+      alert("No leagues configured for this campaign.");
+      return;
+    }
+
+    if (!confirm(`Sync ${leaguesToSync.join(', ')} matchups for Week ${selectedWeek}?`)) return;
 
     setMatchupsLoading(true);
     try {
-      const res = await scrapeLeagueSchedules(campaign.league, false);
-      if (!res.data || res.data.length === 0) {
-        alert("No games found to sync.");
-        return;
-      }
-
       let count = 0;
       let batch = writeBatch(db);
       let batchCount = 0;
 
-      for (const m of res.data) {
-        const pickemMatchupId = `${id}_${selectedWeek}_${m.gameId}`;
-        const docRef = doc(db, 'pickemMatchups', pickemMatchupId);
+      for (const lg of leaguesToSync) {
+        const res = await scrapeLeagueSchedules(lg, false);
+        if (!res.data || res.data.length === 0) {
+          console.warn(`No games found to sync for ${lg}.`);
+          continue;
+        }
 
-        batch.set(docRef, {
-          campaignId: id,
-          week: selectedWeek,
-          gameId: m.gameId,
-          title: m.title,
-          startTime: m.startTime,
-          status: m.status,
-          statusDesc: m.statusDesc,
-          homeTeam: m.homeTeam,
-          awayTeam: m.awayTeam,
-          type: campaign.defaultMatchType || "STANDARD",
-          metadata: m.metadata || null,
-          createdAt: Date.now()
-        }, { merge: true });
+        for (const m of res.data) {
+          const pickemMatchupId = `${id}_${selectedWeek}_${m.gameId}`;
+          const docRef = doc(db, 'pickemMatchups', pickemMatchupId);
 
-        count++;
-        batchCount++;
+          batch.set(docRef, {
+            campaignId: id,
+            week: selectedWeek,
+            gameId: m.gameId,
+            title: m.title,
+            startTime: m.startTime,
+            status: m.status,
+            statusDesc: m.statusDesc,
+            homeTeam: m.homeTeam,
+            awayTeam: m.awayTeam,
+            type: campaign.defaultMatchType || "STANDARD",
+            metadata: m.metadata || null,
+            createdAt: Date.now()
+          }, { merge: true });
 
-        if (batchCount === 500) {
-          await batch.commit();
-          batch = writeBatch(db);
-          batchCount = 0;
+          count++;
+          batchCount++;
+
+          if (batchCount === 500) {
+            await batch.commit();
+            batch = writeBatch(db);
+            batchCount = 0;
+          }
         }
       }
 
@@ -123,8 +134,12 @@ export default function PickEmCampaignDetail() {
         await batch.commit();
       }
 
-      alert(`Synced ${count} matchups successfully!`);
-      await fetchMatchups(selectedWeek);
+      if (count > 0) {
+        alert(`Synced ${count} matchups successfully across ${leaguesToSync.length} league(s)!`);
+        await fetchMatchups(selectedWeek);
+      } else {
+        alert("No games found to sync across any leagues.");
+      }
     } catch (err) {
       console.error(err);
       alert('Failed to sync matchups');
@@ -188,7 +203,12 @@ export default function PickEmCampaignDetail() {
 
       <div className="bg-[#121212] border border-zinc-800 rounded-xl p-6 flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
         <div>
-          <p className="text-zinc-400">League: <span className="text-white font-medium">{campaign.league}</span></p>
+          <p className="text-zinc-400">Leagues: <span className="text-white font-medium">
+            {campaign.leagues && campaign.leagues.length > 0 ? campaign.leagues.join(', ') : campaign.league}
+          </span></p>
+          <p className="text-zinc-400">Pick Limit: <span className="text-white font-medium">
+            {campaign.pickLimit > 0 ? campaign.pickLimit : 'Unlimited'}
+          </span></p>
           <p className="text-zinc-400">Active Week: <span className="text-white font-medium">{campaign.currentWeek}</span></p>
         </div>
 
