@@ -863,7 +863,7 @@ import DashboardPage from './pages/dashboard/DashboardPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import LeaderboardsPage from './pages/leaderboards/LeaderboardsPage';
 import ShopPage from './pages/shop/ShopPage';
-import { BracketsPage } from './pages/Brackets';
+import { BracketsPage } from './pages/brackets/BracketsPage';
 import PickEmPage from './pages/pickem/PickEmPage';
 import SponsorPage from './pages/SponsorPage';
 
