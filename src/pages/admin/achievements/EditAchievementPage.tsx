@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../../../lib/firebase';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
@@ -29,6 +30,7 @@ export default function EditAchievementPage() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -219,11 +221,36 @@ export default function EditAchievementPage() {
                   <FormItem>
                     <FormLabel>Image URL (Optional)</FormLabel>
                     <FormDescription>
-                      External URL for the achievement image
+                      External URL for the achievement image or upload a file
                     </FormDescription>
-                    <FormControl>
-                      <Input type="text" placeholder="https://example.com/image.png" {...field} />
-                    </FormControl>
+                    <div className="flex gap-2">
+                      <FormControl className="flex-1">
+                        <Input type="text" placeholder="https://example.com/image.png" {...field} />
+                      </FormControl>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        className="w-auto"
+                        disabled={isUploading}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+
+                          setIsUploading(true);
+                          try {
+                            const fileRef = ref(storage, `achievements/${Date.now()}_${file.name}`);
+                            await uploadBytes(fileRef, file);
+                            const downloadUrl = await getDownloadURL(fileRef);
+                            form.setValue("image", downloadUrl);
+                          } catch (error) {
+                            console.error("Error uploading image:", error);
+                            alert("Failed to upload image");
+                          } finally {
+                            setIsUploading(false);
+                          }
+                        }}
+                      />
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
