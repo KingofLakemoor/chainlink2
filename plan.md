@@ -1,37 +1,12 @@
-1. **Understand Issue**: The bug is that we don't factor in `metadata?.spread` for "SPREAD" matchups when determining `winnerId` and `isTie` inside `src/services/grader.ts`.
-2. **Current implementation**:
-   ```javascript
-   if (isPostponed) {
-     isTie = true; // Treats postponed as a push to refund
-   } else if (homeScore === awayScore) {
-     isTie = true;
-   } else if (lowerScoreWins) {
-     winnerId = homeScore < awayScore ? matchup.homeTeam.id : matchup.awayTeam.id;
-   } else {
-     winnerId = homeScore > awayScore ? matchup.homeTeam.id : matchup.awayTeam.id;
-   }
-   ```
-3. **Change to**:
-   ```javascript
-   let adjustedHomeScore = homeScore;
-   if (matchup.type === 'SPREAD' && typeof matchup.metadata?.spread === 'number') {
-     adjustedHomeScore += matchup.metadata.spread;
-   }
+1.  **Update `AdminDashboard.tsx` to display Over/Under fields**:
+    -   In `AdminDashboard.tsx`, within the `AdminEditMatchup` component, right under where it conditionally renders the "Spread" input when `matchup.type === 'SPREAD'`, add a conditional render for the "Over/Under" input when `matchup.type === 'OVER_UNDER'`.
+    -   Bind this input to `matchup.metadata.overUnder` with `handleChange('metadata.overUnder', parseFloat(e.target.value) || 0)`.
 
-   if (isPostponed) {
-     isTie = true; // Treats postponed as a push to refund
-   } else if (adjustedHomeScore === awayScore) {
-     isTie = true;
-   } else if (lowerScoreWins) {
-     winnerId = adjustedHomeScore < awayScore ? matchup.homeTeam.id : matchup.awayTeam.id;
-   } else {
-     winnerId = adjustedHomeScore > awayScore ? matchup.homeTeam.id : matchup.awayTeam.id;
-   }
-   ```
-4. **Where to make the change**:
-   `src/services/grader.ts` handles the standard `picks`.
+2.  **Update `CreateMatchupPage.tsx` to handle Metadata fields**:
+    -   The `formData` state needs to be expanded to include `metadata: { spread?: number, overUnder?: number }` or handle it specifically when selecting the type.
+    -   Alternatively, add input fields for "Spread" and "Over/Under" that appear depending on the selected `type`, similar to how they will appear in `AdminDashboard.tsx`.
 
-   Wait, does pick'em also use the same grader?
-   No, pick'em picks (`pickemPicks`) are in a separate collection, but there doesn't seem to be a separate pickem grader yet (at least one that we found). We checked `functions.ts`, `server.ts` and `src/services` and there are no instances of `pickemPicks` grading. PickEm may be manually graded by admins, or not implemented yet. Let me double check if `src/services/grader.ts` also grades pickem picks. It queries `adminDb.collection('picks')`, not `pickemPicks`.
+3.  **Update Auto-titling logic**:
+    -   In `AdminDashboard.tsx`, when `field === 'type' && value === 'OVER_UNDER'`, automatically set the title to `O/U ${matchup.metadata.overUnder || ''} - ${awayName} @ ${homeName}`. (Or whatever formatting is standard, maybe just `${awayName} @ ${homeName} - O/U`). Wait, let's keep it simple, maybe just `${awayName} @ ${homeName} - O/U`.
 
-   Let me check if the PickEmAdminPage does manual grading or has a button to trigger grading for Pick Em.
+4.  **Complete pre-commit steps**.

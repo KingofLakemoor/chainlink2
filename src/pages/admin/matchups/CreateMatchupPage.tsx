@@ -26,6 +26,8 @@ export default function CreateMatchupPage() {
     awayTeamName: '',
     awayTeamId: '',
     awayTeamImage: '',
+    metadataSpread: '',
+    metadataOverUnder: '',
   });
   const [sponsors, setSponsors] = useState<any[]>([]);
 
@@ -73,6 +75,10 @@ export default function CreateMatchupPage() {
           name: formData.awayTeamName,
           image: formData.awayTeamImage,
           score: 0
+        },
+        metadata: {
+          ...(formData.type === 'SPREAD' && formData.metadataSpread !== '' && { spread: Number(formData.metadataSpread) }),
+          ...(formData.type === 'OVER_UNDER' && formData.metadataOverUnder !== '' && { overUnder: Number(formData.metadataOverUnder) }),
         },
         createdAt: Date.now(),
         updatedAt: Date.now()
@@ -162,6 +168,34 @@ export default function CreateMatchupPage() {
               <option value="CUSTOM">Custom</option>
             </select>
           </div>
+
+          {formData.type === 'SPREAD' && (
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-1">Spread</label>
+              <input
+                type="number"
+                step="0.5"
+                name="metadataSpread"
+                value={formData.metadataSpread}
+                onChange={handleChange}
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+          )}
+
+          {formData.type === 'OVER_UNDER' && (
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-1">Total (Over/Under)</label>
+              <input
+                type="number"
+                step="0.5"
+                name="metadataOverUnder"
+                value={formData.metadataOverUnder}
+                onChange={handleChange}
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-zinc-400 mb-1">Cost (Wager)</label>
