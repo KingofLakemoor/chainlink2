@@ -363,51 +363,51 @@ export default function PickEmPage() {
 
                     <div className="p-4 flex-1 flex flex-col gap-3">
                       <button
-                        onClick={() => handlePick(m, m.awayTeam.id)}
+                        onClick={() => handlePick(m, m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id)}
                         disabled={isLocked}
                         className={`p-3 rounded-lg border text-left flex items-center justify-between transition-colors
-                          ${pick?.pick.teamId === m.awayTeam.id
+                          ${pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id)
                             ? '' // dynamic styles below
                             : 'border-zinc-800 hover:border-zinc-600 bg-[#18181A]'}
-                          ${isLocked && pick?.pick.teamId !== m.awayTeam.id ? 'opacity-50 cursor-not-allowed' : ''}
+                          ${isLocked && pick?.pick.teamId !== (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) ? 'opacity-50 cursor-not-allowed' : ''}
                         `}
-                        style={pick?.pick.teamId === m.awayTeam.id ? { borderColor: primaryColor, backgroundColor: `${primaryColor}1A` } : undefined}
+                        style={pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) ? { borderColor: primaryColor, backgroundColor: `${primaryColor}1A` } : undefined}
                       >
                         <div className="flex items-center gap-3">
-                          <img src={m.awayTeam.image} alt={m.awayTeam.name} className="w-8 h-8 object-contain" />
+                          <img src={m.type === 'OVER_UNDER' ? '/images/over.png' : m.awayTeam.image} alt={m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.name} className="w-8 h-8 object-contain" />
                           <div className="flex flex-row items-baseline gap-2">
-                            <span className="font-bold text-white">{m.awayTeam.name}</span>
+                            <span className="font-bold text-white">{m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.name}</span>
                             {isSpread && (
                                <span className="text-base text-zinc-400 font-medium">{spread > 0 ? `-${spread}` : `+${Math.abs(spread)}`}</span>
                             )}
                           </div>
                         </div>
-                        {pick?.pick.teamId === m.awayTeam.id && <CheckCircle className="w-5 h-5" style={{ color: primaryColor }} />}
+                        {pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) && <CheckCircle className="w-5 h-5" style={{ color: primaryColor }} />}
                       </button>
 
                       <div className="text-center text-xs text-zinc-600 font-bold uppercase">@</div>
 
                       <button
-                        onClick={() => handlePick(m, m.homeTeam.id)}
+                        onClick={() => handlePick(m, m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id)}
                         disabled={isLocked}
                         className={`p-3 rounded-lg border text-left flex items-center justify-between transition-colors
-                          ${pick?.pick.teamId === m.homeTeam.id
+                          ${pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id)
                             ? '' // dynamic styles below
                             : 'border-zinc-800 hover:border-zinc-600 bg-[#18181A]'}
-                          ${isLocked && pick?.pick.teamId !== m.homeTeam.id ? 'opacity-50 cursor-not-allowed' : ''}
+                          ${isLocked && pick?.pick.teamId !== (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) ? 'opacity-50 cursor-not-allowed' : ''}
                         `}
-                        style={pick?.pick.teamId === m.homeTeam.id ? { borderColor: primaryColor, backgroundColor: `${primaryColor}1A` } : undefined}
+                        style={pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) ? { borderColor: primaryColor, backgroundColor: `${primaryColor}1A` } : undefined}
                       >
                         <div className="flex items-center gap-3">
-                          <img src={m.homeTeam.image} alt={m.homeTeam.name} className="w-8 h-8 object-contain" />
+                          <img src={m.type === 'OVER_UNDER' ? '/images/under.png' : m.homeTeam.image} alt={m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.name} className="w-8 h-8 object-contain" />
                           <div className="flex flex-row items-baseline gap-2">
-                            <span className="font-bold text-white">{m.homeTeam.name}</span>
+                            <span className="font-bold text-white">{m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.name}</span>
                             {isSpread && (
                                <span className="text-base text-zinc-400 font-medium">{spread > 0 ? `+${spread}` : `-${Math.abs(spread)}`}</span>
                             )}
                           </div>
                         </div>
-                        {pick?.pick.teamId === m.homeTeam.id && <CheckCircle className="w-5 h-5" style={{ color: primaryColor }} />}
+                        {pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) && <CheckCircle className="w-5 h-5" style={{ color: primaryColor }} />}
                       </button>
                     </div>
                   </div>
