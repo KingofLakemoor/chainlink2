@@ -1,11 +1,13 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, signOut, Auth, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 export let app: FirebaseApp;
 export let auth: Auth;
 export let db: Firestore;
+export let storage: FirebaseStorage;
 
 export const initFirebase = async () => {
   let dynamicConfig: any = { ...firebaseConfig };
@@ -30,6 +32,7 @@ export const initFirebase = async () => {
   app = initializeApp(finalConfig);
   auth = getAuth(app);
   db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+  storage = getStorage(app);
 };
 
 const provider = new GoogleAuthProvider();
