@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { collection, getDocs, doc, query, where, setDoc, getDoc, deleteDoc, documentId } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../lib/auth-context';
@@ -7,6 +8,7 @@ import { Layers, CheckCircle, Trophy } from 'lucide-react';
 import { MATCHUP_FINAL_STATUSES } from '../../services/espnScraper';
 
 export default function PickEmPage() {
+  const { campaignId } = useParams<{ campaignId: string }>();
   const { user } = useAuth();
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [selectedCampaign, setSelectedCampaign] = useState<any>(null);
@@ -23,11 +25,37 @@ export default function PickEmPage() {
     const fetchCampaigns = async () => {
       try {
         const snap = await getDocs(collection(db, 'pickemCampaigns'));
-        const camps = snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+        let camps = snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+
+        // Mock for local dev
+        if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
+          if (campaignId === 'charity') {
+             camps.push({
+               id: 'charity',
+               name: 'Charity Pick Em 2026',
+               currentWeek: 1,
+               pickLimit: 5,
+               theme: {
+                 title: "Charity Pick Em",
+                 subtitle: "Make your picks to support a great cause!",
+                 primaryColor: "#3b82f6", // Blue
+                 logoUrl: "https://api.dicebear.com/7.x/shapes/svg?seed=charity-pickem"
+               }
+             });
+          }
+        }
+
         setCampaigns(camps);
-        if (camps.length > 0) {
-          setSelectedCampaign(camps[0]);
-          setSelectedWeek(camps[0].currentWeek || 1);
+
+        let initialCampaign = camps.length > 0 ? camps[0] : null;
+        if (campaignId) {
+          const found = camps.find(c => c.id === campaignId);
+          if (found) initialCampaign = found;
+        }
+
+        if (initialCampaign) {
+          setSelectedCampaign(initialCampaign);
+          setSelectedWeek(initialCampaign.currentWeek || 1);
         }
       } catch (err) {
         console.error(err);
@@ -201,6 +229,11 @@ export default function PickEmPage() {
 
   if (loading) return <div className="p-8 text-center text-zinc-500">Loading Pick'em...</div>;
 
+  const theme = selectedCampaign?.theme || {};
+  const primaryColor = theme.primaryColor || "#22c55e";
+  const title = theme.title || "Pick'em";
+  const subtitle = theme.subtitle || "Make weekly picks and compete on the leaderboard.";
+
   if (campaigns.length === 0) {
     return (
       <div className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full pt-20 md:pt-8 text-center">
@@ -215,10 +248,14 @@ export default function PickEmPage() {
     <div className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full pt-20 md:pt-8">
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-display font-black text-white mb-2 uppercase tracking-tight flex items-center gap-3">
-          <Layers className="w-8 h-8 text-[#22c55e]" />
-          Pick'em
+          {theme.logoUrl ? (
+            <img src={theme.logoUrl} alt={title} className="w-10 h-10 object-contain" />
+          ) : (
+            <Layers className="w-8 h-8" style={{ color: primaryColor }} />
+          )}
+          {title}
         </h1>
-        <p className="text-zinc-400 text-lg">Make weekly picks and compete on the leaderboard.</p>
+        <p className="text-zinc-400 text-lg">{subtitle}</p>
       </div>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
@@ -255,9 +292,10 @@ export default function PickEmPage() {
             onClick={() => setActiveTab('matchups')}
             className={`px-6 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 ${
               activeTab === 'matchups'
-                ? 'bg-[#22c55e] text-black shadow-lg shadow-[#22c55e]/20'
+                ? 'text-black shadow-lg'
                 : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
             }`}
+            style={activeTab === 'matchups' ? { backgroundColor: primaryColor, boxShadow: `0 10px 15px -3px ${primaryColor}33` } : undefined}
           >
             <Layers className="w-4 h-4" />
             Matchups
@@ -266,9 +304,10 @@ export default function PickEmPage() {
             onClick={() => setActiveTab('leaderboard')}
             className={`px-6 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 ${
               activeTab === 'leaderboard'
-                ? 'bg-[#22c55e] text-black shadow-lg shadow-[#22c55e]/20'
+                ? 'text-black shadow-lg'
                 : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
             }`}
+            style={activeTab === 'leaderboard' ? { backgroundColor: primaryColor, boxShadow: `0 10px 15px -3px ${primaryColor}33` } : undefined}
           >
             <Trophy className="w-4 h-4" />
             Leaderboard
@@ -284,7 +323,7 @@ export default function PickEmPage() {
                   <h3 className="text-white font-bold">Weekly Pick Limit</h3>
                   <p className="text-sm text-zinc-400">You can make up to {selectedCampaign.pickLimit} picks for this campaign per week.</p>
                </div>
-               <div className="text-2xl font-black text-[#22c55e]">
+               <div className="text-2xl font-black" style={{ color: primaryColor }}>
                  {Object.keys(userPicks).length} <span className="text-lg text-zinc-500">/ {selectedCampaign.pickLimit}</span>
                </div>
             </div>
@@ -328,10 +367,11 @@ export default function PickEmPage() {
                         disabled={isLocked}
                         className={`p-3 rounded-lg border text-left flex items-center justify-between transition-colors
                           ${pick?.pick.teamId === m.awayTeam.id
-                            ? 'border-[#22c55e] bg-[#22c55e]/10'
+                            ? '' // dynamic styles below
                             : 'border-zinc-800 hover:border-zinc-600 bg-[#18181A]'}
                           ${isLocked && pick?.pick.teamId !== m.awayTeam.id ? 'opacity-50 cursor-not-allowed' : ''}
                         `}
+                        style={pick?.pick.teamId === m.awayTeam.id ? { borderColor: primaryColor, backgroundColor: `${primaryColor}1A` } : undefined}
                       >
                         <div className="flex items-center gap-3">
                           <img src={m.awayTeam.image} alt={m.awayTeam.name} className="w-8 h-8 object-contain" />
@@ -342,7 +382,7 @@ export default function PickEmPage() {
                             )}
                           </div>
                         </div>
-                        {pick?.pick.teamId === m.awayTeam.id && <CheckCircle className="w-5 h-5 text-[#22c55e]" />}
+                        {pick?.pick.teamId === m.awayTeam.id && <CheckCircle className="w-5 h-5" style={{ color: primaryColor }} />}
                       </button>
 
                       <div className="text-center text-xs text-zinc-600 font-bold uppercase">@</div>
@@ -352,10 +392,11 @@ export default function PickEmPage() {
                         disabled={isLocked}
                         className={`p-3 rounded-lg border text-left flex items-center justify-between transition-colors
                           ${pick?.pick.teamId === m.homeTeam.id
-                            ? 'border-[#22c55e] bg-[#22c55e]/10'
+                            ? '' // dynamic styles below
                             : 'border-zinc-800 hover:border-zinc-600 bg-[#18181A]'}
                           ${isLocked && pick?.pick.teamId !== m.homeTeam.id ? 'opacity-50 cursor-not-allowed' : ''}
                         `}
+                        style={pick?.pick.teamId === m.homeTeam.id ? { borderColor: primaryColor, backgroundColor: `${primaryColor}1A` } : undefined}
                       >
                         <div className="flex items-center gap-3">
                           <img src={m.homeTeam.image} alt={m.homeTeam.name} className="w-8 h-8 object-contain" />
@@ -366,7 +407,7 @@ export default function PickEmPage() {
                             )}
                           </div>
                         </div>
-                        {pick?.pick.teamId === m.homeTeam.id && <CheckCircle className="w-5 h-5 text-[#22c55e]" />}
+                        {pick?.pick.teamId === m.homeTeam.id && <CheckCircle className="w-5 h-5" style={{ color: primaryColor }} />}
                       </button>
                     </div>
                   </div>
@@ -401,7 +442,8 @@ export default function PickEmPage() {
                   {leaderboardData.map((participant, index) => (
                     <tr
                       key={participant.uid}
-                      className={`hover:bg-zinc-800/20 transition-colors ${participant.uid === user?.uid ? 'bg-[#22c55e]/5' : ''}`}
+                      className={`hover:bg-zinc-800/20 transition-colors ${participant.uid === user?.uid ? '' : ''}`}
+                      style={participant.uid === user?.uid ? { backgroundColor: `${primaryColor}0D` } : undefined}
                     >
                       <td className="px-6 py-4 text-center">
                         <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold ${
@@ -420,7 +462,7 @@ export default function PickEmPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <span className="text-[#22c55e] font-bold text-lg">{participant.points}</span>
+                        <span className="font-bold text-lg" style={{ color: primaryColor }}>{participant.points}</span>
                       </td>
                       <td className="px-6 py-4 text-center text-zinc-400 font-mono">
                         {participant.wins}-{participant.losses}-{participant.pushes}
