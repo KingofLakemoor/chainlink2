@@ -434,6 +434,15 @@ function PlayDashboard() {
   const handleCancelPick = async (matchup: any) => {
     if (!user || !profile) return;
     try {
+      if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
+        setUserPicks(prev => {
+          const newPicks = { ...prev };
+          delete newPicks[matchup.gameId];
+          return newPicks;
+        });
+        return;
+      }
+
       const pickId = user.uid + "_" + matchup.gameId;
       await deleteDoc(doc(db, 'picks', pickId));
     } catch (error) {
