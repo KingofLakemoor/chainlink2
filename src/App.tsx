@@ -59,7 +59,6 @@ function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) =>
         <NavItem icon={PlayCircle} label="Play ChainLink" path="/play" />
         <NavItem icon={Layers} label="Pick'em" path="/pickem" />
         <NavItem icon={Trophy} label="Brackets" path="/brackets" />
-        <NavItem icon={Users} label="Squads" path="/squads" />
         <NavItem icon={Trophy} label="Leaderboards" path="/leaderboards" />
         <NavItem icon={ShoppingCart} label="Link Shop" path="/shop" />
         <NavItem icon={Settings} label="Settings" path="/settings" />
@@ -809,7 +808,6 @@ function MainLayout({ children }: { children: React.ReactNode }) {
     '/play': 'Play',
     '/profile': 'My Profile',
     '/pickem': "Pick'em",
-    '/squads': 'Squads',
     '/leaderboards': 'Leaderboards',
   }[location.pathname] || 'ChainLink';
 
@@ -879,7 +877,6 @@ export default function App() {
           <Route path="/profile" element={<PrivateRoute><MainLayout><ProfilePage /></MainLayout></PrivateRoute>} />
           <Route path="/pickem" element={<PrivateRoute><MainLayout><PickEmPage /></MainLayout></PrivateRoute>} />
           <Route path="/brackets" element={<PrivateRoute><MainLayout><BracketsPage /></MainLayout></PrivateRoute>} />
-          <Route path="/squads" element={<PrivateRoute><MainLayout><PlaceholderPage title="Squads" /></MainLayout></PrivateRoute>} />
           <Route path="/leaderboards" element={<PrivateRoute><MainLayout><LeaderboardsPage /></MainLayout></PrivateRoute>} />
           <Route path="/shop" element={<PrivateRoute><MainLayout><ShopPage /></MainLayout></PrivateRoute>} />
           <Route path="/games" element={<PrivateRoute><MainLayout><PlaceholderPage title="Games" /></MainLayout></PrivateRoute>} />

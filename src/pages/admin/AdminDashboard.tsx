@@ -75,7 +75,6 @@ const ADMIN_MENU = [
   },
   { id: 'challenges', label: 'Challenges', icon: Target, path: '/admin/challenges' },
   { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
-  { id: 'squads', label: 'Squads', icon: Users, path: '/admin/squads' },
   { id: 'notifications', label: 'Notifications', icon: Bell, path: '/admin/notifications' },
   { id: 'actions', label: 'Actions', icon: Shield, path: '/admin/actions' },
   {
@@ -1137,7 +1136,6 @@ export default function AdminDashboard() {
                 <Route path="brackets/*" element={<BracketsAdminPage />} />
                 <Route path="challenges" element={<GenericTable collectionName="globalQuiz" />} />
                 <Route path="users" element={<GenericTable collectionName="users" />} />
-                <Route path="squads" element={<GenericTable collectionName="squads" />} />
                 <Route path="actions" element={<AdminPlaceholder title="Admin Actions Log" />} />
 
                 {/* Notifications */}
