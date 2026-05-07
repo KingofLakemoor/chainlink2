@@ -32,6 +32,9 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
     }
   };
 
+  const theme = bracket?.theme || {};
+  const primaryColor = theme.primaryColor || "#22c55e";
+
   const renderMatch = (round: number, globalMatchIndex: number) => {
     const matchId = `r${round}-m${globalMatchIndex}`;
     const [team1, team2] = getMatchTeams(round, globalMatchIndex);
@@ -44,9 +47,10 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
           disabled={!team1}
           className={cn(
             "p-2 text-left hover:bg-zinc-800 transition-colors border-b border-[#27272a] truncate",
-            selectedTeam === team1 ? "bg-zinc-800 text-[#22c55e] font-bold" : "text-zinc-300",
+            selectedTeam === team1 ? "bg-zinc-800 font-bold" : "text-zinc-300",
             !team1 && "text-zinc-600 cursor-not-allowed"
           )}
+          style={selectedTeam === team1 ? { color: primaryColor } : undefined}
           title={team1}
         >
           {team1 || 'TBD'}
@@ -56,9 +60,10 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
           disabled={!team2}
           className={cn(
             "p-2 text-left hover:bg-zinc-800 transition-colors truncate",
-            selectedTeam === team2 ? "bg-zinc-800 text-[#22c55e] font-bold" : "text-zinc-300",
+            selectedTeam === team2 ? "bg-zinc-800 font-bold" : "text-zinc-300",
             !team2 && "text-zinc-600 cursor-not-allowed"
           )}
+          style={selectedTeam === team2 ? { color: primaryColor } : undefined}
           title={team2}
         >
           {team2 || 'TBD'}
@@ -94,8 +99,16 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
 
         {/* Center - Finals */}
         <div className="flex flex-col items-center justify-center mx-4">
-          <h3 className="text-[#22c55e] font-bold mb-4 text-center text-xl uppercase tracking-widest">Champion</h3>
-          <div className="bg-[#1a1a1a] border border-[#22c55e] rounded-xl p-6 min-w-[200px] text-center shadow-[0_0_20px_rgba(34,197,94,0.15)] flex items-center justify-center min-h-[100px]">
+          <h3 className="font-bold mb-4 text-center text-xl uppercase tracking-widest" style={{ color: primaryColor }}>Champion</h3>
+          <div
+            className="bg-[#1a1a1a] rounded-xl p-6 min-w-[200px] text-center flex items-center justify-center min-h-[100px]"
+            style={{
+              borderColor: primaryColor,
+              borderWidth: '1px',
+              borderStyle: 'solid',
+              boxShadow: `0 0 20px ${primaryColor}26` // 26 is hex for ~15% opacity
+            }}
+          >
             {champion ? (
               <span className="text-2xl font-black text-white uppercase truncate px-2">{champion}</span>
             ) : (
