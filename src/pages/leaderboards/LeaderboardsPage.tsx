@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { db } from '../../lib/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { Button } from '../../components/ui/button';
 import { cn } from '../../lib/utils';
 import { Trophy, Download, Medal, Flame, CheckCircle2, Percent, Users } from 'lucide-react';
@@ -46,6 +46,21 @@ export default function LeaderboardsPage() {
         const usersSnap = await getDocs(collection(db, 'users'));
         const chainsSnap = await getDocs(collection(db, 'chains'));
 
+        // Fetch pending picks and all matchups to determine next pick
+        const pendingPicksSnap = await getDocs(query(collection(db, 'picks'), where('status', '==', 'PENDING')));
+        const matchupsSnap = await getDocs(collection(db, 'matchups'));
+
+        const matchupsMap = new Map();
+        matchupsSnap.docs.forEach(doc => {
+            matchupsMap.set(doc.id, doc.data());
+        });
+
+        const activePicksMap = new Map();
+        pendingPicksSnap.docs.forEach(doc => {
+            const pick = doc.data();
+            activePicksMap.set(pick.userId, pick);
+        });
+
         const chainsMap = new Map();
         chainsSnap.docs.forEach(doc => {
             const data = doc.data();
@@ -61,6 +76,19 @@ export default function LeaderboardsPage() {
             const total = wins + losses;
             const winRate = total > 0 ? (wins / total) * 100 : 0;
 
+            let nextPickText = 'NO PICK';
+            const userPick = activePicksMap.get(doc.id);
+            if (userPick) {
+                const matchup = matchupsMap.get(userPick.matchupId);
+                if (matchup) {
+                    if (matchup.status === 'STATUS_SCHEDULED') {
+                        nextPickText = 'PICK IN';
+                    } else {
+                        nextPickText = userPick.pick?.name || userPick.pick?.id || 'NO PICK';
+                    }
+                }
+            }
+
             return {
                 id: doc.id,
                 ...userData,
@@ -68,7 +96,8 @@ export default function LeaderboardsPage() {
                 currentChain: chainData.chain || 0,
                 bestChain: chainData.best || 0,
                 winRate,
-                totalDecisions: total
+                totalDecisions: total,
+                nextPickText
             };
         });
 
@@ -106,7 +135,7 @@ export default function LeaderboardsPage() {
   const handleExportCSV = () => {
     if (leaderboardData.length === 0) return;
 
-    const headers = ['Rank', 'Player', 'Wins', 'Losses', 'Win %', 'Current Chain', 'Best Chain'];
+    const headers = ['Rank', 'Player', 'Next Pick', 'Wins', 'Losses', 'Win %', 'Current Chain', 'Best Chain'];
 
     const csvRows = leaderboardData.map((player, index) => {
       const wins = player.stats?.wins || 0;
@@ -118,6 +147,7 @@ export default function LeaderboardsPage() {
       return [
         index + 1,
         `"${name.replace(/"/g, '""')}"`,
+        `"${(player.nextPickText || 'NO PICK').replace(/"/g, '""')}"`,
         wins,
         losses,
         `${winRate}%`,
@@ -242,6 +272,7 @@ export default function LeaderboardsPage() {
               <tr>
                 <th scope="col" className="px-6 py-4 font-bold">Rank</th>
                 <th scope="col" className="px-6 py-4 font-bold">Player</th>
+                <th scope="col" className="px-6 py-4 font-bold text-center">Next Pick</th>
                 <th scope="col" className="px-6 py-4 font-bold text-center">Wins</th>
                 <th scope="col" className="px-6 py-4 font-bold text-center">Losses</th>
                 <th scope="col" className="px-6 py-4 font-bold text-center">Win %</th>
@@ -252,7 +283,7 @@ export default function LeaderboardsPage() {
             <tbody className="divide-y divide-zinc-800/50">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-zinc-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-zinc-500">
                     <div className="flex justify-center mb-2">
                       <div className="w-6 h-6 border-2 border-[#22c55e] border-t-transparent rounded-full animate-spin"></div>
                     </div>
@@ -261,7 +292,7 @@ export default function LeaderboardsPage() {
                 </tr>
               ) : leaderboardData.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-zinc-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-zinc-500">
                     No leaderboard data available yet.
                   </td>
                 </tr>
@@ -292,6 +323,16 @@ export default function LeaderboardsPage() {
                           {user?.uid === player.id && <span className="ml-2 text-[10px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded font-bold uppercase">You</span>}
                         </div>
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <span className={cn(
+                        "font-bold text-xs px-2 py-1 rounded bg-zinc-900/50 border border-zinc-800",
+                        player.nextPickText === 'NO PICK' ? "text-zinc-500" :
+                        player.nextPickText === 'PICK IN' ? "text-green-500 border-green-500/20 bg-green-500/10" :
+                        "text-orange-400 border-orange-500/20 bg-orange-500/10"
+                      )}>
+                        {player.nextPickText || 'NO PICK'}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-green-400 font-mono font-bold">{player.stats?.wins || 0}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-center text-red-400 font-mono font-bold">{player.stats?.losses || 0}</td>
