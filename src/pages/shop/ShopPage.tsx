@@ -44,8 +44,8 @@ export default function ShopPage() {
       try {
         if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
           setItems([
-            { id: 'ring_gold', name: 'Gold Ring', description: 'A fancy gold ring for your avatar.', cost: 500, type: 'AVATAR_RING', active: true, image: 'border-yellow-500' },
-            { id: 'banner_neon', name: 'Neon Banner', description: 'Brighten up your profile header.', cost: 1000, type: 'PROFILE_BANNER', active: true, image: 'bg-gradient-to-r from-fuchsia-500 to-cyan-500' },
+            { id: 'ring_gold', name: 'Gold Ring', description: 'A fancy gold ring for your avatar.', cost: 500, type: 'AVATAR_RING', active: true, image: 'Hexagons' },
+            { id: 'banner_neon', name: 'Neon Banner', description: 'Brighten up your profile header.', cost: 1000, type: 'PROFILE_BANNER', active: true, image: 'InfernoBanner' },
             { id: 'title_highroller', name: 'High Roller', description: 'Show off your wealth.', cost: 2500, type: 'TITLE', active: true, image: '' },
           ]);
           setLoading(false);
@@ -312,7 +312,7 @@ export default function ShopPage() {
                         {item.type === 'PROFILE_BANNER' && (
                           ProfileBannerMap[item.image] ? (
                             <div className="absolute inset-0">
-                              {React.createElement(ProfileBannerMap[item.image], { isStatic: true })}
+                              {React.createElement(ProfileBannerMap[item.image], { isStatic: false })}
                             </div>
                           ) : (
                             <div className={`absolute inset-0 ${item.image || 'bg-zinc-800'}`}></div>
@@ -323,7 +323,7 @@ export default function ShopPage() {
                             {AvatarBackgroundMap[item.image] ? (
                                <>
                                  <div className="absolute inset-0 rounded-full overflow-hidden">
-                                   {React.createElement(AvatarBackgroundMap[item.image], { isStatic: true })}
+                                   {React.createElement(AvatarBackgroundMap[item.image], { isStatic: false })}
                                  </div>
                                  <div className="relative w-full h-full p-1.5">
                                    <div className="w-full h-full rounded-full bg-zinc-800 flex items-center justify-center text-[10px] text-zinc-500 shadow-inner">Avatar</div>
