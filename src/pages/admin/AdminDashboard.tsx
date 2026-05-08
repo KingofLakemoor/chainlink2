@@ -652,8 +652,14 @@ function AdminEditMatchup() {
         if (field === 'type' && value === 'OVER_UNDER') {
             const awayName = newData.awayTeam?.name || 'Away';
             const homeName = newData.homeTeam?.name || 'Home';
-            newData.title = `${awayName} @ ${homeName} - O/U`;
+            newData.title = `${awayName} @ ${homeName} - O/U ${newData.metadata?.overUnder ?? ''}`.trim();
             newData.hasCustomTitle = true;
+        }
+
+        if (field === 'metadata.overUnder' && newData.type === 'OVER_UNDER') {
+            const awayName = newData.awayTeam?.name || 'Away';
+            const homeName = newData.homeTeam?.name || 'Home';
+            newData.title = `${awayName} @ ${homeName} - O/U ${value}`.trim();
         }
 
         return newData;
