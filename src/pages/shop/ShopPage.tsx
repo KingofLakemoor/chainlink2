@@ -5,7 +5,12 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
 import { loadStripe } from '@stripe/stripe-js';
+
 import { Hexagons } from '../../components/ui/avatar-backgrounds/hexagons';
+import { Modal } from '../../components/ui/modal';
+import { Input } from '../../components/ui/input';
+
+
 import { Hip } from '../../components/ui/avatar-backgrounds/hip';
 import { Inferno } from '../../components/ui/avatar-backgrounds/inferno';
 import { Mandala } from '../../components/ui/avatar-backgrounds/mandala';
@@ -36,8 +41,20 @@ export default function ShopPage() {
   const { user, profile } = useAuth();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
   const [buyLoading, setBuyLoading] = useState<string | null>(null);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
+  const [isMerchModalOpen, setIsMerchModalOpen] = useState(false);
+  const [selectedMerchItem, setSelectedMerchItem] = useState<any>(null);
+  const [shippingInfo, setShippingInfo] = useState({
+    fullName: '',
+    streetAddress: '',
+    city: '',
+    state: '',
+    zip: '',
+    country: ''
+  });
+
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -47,6 +64,7 @@ export default function ShopPage() {
             { id: 'ring_gold', name: 'Gold Ring', description: 'A fancy gold ring for your avatar.', cost: 500, type: 'AVATAR_RING', active: true, image: 'border-yellow-500' },
             { id: 'banner_neon', name: 'Neon Banner', description: 'Brighten up your profile header.', cost: 1000, type: 'PROFILE_BANNER', active: true, image: 'bg-gradient-to-r from-fuchsia-500 to-cyan-500' },
             { id: 'title_highroller', name: 'High Roller', description: 'Show off your wealth.', cost: 2500, type: 'TITLE', active: true, image: '' },
+            { id: 'merch_shirt', name: 'Cool Shirt', description: 'A shirt', cost: 100, type: 'MERCH', active: true, image: '' },
           ]);
           setLoading(false);
           return;
@@ -156,7 +174,49 @@ export default function ShopPage() {
     }
   };
 
+
+  const handleBuyMerch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !selectedMerchItem) return;
+
+    if ((profile?.coins || 0) < selectedMerchItem.cost) {
+      setMessage({ text: "Not enough links!", type: 'error' });
+      setIsMerchModalOpen(false);
+      return;
+    }
+
+    setBuyLoading(selectedMerchItem.id);
+    setMessage(null);
+
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/shop/buy-merch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ itemId: selectedMerchItem.id, shippingInfo })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setMessage({ text: "Order placed successfully! We will email you with updates.", type: 'success' });
+        setIsMerchModalOpen(false);
+      } else {
+        setMessage({ text: data.error || "Purchase failed.", type: 'error' });
+      }
+    } catch (e: any) {
+      setMessage({ text: "An error occurred.", type: 'error' });
+    } finally {
+      setBuyLoading(null);
+    }
+  };
+
+
   const cosmetics = items.filter(item => item.type === 'AVATAR_RING' || item.type === 'PROFILE_BANNER' || item.type === 'TITLE');
+  const merchItems = items.filter(item => item.type === 'MERCH');
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
@@ -380,29 +440,129 @@ export default function ShopPage() {
           )}
         </section>
 
+
         <section>
           <h2 className="text-2xl font-bold text-zinc-200 mb-4 border-b border-zinc-800 pb-2">Merch</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* T-Shirt */}
-            <div className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
-              <div className="h-40 bg-zinc-900 flex items-center justify-center relative overflow-hidden border-b border-zinc-800">
-                <div className="text-6xl">👕</div>
-              </div>
-              <div className="p-5 flex flex-col flex-1">
-                <h3 className="text-xl font-bold text-zinc-200 mb-2">ChainLink T-Shirt</h3>
-                <p className="text-sm text-zinc-400 flex-1 mb-6">Anchor for the entire economy. Rep your favorite predictions app in real life.</p>
-                <div className="flex items-center justify-between">
-                  <div className="font-mono font-bold text-cyan-400 flex items-center gap-1">
-                    <Coins className="w-4 h-4" /> 1,000
+          {merchItems.length === 0 ? (
+            <div className="bg-[#121212] border border-zinc-800 rounded-xl p-8 text-center text-zinc-500">
+              No merch available right now.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {merchItems.map(item => (
+                <div key={item.id} className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
+                  <div className="h-40 bg-zinc-900 flex items-center justify-center relative overflow-hidden border-b border-zinc-800">
+                     <div className={`absolute inset-0 ${item.image || 'bg-zinc-800'}`}></div>
+                     {item.image ? null : <div className="text-6xl z-10">👕</div>}
                   </div>
-                  <Button variant="secondary" onClick={() => setMessage({ text: "Redemption system coming soon! Contact support.", type: 'error' })}>
-                    Coming Soon
-                  </Button>
+                  <div className="p-5 flex flex-col flex-1">
+                    <h3 className="text-xl font-bold text-zinc-200 mb-2">{item.name}</h3>
+                    <p className="text-sm text-zinc-400 flex-1 mb-6">{item.description}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="font-mono font-bold text-cyan-400 flex items-center gap-1">
+                        <Coins className="w-4 h-4" /> {item.cost.toLocaleString()}
+                      </div>
+                      <Button
+                         variant="default"
+                         className="bg-[#22c55e] hover:bg-[#16a34a] text-white"
+                         disabled={buyLoading === item.id || !user || (profile?.coins || 0) < item.cost}
+                         onClick={() => {
+                           setSelectedMerchItem(item);
+                           setIsMerchModalOpen(true);
+                         }}
+                      >
+                         {buyLoading === item.id ? 'Processing...' : 'Buy Now'}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+      <Modal isOpen={isMerchModalOpen} onClose={() => setIsMerchModalOpen(false)}>
+        <div className="p-6">
+          <h2 className="text-xl font-bold text-zinc-100 mb-2">Order {selectedMerchItem?.name}</h2>
+          <p className="text-zinc-400 text-sm mb-6">
+            Please enter your shipping information below. This is required for physical merchandise.
+          </p>
+          <form onSubmit={handleBuyMerch}>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="fullName" className="block text-sm font-medium text-zinc-400 mb-1">Full Name</label>
+                <Input
+                  id="fullName"
+                  required
+                  value={shippingInfo.fullName}
+                  onChange={(e) => setShippingInfo({...shippingInfo, fullName: e.target.value})}
+                  className="bg-zinc-900 border-zinc-800"
+                />
+              </div>
+              <div>
+                <label htmlFor="streetAddress" className="block text-sm font-medium text-zinc-400 mb-1">Street Address</label>
+                <Input
+                  id="streetAddress"
+                  required
+                  value={shippingInfo.streetAddress}
+                  onChange={(e) => setShippingInfo({...shippingInfo, streetAddress: e.target.value})}
+                  className="bg-zinc-900 border-zinc-800"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="city" className="block text-sm font-medium text-zinc-400 mb-1">City</label>
+                  <Input
+                    id="city"
+                    required
+                    value={shippingInfo.city}
+                    onChange={(e) => setShippingInfo({...shippingInfo, city: e.target.value})}
+                    className="bg-zinc-900 border-zinc-800"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="state" className="block text-sm font-medium text-zinc-400 mb-1">State</label>
+                  <Input
+                    id="state"
+                    required
+                    value={shippingInfo.state}
+                    onChange={(e) => setShippingInfo({...shippingInfo, state: e.target.value})}
+                    className="bg-zinc-900 border-zinc-800"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="zip" className="block text-sm font-medium text-zinc-400 mb-1">ZIP Code</label>
+                  <Input
+                    id="zip"
+                    required
+                    value={shippingInfo.zip}
+                    onChange={(e) => setShippingInfo({...shippingInfo, zip: e.target.value})}
+                    className="bg-zinc-900 border-zinc-800"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="country" className="block text-sm font-medium text-zinc-400 mb-1">Country</label>
+                  <Input
+                    id="country"
+                    required
+                    value={shippingInfo.country}
+                    onChange={(e) => setShippingInfo({...shippingInfo, country: e.target.value})}
+                    className="bg-zinc-900 border-zinc-800"
+                  />
                 </div>
               </div>
             </div>
-          </div>
-        </section>
+            <div className="mt-6 flex justify-end">
+              <Button type="submit" disabled={buyLoading === selectedMerchItem?.id} className="bg-[#22c55e] hover:bg-[#16a34a] text-white">
+                 {buyLoading === selectedMerchItem?.id ? 'Processing...' : 'Place Order'}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </Modal>
+
       </div>
     </div>
   );
