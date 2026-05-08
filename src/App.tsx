@@ -864,6 +864,7 @@ import ShopPage from './pages/shop/ShopPage';
 import { BracketsPage } from './pages/brackets/BracketsPage';
 import PickEmPage from './pages/pickem/PickEmPage';
 import SponsorPage from './pages/SponsorPage';
+import ChallengesPage from './pages/challenges/ChallengesPage';
 
 export default function App() {
   return (
@@ -879,6 +880,7 @@ export default function App() {
           <Route path="/pickem/:campaignId" element={<PrivateRoute><MainLayout><PickEmPage /></MainLayout></PrivateRoute>} />
           <Route path="/brackets" element={<PrivateRoute><MainLayout><BracketsPage /></MainLayout></PrivateRoute>} />
           <Route path="/brackets/:bracketId" element={<PrivateRoute><MainLayout><BracketsPage /></MainLayout></PrivateRoute>} />
+          <Route path="/challenges" element={<PrivateRoute><MainLayout><ChallengesPage /></MainLayout></PrivateRoute>} />
           <Route path="/squads" element={<PrivateRoute><MainLayout><PlaceholderPage title="Squads" /></MainLayout></PrivateRoute>} />
           <Route path="/leaderboards" element={<PrivateRoute><MainLayout><LeaderboardsPage /></MainLayout></PrivateRoute>} />
           <Route path="/shop" element={<PrivateRoute><MainLayout><ShopPage /></MainLayout></PrivateRoute>} />
