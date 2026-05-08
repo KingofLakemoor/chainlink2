@@ -340,7 +340,83 @@ apiRouter.post("/shop/buy", async (req, res) => {
   }
 });
 
-apiRouter.post("/user/equip", async (req, res) => {
+apiRouter.post("/shop/buy-merch", async (req, res) => {
+  try {
+    const { itemId, shippingInfo } = req.body;
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const idToken = authHeader.split('Bearer ')[1];
+    if (!adminAuth || !adminDb) return res.status(500).json({ success: false, error: "admin tools not initialized" });
+
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    await adminDb.runTransaction(async (transaction: any) => {
+      const userRef = adminDb.collection('users').doc(uid);
+      const userDoc = await transaction.get(userRef);
+      if (!userDoc.exists) throw new Error("User not found");
+
+      const itemRef = adminDb.collection('shopItems').doc(itemId);
+      const itemDoc = await transaction.get(itemRef);
+      if (!itemDoc.exists) throw new Error("Item not found");
+
+      const item = itemDoc.data()!;
+      if (!item.active) throw new Error("Item is no longer available");
+      if (item.type !== 'MERCH') throw new Error("Item is not a merch item");
+
+      const profile = userDoc.data()!;
+      const cost = item.cost ?? 0;
+
+      if (item.premiumOnly && !profile.premium) {
+        throw new Error("This item requires ChainLink Pro.");
+      }
+
+      if (profile.coins < cost) {
+        throw new Error("Not enough links!");
+      }
+
+      // We don't add merch to inventory like cosmetics, we create an order
+      const updateData: any = {
+        updatedAt: Date.now(),
+        coins: profile.coins - cost,
+      };
+
+      transaction.update(userRef, updateData);
+
+      const ordersRef = adminDb.collection('orders').doc();
+      transaction.set(ordersRef, {
+        userId: uid,
+        userEmail: profile.email || decodedToken.email || '',
+        itemId: itemId,
+        itemName: item.name,
+        shippingInfo: shippingInfo,
+        status: 'PENDING',
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      });
+
+      const notificationsRef = adminDb.collection('notifications').doc();
+      transaction.set(notificationsRef, {
+        title: 'New Merch Order',
+        body: `User ${profile.username || uid} ordered ${item.name}.`,
+        audience: 'ADMIN',
+        status: 'PENDING',
+        scheduledTime: Date.now(),
+        createdAt: Date.now()
+      });
+    });
+
+    res.json({ success: true });
+  } catch (e: any) {
+    console.error("Buy merch error:", e.message, e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+apiRouter.post("/user/equip" , async (req, res) => {
   try {
     const { itemId, type } = req.body; // type is e.g. 'PROFILE_BANNER', 'AVATAR_RING', 'TITLE'
     const authHeader = req.headers.authorization;
