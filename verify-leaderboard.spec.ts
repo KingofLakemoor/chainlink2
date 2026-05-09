@@ -26,7 +26,7 @@ test('LeaderboardsPage shows Next Pick', async ({ page }) => {
 
   // Navigate to leaderboards manually
   await page.goto('http://localhost:3000/leaderboards');
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(5000);
 
   console.log("BODY text:", await page.locator('body').innerText());
 
