@@ -1,3 +1,4 @@
+import React from 'react';
 import { test, expect } from '@playwright/test';
 
 test('LeaderboardsPage shows Next Pick', async ({ page }) => {
