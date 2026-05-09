@@ -17,6 +17,8 @@ import { PhantomStar } from '../../components/ui/avatar-backgrounds/phantomstar'
 import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
 import { OceanBanner } from '../../components/ui/profile-banners/ocean';
 import { PhantomStarBanner } from '../../components/ui/profile-banners/phantom-star';
+import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-syndicate';
+import { PrimeCircuitRing } from '../../components/ui/avatar-backgrounds/prime-circuit-ring';
 import { cn } from '../../lib/utils';
 
 const AvatarBackgroundMap: Record<string, React.FC<any>> = {
@@ -25,13 +27,15 @@ const AvatarBackgroundMap: Record<string, React.FC<any>> = {
   'Inferno': Inferno,
   'Mandala': Mandala,
   'Ocean': Ocean,
-  'PhantomStar': PhantomStar
+  'PhantomStar': PhantomStar,
+  'PrimeCircuitRing': PrimeCircuitRing
 };
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {
   'InfernoBanner': InfernoBanner,
   'OceanBanner': OceanBanner,
-  'PhantomStarBanner': PhantomStarBanner
+  'PhantomStarBanner': PhantomStarBanner,
+  'GenesisSyndicate': GenesisSyndicate
 };
 
 export default function DashboardPage() {
