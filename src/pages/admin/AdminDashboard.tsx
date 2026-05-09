@@ -285,7 +285,9 @@ function AdminMatchups() {
                      existingData.homeTeam?.id !== scrapedMatchup.homeTeam?.id ||
                      existingData.awayTeam?.name !== scrapedMatchup.awayTeam?.name ||
                      existingData.awayTeam?.image !== scrapedMatchup.awayTeam?.image ||
-                     existingData.awayTeam?.id !== scrapedMatchup.awayTeam?.id;
+                     existingData.awayTeam?.id !== scrapedMatchup.awayTeam?.id ||
+                     existingData.metadata?.overUnder !== scrapedMatchup.metadata?.overUnder ||
+                     (existingData.type !== 'SPREAD' && existingData.metadata?.spread !== scrapedMatchup.metadata?.spread);
 
                  if (existingDoc.id !== gameId) {
                    // Migrate to use gameId as the document ID
@@ -312,7 +314,7 @@ function AdminMatchups() {
                      metadata: {
                          ...(existingData.metadata || {}),
                          overUnder: scrapedMatchup.metadata?.overUnder,
-                         spread: scrapedMatchup.metadata?.spread,
+                         spread: existingData.type === 'SPREAD' ? existingData.metadata?.spread : scrapedMatchup.metadata?.spread,
                          network: scrapedMatchup.metadata?.network
                      },
                      updatedAt: Date.now()
@@ -335,7 +337,7 @@ function AdminMatchups() {
                      'awayTeam.image': scrapedMatchup.awayTeam?.image || existingData.awayTeam?.image,
                      'awayTeam.score': scrapedMatchup.awayTeam?.score || 0,
                      'metadata.overUnder': scrapedMatchup.metadata?.overUnder,
-                     'metadata.spread': scrapedMatchup.metadata?.spread,
+                     'metadata.spread': existingData.type === 'SPREAD' ? existingData.metadata?.spread : scrapedMatchup.metadata?.spread,
                      'metadata.network': scrapedMatchup.metadata?.network,
                      updatedAt: Date.now()
                    });
@@ -847,13 +849,13 @@ function AdminEditMatchup() {
             {matchup.type === 'SPREAD' && (
                 <div className="space-y-2">
                     <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Spread</label>
-                    <input type="number" step="0.5" value={matchup.metadata?.spread ?? ''} onChange={(e) => handleChange('metadata.spread', parseFloat(e.target.value) || 0)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+                    <input type="number" step="0.5" value={matchup.metadata?.spread ?? ''} onChange={(e) => handleChange('metadata.spread', e.target.value === '' ? '' : parseFloat(e.target.value))} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
                 </div>
             )}
             {matchup.type === 'OVER_UNDER' && (
                 <div className="space-y-2">
                     <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Total (Over/Under)</label>
-                    <input type="number" step="0.5" value={matchup.metadata?.overUnder ?? ''} onChange={(e) => handleChange('metadata.overUnder', parseFloat(e.target.value) || 0)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+                    <input type="number" step="0.5" value={matchup.metadata?.overUnder ?? ''} onChange={(e) => handleChange('metadata.overUnder', e.target.value === '' ? '' : parseFloat(e.target.value))} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
                 </div>
             )}
             <div className="space-y-2">
