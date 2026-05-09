@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
