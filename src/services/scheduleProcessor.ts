@@ -71,7 +71,9 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               existingData.awayTeam?.name !== scrapedMatchup.awayTeam?.name ||
               existingData.awayTeam?.image !== scrapedMatchup.awayTeam?.image ||
               existingData.awayTeam?.id !== scrapedMatchup.awayTeam?.id ||
-              existingData.active !== finalActive;
+              existingData.active !== finalActive ||
+              existingData.metadata?.overUnder !== scrapedMatchup.metadata?.overUnder ||
+              (existingData.type !== 'SPREAD' && existingData.metadata?.spread !== scrapedMatchup.metadata?.spread);
 
           if (needsUpdate || existingDoc.id !== gameId) {
             const updateData: any = {

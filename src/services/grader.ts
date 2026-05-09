@@ -41,14 +41,14 @@ export async function gradeSingleMatchup(matchup: any) {
 
   console.log(`[Grader] Grading ${pendingPicksSnap.size} picks for matchup ${matchup.gameId}.`);
 
-  const homeScore = matchup.homeTeam?.score || 0;
-  const awayScore = matchup.awayTeam?.score || 0;
+  const homeScore = Number(matchup.homeTeam?.score || 0);
+  const awayScore = Number(matchup.awayTeam?.score || 0);
   const lowerScoreWins = matchup.metadata?.lowerScoreWins;
   const isPostponed = matchup.status === 'STATUS_POSTPONED';
 
   let adjustedHomeScore = homeScore;
-  if (matchup.type === 'SPREAD' && typeof matchup.metadata?.spread === 'number') {
-    adjustedHomeScore += matchup.metadata.spread;
+  if (matchup.type === 'SPREAD' && matchup.metadata?.spread !== undefined && matchup.metadata?.spread !== null) {
+    adjustedHomeScore += Number(matchup.metadata.spread);
   }
 
   let winnerId: string | null = null;
@@ -56,11 +56,13 @@ export async function gradeSingleMatchup(matchup: any) {
 
   if (isPostponed) {
     isTie = true; // Treats postponed as a push to refund
-  } else if (matchup.type === 'OVER_UNDER' && typeof matchup.metadata?.overUnder === 'number') {
+  } else if (matchup.type === 'OVER_UNDER' && matchup.metadata?.overUnder !== undefined && matchup.metadata?.overUnder !== null) {
     const combinedScore = homeScore + awayScore;
-    if (combinedScore === matchup.metadata.overUnder) {
+    const overUnderLine = Number(matchup.metadata.overUnder);
+
+    if (combinedScore === overUnderLine) {
       isTie = true;
-    } else if (combinedScore > matchup.metadata.overUnder) {
+    } else if (combinedScore > overUnderLine) {
       winnerId = 'OVER';
     } else {
       winnerId = 'UNDER';
