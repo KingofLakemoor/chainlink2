@@ -550,7 +550,11 @@ function GenericTable({ collectionName }: { collectionName: string }) {
                     </td>
                   ))}
                   <td className="px-4 py-3 text-right">
-                    <button className="text-zinc-500 hover:text-white mr-3"><Edit className="w-4 h-4" /></button>
+                    {collectionName === 'picks' && (
+                      <Link to={`/admin/picks/edit/${row.id}`} className="text-zinc-500 hover:text-white mr-3 inline-block">
+                        <Edit className="w-4 h-4" />
+                      </Link>
+                    )}
                     <button onClick={() => handleDelete(row.id)} className="text-red-500/70 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                   </td>
                 </tr>
@@ -918,6 +922,7 @@ function AdminEditMatchup() {
                 <th className="pb-3 font-medium">Pick</th>
                 <th className="pb-3 font-medium">Status</th>
                 <th className="pb-3 font-medium">Coins</th>
+                <th className="pb-3 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
@@ -941,11 +946,14 @@ function AdminEditMatchup() {
                             </span>
                         </td>
                         <td className="py-4 text-zinc-400">{p.coins || 0}</td>
+                        <td className="py-4 text-right">
+                            <Link to={`/admin/picks/edit/${p.id}`} className="text-zinc-500 hover:text-white mr-3 inline-block"><Edit className="w-4 h-4" /></Link>
+                        </td>
                     </tr>
                 ))}
                 {picks.length === 0 && (
                     <tr>
-                        <td colSpan={4} className="py-8 text-center text-zinc-500">No picks found for this matchup.</td>
+                        <td colSpan={5} className="py-8 text-center text-zinc-500">No picks found for this matchup.</td>
                     </tr>
                 )}
             </tbody>
@@ -1090,6 +1098,8 @@ function AdminPlaceholder({ title }: { title: string }) {
   );
 }
 
+const EditPickPage = React.lazy(() => import('./picks/EditPickPage'));
+
 export default function AdminDashboard() {
   const { profile, loading } = useAuth();
   const location = useLocation();
@@ -1129,7 +1139,15 @@ export default function AdminDashboard() {
                 <Route path="leagues" element={<AdminLeagues />} />
                 {/* Matchups routes */}
                 <Route path="matchups" element={<AdminMatchups />} />
+
                 <Route path="picks" element={<GenericTable collectionName="picks" />} />
+                {/* Picks Routes */}
+                <Route path="picks/edit/:id" element={
+                  <React.Suspense fallback={<div className="p-8 text-zinc-500">Loading...</div>}>
+                    <EditPickPage />
+                  </React.Suspense>
+                } />
+
                 <Route path="matchups/create" element={<CreateMatchupPage />} />
                 <Route path="matchups/find" element={<AdminPlaceholder title="Find Matchup" />} />
                 <Route path="matchups/:id" element={<AdminEditMatchup />} />
