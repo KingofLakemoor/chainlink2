@@ -7,6 +7,7 @@ import { useAuth } from '../../lib/auth-context';
 import { Navigate, Routes, Route, Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 import CreateMatchupPage from './matchups/CreateMatchupPage';
+import PGABuilderPage from './pga/PGABuilderPage';
 import CreateAchievementPage from './achievements/CreateAchievementPage';
 import AwardAchievementPage from './achievements/AwardAchievementPage';
 import AchievementsListPage from './achievements/AchievementsListPage';
@@ -25,7 +26,7 @@ import BracketsAdminPage from './brackets/BracketsAdminPage';
 import {
   Users, Gamepad2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
-  FileText, Diamond, Target, Bell, Shield, Coins, Menu, X, Settings, GitMerge
+  FileText, Diamond, Target, Bell, Shield, Coins, Menu, X, Settings, GitMerge, Flag
 } from 'lucide-react';
 
 import ScraperSettingsPage from './settings/ScraperSettingsPage';
@@ -43,8 +44,9 @@ const ADMIN_MENU = [
       { id: 'matchups-find', label: 'Find Matchup', path: '/admin/matchups/find' }
     ]
   },
-  { id: 'pickem', label: "Pick'em", icon: Layers, path: '/admin/pickem' },
+{ id: 'pickem', label: "Pick'em", icon: Layers, path: '/admin/pickem' },
   { id: 'brackets', label: 'Brackets', icon: GitMerge, path: '/admin/brackets' },
+  { id: 'pga-builder', label: 'PGA Builder', icon: Flag, path: '/admin/pga-builder' },
   {
     id: 'announcements',
     label: 'Announcements',
@@ -1179,7 +1181,8 @@ export default function AdminDashboard() {
 
                 <Route path="matchups/create" element={<CreateMatchupPage />} />
                 <Route path="matchups/find" element={<AdminPlaceholder title="Find Matchup" />} />
-                <Route path="matchups/:id" element={<AdminEditMatchup />} />
+<Route path="matchups/:id" element={<AdminEditMatchup />} />
+                <Route path="pga-builder" element={<PGABuilderPage />} />
 
                 {/* Announcements */}
                 <Route path="announcements" element={<GenericTable collectionName="announcements" />} />
