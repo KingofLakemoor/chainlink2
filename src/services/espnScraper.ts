@@ -1,4 +1,4 @@
-export type League = "NFL" | "NBA" | "NHL" | "MLB" | "MLS" | "EPL" | "MBB" | "WBB" | "NWSL" | "COLLEGE-FOOTBALL" | "WNBA" | "PGA" | "FIFA" | "FRA" | "TUR" | "RPL" | "CHN" | string;
+export type League = "NFL" | "NBA" | "NHL" | "MLB" | "MLS" | "EPL" | "MBB" | "WBB" | "NWSL" | "COLLEGE-FOOTBALL" | "COLLEGE-BASEBALL" | "WNBA" | "PGA" | "FIFA" | "FRA" | "TUR" | "RPL" | "CHN" | string;
 
 
 export const MATCHUP_FINAL_STATUSES = [
@@ -73,6 +73,9 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
   if (league === "WBB") {
     return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/basketball/womens-college-basketball/scoreboard?groups=50&dates=${date}&limit=500`);
   }
+  if (league === "COLLEGE-BASEBALL") {
+    return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates=${date}&limit=500`);
+  }
   if (league === "PGA") {
     return ['https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga'];
   }
@@ -92,6 +95,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
       case "RPL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/rus.1/scoreboard?dates=${date}`);
       case "CHN": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/chn.1/scoreboard?dates=${date}`);
       case "COLLEGE-FOOTBALL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${date}`);
+      case "COLLEGE-BASEBALL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates=${date}&limit=500`);
       case "WNBA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/scoreboard?dates=${date}`);
       default: return [];
     }
@@ -111,6 +115,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
     case "RPL": return [`https://cdn.espn.com/core/soccer/schedule/_/league/rus.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "CHN": return [`https://cdn.espn.com/core/soccer/schedule/_/league/chn.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "COLLEGE-FOOTBALL": return [`https://cdn.espn.com/core/college-football/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
+    case "COLLEGE-BASEBALL": return [`https://cdn.espn.com/core/college-baseball/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "WNBA": return [`https://cdn.espn.com/core/wnba/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     default: return [];
   }
@@ -122,7 +127,7 @@ export async function fetchScheduleData(endpoint: string, league: League, isScor
   const scheduleData: Record<string, any> = {};
 
   // For scoreboards or leagues already using scoreboard
-  if (league === "MBB" || league === "WBB" || league === "PGA" || isScoreboardOnly) {
+  if (league === "MBB" || league === "WBB" || league === "PGA" || league === "COLLEGE-BASEBALL" || isScoreboardOnly) {
     const seenGameIds = new Set<string>();
     const uniqueEvents = [];
 

@@ -13,7 +13,7 @@ export default function PickEmCreateCampaign() {
   const [pickLimit, setPickLimit] = useState<number>(0);
   const [loading, setLoading] = useState(false);
 
-  const availableLeagues = ['COLLEGE-FOOTBALL', 'NFL', 'NBA'];
+  const availableLeagues = ['COLLEGE-FOOTBALL', 'COLLEGE-BASEBALL', 'NFL', 'NBA'];
 
   const handleLeagueToggle = (league: string) => {
     setLeagues(prev =>
