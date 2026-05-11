@@ -229,7 +229,7 @@ function AdminMatchups() {
         console.error("Error fetching system settings", e);
       }
 
-      const leagues = ["MLB", "NBA", "NHL", "PGA", "WNBA", "NFL", "WBB", "MBB", "MLS", "EPL", "NWSL", "COLLEGE-FOOTBALL", "COLLEGE-BASEBALL", "FIFA", "FRA", "TUR", "RPL", "CHN"];
+      const leagues = ["MLB", "NBA", "NHL", "PGA", "WNBA", "NFL", "WBB", 
 
       let totalImported = 0;
 
