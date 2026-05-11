@@ -417,7 +417,7 @@ function PlayDashboard() {
       if (filterType === 'available' && m.status !== 'STATUS_SCHEDULED') return false;
       if (filterType === 'chain' && !m.featured) return false;
 
-      if (selectedSport === 'SOCCER' && !['MLS', 'EPL', 'NWSL', 'FIFA'].includes(m.league)) return false;
+      if (selectedSport === 'SOCCER' && !['MLS', 'EPL', 'NWSL', 'FIFA', 'FRA', 'TUR', 'RPL', 'CHN'].includes(m.league)) return false;
       if (selectedSport === 'BASKETBALL' && !['NBA', 'MBB', 'WBB', 'WNBA'].includes(m.league)) return false;
       if (selectedSport === 'HOCKEY' && !['NHL'].includes(m.league)) return false;
       if (selectedSport === 'BASEBALL' && !['MLB'].includes(m.league)) return false;
