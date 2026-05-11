@@ -107,9 +107,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     // Listen to current chain
-    const unsubChain = onSnapshot(doc(db, 'chains', user.uid + '_current'), (doc) => {
-      if (doc.exists()) {
-        setChain({ id: doc.id, ...doc.data() });
+    const unsubChain = onSnapshot(doc(db, 'chains', user.uid + '_current'), async (documentSnapshot) => {
+      if (documentSnapshot.exists()) {
+        setChain({ id: documentSnapshot.id, ...documentSnapshot.data() });
+      } else {
+        // Create the missing chain document for the user
+        try {
+          const { setDoc } = await import('firebase/firestore');
+          const newChainData = {
+            userId: user.uid,
+            active: true,
+            chain: 0,
+            wins: 0,
+            losses: 0,
+            best: 0,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          };
+          await setDoc(doc(db, 'chains', user.uid + '_current'), newChainData);
+          // The onSnapshot will automatically re-fire and set the state once created
+        } catch (err) {
+          console.error("Failed to create missing chain document:", err);
+        }
       }
     });
 
