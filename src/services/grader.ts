@@ -67,6 +67,33 @@ export async function gradeSingleMatchup(matchup: any) {
     } else {
       winnerId = 'UNDER';
     }
+  } else if (matchup.type === 'SOCCER_SCORE') {
+    const awayScoreType = matchup.metadata?.awayScoreType || 'WIN_BY';
+    const homeScoreType = matchup.metadata?.homeScoreType || 'WIN_DRAW_LOSE';
+    const awayScoreValue = Number(matchup.metadata?.awayScoreValue || 0);
+    const homeScoreValue = Number(matchup.metadata?.homeScoreValue || 0);
+
+    let awayWins = false;
+    if (awayScoreType === 'WIN_BY') {
+        awayWins = (awayScore - homeScore) >= awayScoreValue;
+    } else {
+        awayWins = (awayScore - homeScore) >= -awayScoreValue;
+    }
+
+    let homeWins = false;
+    if (homeScoreType === 'WIN_BY') {
+        homeWins = (homeScore - awayScore) >= homeScoreValue;
+    } else {
+        homeWins = (homeScore - awayScore) >= -homeScoreValue;
+    }
+
+    if (awayWins && !homeWins) {
+        winnerId = matchup.awayTeam?.id;
+    } else if (homeWins && !awayWins) {
+        winnerId = matchup.homeTeam?.id;
+    } else {
+        isTie = true;
+    }
   } else if (adjustedHomeScore === awayScore) {
     isTie = true;
   } else if (lowerScoreWins) {

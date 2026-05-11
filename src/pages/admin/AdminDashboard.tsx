@@ -839,7 +839,7 @@ function AdminEditMatchup() {
                     <option value="BOOLEAN">BOOLEAN</option>
                     <option value="CUSTOM">CUSTOM</option>
                     <option value="SPREAD">SPREAD</option>
-                    <option value="CUSTOM_SCORE">CUSTOM_SCORE</option>
+                    <option value="SOCCER_SCORE">SOCCER_SCORE</option>
                     <option value="OVER_UNDER">OVER_UNDER</option>
                 </select>
             </div>
@@ -857,6 +857,32 @@ function AdminEditMatchup() {
                 <div className="space-y-2">
                     <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Total (Over/Under)</label>
                     <input type="number" step="0.5" value={matchup.metadata?.overUnder ?? ''} onChange={(e) => handleChange('metadata.overUnder', e.target.value === '' ? '' : parseFloat(e.target.value))} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+                </div>
+            )}
+            {matchup.type === 'SOCCER_SCORE' && (
+                <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Away Team Score Type</label>
+                        <select value={matchup.metadata?.awayScoreType || 'WIN_BY'} onChange={(e) => handleChange('metadata.awayScoreType', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700">
+                            <option value="WIN_BY">Win By x+</option>
+                            <option value="WIN_DRAW_LOSE">Win, Draw, or Lose by x</option>
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Home Team Score Type</label>
+                        <select value={matchup.metadata?.homeScoreType || 'WIN_DRAW_LOSE'} onChange={(e) => handleChange('metadata.homeScoreType', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700">
+                            <option value="WIN_BY">Win By x+</option>
+                            <option value="WIN_DRAW_LOSE">Win, Draw, or Lose by x</option>
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Away Score Value</label>
+                        <input type="number" step="0.5" value={matchup.metadata?.awayScoreValue ?? ''} onChange={(e) => handleChange('metadata.awayScoreValue', e.target.value === '' ? '' : parseFloat(e.target.value))} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Home Score Value</label>
+                        <input type="number" step="0.5" value={matchup.metadata?.homeScoreValue ?? ''} onChange={(e) => handleChange('metadata.homeScoreValue', e.target.value === '' ? '' : parseFloat(e.target.value))} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+                    </div>
                 </div>
             )}
             <div className="space-y-2">
