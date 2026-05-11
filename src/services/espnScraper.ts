@@ -1,4 +1,4 @@
-export type League = "NFL" | "NBA" | "NHL" | "MLB" | "MLS" | "EPL" | "MBB" | "WBB" | "NWSL" | "COLLEGE-FOOTBALL" | "COLLEGE-BASEBALL" | "WNBA" | "PGA" | "FIFA" | "FRA" | "TUR" | "RPL" | "CHN" | string;
+export type League = "NFL" | "NBA" | "NHL" | "MLB" | "MLS" | "EPL" | "MBB" | "WBB" | "NWSL" | "COLLEGE-FOOTBALL" | "COLLEGE-BASEBALL" | "ATP" | "WTA" | "WNBA" | "PGA" | "FIFA" | "FRA" | "TUR" | "RPL" | "CHN" | string;
 
 
 export const MATCHUP_FINAL_STATUSES = [
@@ -79,6 +79,12 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
   if (league === "PGA") {
     return ['https://site.api.espn.com/apis/site/v2/sports/golf/leaderboard?league=pga'];
   }
+  if (league === "ATP") {
+    return ['https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard'];
+  }
+  if (league === "WTA") {
+    return ['https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard'];
+  }
 
   // If scoreboardOnly is true, use scoreboard endpoints to save bandwidth
   if (scoreboardOnly) {
@@ -127,7 +133,7 @@ export async function fetchScheduleData(endpoint: string, league: League, isScor
   const scheduleData: Record<string, any> = {};
 
   // For scoreboards or leagues already using scoreboard
-  if (league === "MBB" || league === "WBB" || league === "PGA" || league === "COLLEGE-BASEBALL" || isScoreboardOnly) {
+  if (league === "MBB" || league === "WBB" || league === "PGA" || league === "COLLEGE-BASEBALL" || league === "ATP" || league === "WTA" || isScoreboardOnly) {
     const seenGameIds = new Set<string>();
     const uniqueEvents = [];
 
@@ -195,6 +201,92 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
 
         for (const game of games) {
           const gameId = String(game.id);
+
+          if (league === "ATP" || league === "WTA") {
+            const tournamentName = game.name;
+            const tournamentId = game.id;
+
+            for (const grouping of (game.groupings || [])) {
+              if (grouping.grouping?.slug !== "mens-singles" && grouping.grouping?.slug !== "womens-singles") {
+                  continue; // We'll stick to singles for now
+              }
+
+              for (const comp of (grouping.competitions || [])) {
+                  const competitors = comp.competitors?.filter((c: any) => c.athlete) || [];
+                  if (competitors.length !== 2) continue;
+
+                  const a = competitors[0];
+                  const b = competitors[1];
+
+                  // Determine home/away based on explicit designation or default to a/b
+                  let awayCompetitor, homeCompetitor;
+                  if (a.homeAway === 'away' && b.homeAway === 'home') {
+                      awayCompetitor = a;
+                      homeCompetitor = b;
+                  } else if (a.homeAway === 'home' && b.homeAway === 'away') {
+                      awayCompetitor = b;
+                      homeCompetitor = a;
+                  } else {
+                      awayCompetitor = a;
+                      homeCompetitor = b;
+                  }
+
+                  const homeScore = homeCompetitor.linescores ? homeCompetitor.linescores.filter((ls: any) => ls.winner === true).length : 0;
+                  const awayScore = awayCompetitor.linescores ? awayCompetitor.linescores.filter((ls: any) => ls.winner === true).length : 0;
+
+                  const matchupGameId = `${tournamentId}_${comp.id}`;
+                  if (processedGameIds.has(matchupGameId)) continue;
+                  processedGameIds.add(matchupGameId);
+
+                  let rawStatus = comp.status?.type?.name || "STATUS_SCHEDULED";
+                  let finalStatusDesc = comp.status?.type?.shortDetail || "Upcoming";
+                  let finalStatus = "STATUS_SCHEDULED";
+
+                  if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || finalStatusDesc.toLowerCase().includes('final')) {
+                      finalStatus = "STATUS_FINAL";
+                  } else if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus)) {
+                      finalStatus = "STATUS_POSTPONED";
+                  } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus)) {
+                      finalStatus = "STATUS_DELAYED";
+                  } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || (rawStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0))) {
+                      finalStatus = "STATUS_IN_PROGRESS";
+                  } else {
+                      finalStatus = "STATUS_SCHEDULED";
+                      finalStatusDesc = "Upcoming";
+                  }
+
+                  parsedMatchups.push({
+                     startTime: new Date(comp.date).getTime(),
+                     active: true,
+                     featured: false,
+                     league,
+                     type: "MONEYLINE",
+                     status: finalStatus,
+                     statusDesc: finalStatusDesc,
+                     gameId: matchupGameId,
+                     homeTeam: {
+                       id: String(homeCompetitor.id),
+                       name: homeCompetitor.athlete.displayName,
+                       image: homeCompetitor.athlete.flag?.href || "/icons/icon-256x256.png",
+                       score: homeScore
+                     },
+                     awayTeam: {
+                       id: String(awayCompetitor.id),
+                       name: awayCompetitor.athlete.displayName,
+                       image: awayCompetitor.athlete.flag?.href || "/icons/icon-256x256.png",
+                       score: awayScore
+                     },
+                     cost: 0,
+                     metadata: {
+                       network: comp.geoBroadcasts?.[0]?.media?.shortName || "N/A",
+                       tournament: tournamentName
+                     }
+                  });
+              }
+            }
+            continue;
+          }
+
           const competition = game.competitions?.[0];
           if (!competition) continue;
 
