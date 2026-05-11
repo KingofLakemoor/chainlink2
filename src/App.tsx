@@ -57,6 +57,7 @@ function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) =>
 
         <div className="mt-6 mb-2 px-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">ChainLink</div>
         <NavItem icon={PlayCircle} label="Play ChainLink" path="/play" />
+        <NavItem icon={Gamepad2} label="My Picks" path="/mypicks" />
         <NavItem icon={Layers} label="Pick'em" path="/pickem" />
         <NavItem icon={Trophy} label="Brackets" path="/brackets" />
         <NavItem icon={Trophy} label="Leaderboards" path="/leaderboards" />
@@ -863,6 +864,7 @@ import DashboardPage from './pages/dashboard/DashboardPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import LeaderboardsPage from './pages/leaderboards/LeaderboardsPage';
 import ShopPage from './pages/shop/ShopPage';
+import MyPicksPage from './pages/mypicks/MyPicksPage';
 import { BracketsPage } from './pages/brackets/BracketsPage';
 import PickEmPage from './pages/pickem/PickEmPage';
 import SponsorPage from './pages/SponsorPage';
@@ -884,6 +886,7 @@ export default function App() {
           <Route path="/brackets/:bracketId" element={<PrivateRoute><MainLayout><BracketsPage /></MainLayout></PrivateRoute>} />
           <Route path="/challenges" element={<PrivateRoute><MainLayout><ChallengesPage /></MainLayout></PrivateRoute>} />
           <Route path="/squads" element={<PrivateRoute><MainLayout><PlaceholderPage title="Squads" /></MainLayout></PrivateRoute>} />
+          <Route path="/mypicks" element={<PrivateRoute><MainLayout><MyPicksPage /></MainLayout></PrivateRoute>} />
           <Route path="/leaderboards" element={<PrivateRoute><MainLayout><LeaderboardsPage /></MainLayout></PrivateRoute>} />
           <Route path="/shop" element={<PrivateRoute><MainLayout><ShopPage /></MainLayout></PrivateRoute>} />
           <Route path="/games" element={<PrivateRoute><MainLayout><PlaceholderPage title="Games" /></MainLayout></PrivateRoute>} />
