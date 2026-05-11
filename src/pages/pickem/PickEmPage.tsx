@@ -158,7 +158,7 @@ export default function PickEmPage() {
           const formattedLeaderboard = participantIds.map(uid => ({
              uid,
              name: usersMap[uid]?.username || usersMap[uid]?.displayName || 'Unknown User',
-             avatar: usersMap[uid]?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${uid}`,
+             avatar: usersMap[uid]?.image || usersMap[uid]?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${uid}`,
              ...participantStats[uid]
           })).sort((a, b) => b.points - a.points); // Sort by points descending
 
