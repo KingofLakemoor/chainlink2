@@ -1,26 +1,16 @@
-1. **Update `App.tsx` (`renderMatchupCard` function)**
-   - Check if `m.type === 'OVER_UNDER'`.
-   - If it is:
-     - Use `OVER` for the away team side and `/images/over.png` for its image.
-     - Use `UNDER` for the home team side and `/images/under.png` for its image.
-   - Adjust the `handleMakePick` calls to pass the modified team details or just keep it simple by replacing the display elements. Wait, if `handleMakePick(m, m.awayTeam)` is called, but we are faking it to be 'OVER', we need to check how picks are stored.
-   - From grep results: `winnerId` is set to `'OVER'` or `'UNDER'` for `OVER_UNDER` matchups (in `grader.ts` and `pickemGrader.ts`).
-   - If `m.type === 'OVER_UNDER'`, we should probably pass `{ id: 'OVER', name: 'Over', image: '/images/over.png' }` to `handleMakePick` for the "away" (top) pick, and similarly `{ id: 'UNDER', name: 'Under', image: '/images/under.png' }` for the "home" (bottom) pick.
-
-2. **Update `src/components/dashboard/dashboard-pick.tsx` (`DashboardPick`)**
-   - In `DashboardPick`, check if `activeMatchup.type === 'OVER_UNDER'`.
-   - If so, update the image, name, and pick ID logic similar to `App.tsx`.
-   - Ensure the pick status logic (`activePick?.pick?.id === ...`) still works with `'OVER'` and `'UNDER'`.
-
-3. **Update `src/pages/pickem/PickEmPage.tsx`**
-   - When rendering the matchup buttons, check `m.type === 'OVER_UNDER'`.
-   - Replace the team images and names with 'OVER' / 'UNDER' and their respective images `/images/over.png` / `/images/under.png`.
-   - The pick IDs should be `'OVER'` and `'UNDER'`. Update `handlePick(m, m.awayTeam.id)` to `handlePick(m, 'OVER')` etc.
-
-4. **Add the images**
-   - `cp "/tmp/file_attachments/Over Under ChainLink-1-Over.png" public/images/over.png`
-   - `cp "/tmp/file_attachments/Over Under ChainLink-2-Under.png" public/images/under.png`
-   (Already done, need to make sure they are tracked). Wait, I just need to make sure I don't need to rename them.
-
-5. **Pre-commit Instructions & Review**
-   - Check the code using `pre_commit_instructions` tool and run pre-commit tests.
+1. **Create the PGA Matchups Builder Component (`src/pages/admin/pga/PGABuilderPage.tsx`)**
+    - Needs a UI for fetching the current PGA leaderboard (calling the `PGA` ESPN API endpoint directly or via a new backend helper).
+    - Allow selecting Golfer A and Golfer B from the leaderboard.
+    - Matchup types: "Tournament Finish" (who places higher overall, lower score wins) or "Round Score" (lower score wins).
+    - Save this customized matchup to the database with appropriate metadata (`metadata: { golf: true, lowerScoreWins: true, pgaBuilder: true, ... }`).
+2. **Add the PGA Builder route in `AdminDashboard.tsx`**
+    - Add a link in the Admin sidebar for "PGA Builder".
+    - Add the route `/admin/pga-builder` pointing to `PGABuilderPage`.
+3. **Update `espnScraper.ts` for PGA**
+    - Refactor the automated matchup generation for PGA. We can either remove the automatic generation completely and rely only on the builder, OR we keep the automated generation as an option but flag it somehow. Since the user wants a builder, it might be better to *only* update existing PGA matchups (like those created by the builder) with their scores, rather than auto-creating random pairs. Let's update `espnScraper.ts` to update golfers' scores based on their ESPN IDs, rather than auto-generating pairs. Wait, the user said: "Instead of using it to create matchups, we just use it to fetch the leaderboard?league=pga endpoint to populate a dropdown list of golfers in your Builder. Hybrid Grading: Once you manually pair Golfer A and Golfer B, we can still use the automated background scraper to update their scores and auto-grade the matchup when the round/tournament ends".
+    - Thus, in `espnScraper.ts`, if `league === "PGA"`, we should *stop* auto-creating matchups. Instead, we just fetch the leaderboard and maybe return it as raw data if called from the frontend builder, OR we iterate through *existing* PGA matchups in our DB, find those golfers in the leaderboard payload, update their scores, and return those updated matchups to be synced.
+    - Actually, the easiest way is: when `scrapeLeagueSchedules` runs for PGA, it should fetch all existing PGA matchups from the DB that are active/not final. Then it uses the `leaderboard` data to update the `score` and `status` of those specific matchups, instead of creating new ones.
+4. **Complete pre commit steps**
+    - Ensure proper testing, verification, review, and reflection are done.
+5. **Submit the change**
+    - Commit with branch name `pga-builder`.
