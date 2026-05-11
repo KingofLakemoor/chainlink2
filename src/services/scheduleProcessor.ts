@@ -50,13 +50,32 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
           const newTitle = existingData.hasCustomTitle ? existingData.title : scrapedMatchup.title;
 
-          let intendedActive = scrapedMatchup.active && defaultActive;
-          let finalActive = intendedActive;
+          let finalActive = existingData.active;
 
-          if (existingData.active && !intendedActive) {
-            const picksSnap = await adminDb.collection('picks').where('matchupId', '==', gameId).limit(1).get();
-            if (!picksSnap.empty) {
+          if (!scoreboardOnly) {
+            let scraperActive = scrapedMatchup.active;
+            if (!scraperActive && existingData.type !== 'SCORE') {
+              scraperActive = true;
+            }
+
+            let intendedActive = scraperActive && defaultActive;
+
+            if (existingData.active && !intendedActive) {
+              const picksSnap = await adminDb.collection('picks').where('matchupId', '==', gameId).limit(1).get();
+              if (!picksSnap.empty) {
+                finalActive = true;
+              } else {
+                finalActive = false;
+              }
+            } else if (!existingData.active && intendedActive) {
               finalActive = true;
+            }
+          } else {
+            if (existingData.active && !defaultActive) {
+              const picksSnap = await adminDb.collection('picks').where('matchupId', '==', gameId).limit(1).get();
+              if (picksSnap.empty) {
+                finalActive = false;
+              }
             }
           }
 
