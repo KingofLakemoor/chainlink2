@@ -55,17 +55,6 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchAchievements = async () => {
       try {
-        if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
-            // Mock achievements for local UI testing
-            setAchievements([
-                { id: '1', name: 'First Win', description: 'Won your first game', weight: 1, image: '/icons/icon-256x256.png' },
-                { id: '2', name: 'Hot Streak', description: 'Won 5 games in a row', weight: 2, image: '/icons/icon-256x256.png' },
-                { id: '3', name: 'Unstoppable', description: 'Won 10 games in a row', weight: 3, image: '/icons/icon-256x256.png' }
-            ]);
-            setAchievementsLoading(false);
-            return;
-        }
-
         const snap = await getDocs(query(collection(db, 'achievements'), orderBy('weight', 'desc')));
         const achs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setAchievements(achs);
