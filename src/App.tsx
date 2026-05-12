@@ -766,6 +766,13 @@ function PlayDashboard() {
           ))}
         </div>
       )}
+
+      <div className="mt-12 mb-8 px-4 text-center text-[10px] text-zinc-600/40 max-w-4xl mx-auto leading-relaxed">
+        <p>&copy; {new Date().getFullYear()} Club 602. All rights reserved.</p>
+        <p className="mt-1">
+          DISCLAIMER: This site is not affiliated, associated, authorized, endorsed by, or in any way officially connected with any network, team, league or its subsidiaries or its affiliates. All logos, brands, and other trademarks or images featured or referred to within this website are the property of their respective trademark holders.
+        </p>
+      </div>
     </div>
   );
 }
