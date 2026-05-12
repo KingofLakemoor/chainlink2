@@ -1,16 +1,76 @@
 [
   {
-    "name": "First Win",
-    "description": "You won your first game!",
+    "name": "Campaign Starter",
+    "description": "You started a campaign chain!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 500,
+    "weight": 2,
+    "threshold": 1,
+    "type": "CAMPAIGNCHAIN"
+  },
+  {
+    "name": "Campaign Winner",
+    "description": "You won a campaign game!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 500,
+    "weight": 2,
+    "threshold": 1,
+    "type": "CAMPAIGNWINS"
+  },
+  {
+    "name": "Lose 5 in a row",
+    "description": "You lost 5 games in a row.",
     "image": "/icons/icon-256x256.png",
     "imageStorageId": "default",
     "coins": 100,
     "weight": 1,
-    "threshold": 1,
-    "type": "WINS"
+    "threshold": 5,
+    "type": "CHAINLOSS"
   },
   {
-    "name": "Winning Streak",
+    "name": "Lose 10 in a row",
+    "description": "You lost 10 games in a row.",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 200,
+    "weight": 2,
+    "threshold": 10,
+    "type": "CHAINLOSS"
+  },
+  {
+    "name": "Lose 15 in a row",
+    "description": "You lost 15 games in a row.",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 300,
+    "weight": 3,
+    "threshold": 15,
+    "type": "CHAINLOSS"
+  },
+  {
+    "name": "Lose 20 in a row",
+    "description": "You lost 20 games in a row.",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 400,
+    "weight": 4,
+    "threshold": 20,
+    "type": "CHAINLOSS"
+  },
+  {
+    "name": "Lose 25 in a row",
+    "description": "You lost 25 games in a row.",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 500,
+    "weight": 5,
+    "threshold": 25,
+    "type": "CHAINLOSS"
+  },
+  {
+    "name": "Win 5 in a row",
     "description": "You won 5 games in a row!",
     "image": "/icons/icon-256x256.png",
     "imageStorageId": "default",
@@ -20,7 +80,7 @@
     "type": "CHAINWIN"
   },
   {
-    "name": "Hot Streak",
+    "name": "Win 10 in a row",
     "description": "You won 10 games in a row!",
     "image": "/icons/icon-256x256.png",
     "imageStorageId": "default",
@@ -30,24 +90,64 @@
     "type": "CHAINWIN"
   },
   {
-    "name": "Monthly Winner",
-    "description": "You won 5 games this month!",
+    "name": "Win 15 in a row",
+    "description": "You won 15 games in a row!",
     "image": "/icons/icon-256x256.png",
     "imageStorageId": "default",
-    "coins": 500,
-    "weight": 2,
-    "threshold": 5,
-    "type": "MONTHLYWIN"
+    "coins": 1500,
+    "weight": 4,
+    "threshold": 15,
+    "type": "CHAINWIN"
   },
   {
-    "name": "Monthly Champion",
-    "description": "You won 10 games this month!",
+    "name": "Win 20 in a row",
+    "description": "You won 20 games in a row!",
     "image": "/icons/icon-256x256.png",
     "imageStorageId": "default",
-    "coins": 1000,
-    "weight": 3,
+    "coins": 2000,
+    "weight": 5,
+    "threshold": 20,
+    "type": "CHAINWIN"
+  },
+  {
+    "name": "Win 25 in a row",
+    "description": "You won 25 games in a row!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 2500,
+    "weight": 6,
+    "threshold": 25,
+    "type": "CHAINWIN"
+  },
+  {
+    "name": "Win 30 in a row",
+    "description": "You won 30 games in a row!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 3000,
+    "weight": 7,
+    "threshold": 30,
+    "type": "CHAINWIN"
+  },
+  {
+    "name": "Lose 5",
+    "description": "You lost 5 games. Don't give up!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 100,
+    "weight": 1,
+    "threshold": 5,
+    "type": "LOSS"
+  },
+  {
+    "name": "Lose 10",
+    "description": "You lost 10 games. Keep trying!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 200,
+    "weight": 2,
     "threshold": 10,
-    "type": "MONTHLYWIN"
+    "type": "LOSS"
   },
   {
     "name": "Bouncing Back",
@@ -90,23 +190,83 @@
     "type": "MONTHLYPUSH"
   },
   {
-    "name": "Campaign Starter",
-    "description": "You started a campaign chain!",
+    "name": "Monthly Winner",
+    "description": "You won 5 games this month!",
     "image": "/icons/icon-256x256.png",
     "imageStorageId": "default",
     "coins": 500,
     "weight": 2,
-    "threshold": 1,
-    "type": "CAMPAIGNCHAIN"
+    "threshold": 5,
+    "type": "MONTHLYWIN"
   },
   {
-    "name": "Campaign Winner",
-    "description": "You won a campaign game!",
+    "name": "Monthly Champion",
+    "description": "You won 10 games this month!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 1000,
+    "weight": 3,
+    "threshold": 10,
+    "type": "MONTHLYWIN"
+  },
+  {
+    "name": "Win 30 in a month",
+    "description": "You won 30 games this month!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 1000,
+    "weight": 4,
+    "threshold": 30,
+    "type": "MONTHLYWIN"
+  },
+  {
+    "name": "Win 60 in a month",
+    "description": "You won 60 games this month!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 2000,
+    "weight": 5,
+    "threshold": 60,
+    "type": "MONTHLYWIN"
+  },
+  {
+    "name": "Win 90 in a month",
+    "description": "You won 90 games this month!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 3000,
+    "weight": 6,
+    "threshold": 90,
+    "type": "MONTHLYWIN"
+  },
+  {
+    "name": "First Win",
+    "description": "You won your first game!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 100,
+    "weight": 1,
+    "threshold": 1,
+    "type": "WINS"
+  },
+  {
+    "name": "Win 5",
+    "description": "You won 5 games!",
     "image": "/icons/icon-256x256.png",
     "imageStorageId": "default",
     "coins": 500,
     "weight": 2,
-    "threshold": 1,
-    "type": "CAMPAIGNWINS"
+    "threshold": 5,
+    "type": "WINS"
+  },
+  {
+    "name": "Win 10",
+    "description": "You won 10 games!",
+    "image": "/icons/icon-256x256.png",
+    "imageStorageId": "default",
+    "coins": 1000,
+    "weight": 3,
+    "threshold": 10,
+    "type": "WINS"
   }
 ]
