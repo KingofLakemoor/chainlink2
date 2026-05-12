@@ -71,12 +71,11 @@ export function DashboardPick({ activePick, activeMatchup }: DashboardPickProps)
   );
 }
 
-//Todo loading skeleton
 export function DashboardPickSkeleton() {
   return (
-    <div className="flex flex-col gap-4 w-full h-[400px] border border-zinc-800 rounded-xl bg-zinc-950 p-6 animate-pulse">
+    <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6 h-full animate-pulse flex flex-col">
       {/* Header Skeleton */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 bg-zinc-800 rounded-md" />
           <div className="h-5 w-32 bg-zinc-800 rounded-md" />
@@ -85,14 +84,14 @@ export function DashboardPickSkeleton() {
       </div>
 
       {/* Main Content Skeleton */}
-      <div className="flex-1 bg-[#161d2b]/50 rounded-xl border border-zinc-800 overflow-hidden flex flex-col">
+      <div className="bg-[#161d2b] rounded-xl border border-[#27272a] overflow-hidden bg-gradient-to-r from-[#111f38] to-[#121212] flex-1 flex flex-col">
         <div className="p-5 flex flex-col items-center text-center flex-1 justify-center">
           <div className="h-3 w-16 bg-zinc-800 rounded-full mb-4" />
           <div className="h-6 w-3/4 bg-zinc-800 rounded-md mb-8" />
 
           <div className="flex items-center justify-center gap-8 w-full">
             {/* Team 1 */}
-            <div className="flex flex-col items-center gap-3 p-4 rounded-xl border border-zinc-800/50 w-32">
+            <div className="flex flex-col items-center gap-3 p-4 rounded-xl border border-zinc-800">
               <div className="w-16 h-16 bg-zinc-800 rounded-lg" />
               <div className="h-4 w-20 bg-zinc-800 rounded-md" />
             </div>
@@ -100,7 +99,7 @@ export function DashboardPickSkeleton() {
             <div className="text-zinc-800 font-bold text-xl">VS</div>
 
             {/* Team 2 */}
-            <div className="flex flex-col items-center gap-3 p-4 rounded-xl border border-zinc-800/50 w-32">
+            <div className="flex flex-col items-center gap-3 p-4 rounded-xl border border-zinc-800">
               <div className="w-16 h-16 bg-zinc-800 rounded-lg" />
               <div className="h-4 w-20 bg-zinc-800 rounded-md" />
             </div>
@@ -108,7 +107,7 @@ export function DashboardPickSkeleton() {
         </div>
 
         {/* Footer Skeleton */}
-        <div className="bg-zinc-900/50 px-5 py-3 border-t border-zinc-800 flex justify-between items-center">
+        <div className="bg-[#111111] px-5 py-3 border-t border-[#27272a] flex justify-between items-center">
           <div className="h-4 w-20 bg-zinc-800 rounded-md" />
           <div className="h-4 w-24 bg-zinc-800 rounded-md" />
         </div>
