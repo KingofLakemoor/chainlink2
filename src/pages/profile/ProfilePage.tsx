@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
-import { Trophy, Coins, Calendar, Mail, CheckCircle2, XCircle, MinusCircle, Medal, BarChart3, Pencil } from 'lucide-react';
+import { Trophy, Coins, Calendar, Mail, CheckCircle2, XCircle, MinusCircle, Medal, BarChart3, Pencil, Share2, Copy } from 'lucide-react';
 import { format } from 'date-fns';
 import { db } from '../../lib/firebase';
 import { collection, getDocs, orderBy, query, where, documentId, doc, updateDoc } from 'firebase/firestore';
@@ -510,6 +510,39 @@ export default function ProfilePage() {
             </div>
          </div>
       )}
+
+      {/* Referral Section */}
+      <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6 mt-6">
+         <h2 className="text-lg font-bold text-zinc-200 mb-4 flex items-center gap-2">
+            <Share2 className="w-5 h-5 text-purple-400" /> Refer & Earn
+         </h2>
+         <p className="text-sm text-zinc-400 mb-4">
+            Invite friends to join using your personal link. Build your referral network!
+         </p>
+         <div className="flex items-center gap-3 bg-zinc-800/50 p-3 rounded-lg border border-zinc-700">
+            <div className="flex-1 font-mono text-sm text-zinc-300 truncate">
+               {window.location.origin}/?ref={profile?.id}
+            </div>
+            <Button
+               variant="outline"
+               size="sm"
+               className="shrink-0 flex items-center gap-2 border-zinc-600 text-zinc-300 hover:text-white"
+               onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}/?ref=${profile?.id}`);
+                  // Note: In a real app we'd show a toast here
+                  alert("Referral link copied!");
+               }}
+            >
+               <Copy className="w-4 h-4" /> Copy
+            </Button>
+         </div>
+         {profile?.referralsCount !== undefined && (
+            <div className="mt-4 pt-4 border-t border-zinc-800 flex items-center justify-between">
+               <span className="text-zinc-400 text-sm">Total Referrals</span>
+               <span className="font-bold text-lg text-purple-400">{profile.referralsCount}</span>
+            </div>
+         )}
+      </div>
 
       {/* Medal Table */}
       <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6 mt-6">
