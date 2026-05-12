@@ -277,7 +277,7 @@ export default function DashboardPage() {
                           <span className="text-2xl font-bold text-zinc-300">{currentMonthStats.pushes}</span>
                       </div>
                       <div className="bg-[#18181a] rounded-xl p-4 border border-zinc-800 flex flex-col items-center">
-                          <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider mb-1">Streak</span>
+                          <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider mb-1">Chain</span>
                           <span className={cn("text-2xl font-bold", currentMonthStats.streak > 0 ? "text-green-500" : currentMonthStats.streak < 0 ? "text-red-500" : "text-zinc-500")}>
                              {currentMonthStats.streak > 0 ? `W${currentMonthStats.streak}` : currentMonthStats.streak < 0 ? `L${Math.abs(currentMonthStats.streak)}` : '-'}
                           </span>
