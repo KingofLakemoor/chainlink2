@@ -646,31 +646,65 @@ function PlayDashboard() {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <div className={cn("w-12 sm:w-16 h-10 rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden",
-                      m.status === 'STATUS_IN_PROGRESS' ? "bg-[#27272a] text-white ring-1 ring-zinc-700" : "bg-[#1a1a1a]",
-                      (m.metadata?.lowerScoreWins ? m.awayTeam.score < m.homeTeam.score : m.awayTeam.score > m.homeTeam.score) ? "text-zinc-100" : (m.status === 'STATUS_IN_PROGRESS' ? "text-zinc-200" : "text-zinc-500")
-                    )}>
-                       {(m.metadata?.lowerScoreWins ? m.awayTeam.score < m.homeTeam.score : m.awayTeam.score > m.homeTeam.score) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-300"></div>}
-                       {m.awayTeam.score ?? 0}
+                  <div className="flex items-start gap-2">
+                    <div className="flex flex-col items-center gap-1.5 w-12 sm:w-16">
+                      <div className={cn("w-full h-10 rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden",
+                        m.status === 'STATUS_IN_PROGRESS' ? "bg-[#27272a] text-white ring-1 ring-zinc-700" : "bg-[#1a1a1a]",
+                        (m.metadata?.lowerScoreWins ? m.awayTeam.score < m.homeTeam.score : m.awayTeam.score > m.homeTeam.score) ? "text-zinc-100" : (m.status === 'STATUS_IN_PROGRESS' ? "text-zinc-200" : "text-zinc-500")
+                      )}>
+                         {(m.metadata?.lowerScoreWins ? m.awayTeam.score < m.homeTeam.score : m.awayTeam.score > m.homeTeam.score) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-300"></div>}
+                         {m.awayTeam.score ?? 0}
+                      </div>
+
+                      {/* Away Hot Bar */}
+                      {mCounts.total > 0 && (
+                        <div className="w-full flex flex-col items-center relative -mt-0.5">
+                          <div className="w-10 sm:w-12 h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden flex justify-end shadow-sm">
+                             <div className={cn("h-full rounded-full transition-all duration-500", awayHotPct >= 50 ? "bg-gradient-to-l from-red-500 to-red-500" : "bg-zinc-700")} style={{ width: `${awayHotPct}%` }}></div>
+                          </div>
+                          {awayHotPct >= 50 && (
+                             <div className="absolute top-2 w-full flex justify-center">
+                               <div className="text-[10px] font-bold text-red-500 flex items-center justify-center tracking-wider gap-0.5 drop-shadow-md">Hot <span className="text-xs">🔥</span></div>
+                             </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
-                    {m.status === 'STATUS_IN_PROGRESS' && (
-                      <div className="flex flex-col items-center justify-center min-w-[40px]">
-                        <span className="relative flex h-2.5 w-2.5 mb-1">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-                        </span>
-                        <span className="text-[9px] font-bold text-red-500 tracking-wider">LIVE</span>
-                      </div>
-                    )}
+                    <div className="flex flex-col items-center justify-start min-w-[40px] pt-1">
+                      {m.status === 'STATUS_IN_PROGRESS' && (
+                        <>
+                          <span className="relative flex h-2.5 w-2.5 mb-1">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                          </span>
+                          <span className="text-[9px] font-bold text-red-500 tracking-wider">LIVE</span>
+                        </>
+                      )}
+                    </div>
 
-                    <div className={cn("w-12 sm:w-16 h-10 rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden",
-                      m.status === 'STATUS_IN_PROGRESS' ? "bg-[#27272a] text-white ring-1 ring-zinc-700" : "bg-[#1a1a1a]",
-                      (m.metadata?.lowerScoreWins ? m.homeTeam.score < m.awayTeam.score : m.homeTeam.score > m.awayTeam.score) ? "text-zinc-100" : (m.status === 'STATUS_IN_PROGRESS' ? "text-zinc-200" : "text-zinc-500")
-                    )}>
-                       {(m.metadata?.lowerScoreWins ? m.homeTeam.score < m.awayTeam.score : m.homeTeam.score > m.awayTeam.score) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-300"></div>}
-                       {m.homeTeam.score ?? 0}
+                    <div className="flex flex-col items-center gap-1.5 w-12 sm:w-16">
+                      <div className={cn("w-full h-10 rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden",
+                        m.status === 'STATUS_IN_PROGRESS' ? "bg-[#27272a] text-white ring-1 ring-zinc-700" : "bg-[#1a1a1a]",
+                        (m.metadata?.lowerScoreWins ? m.homeTeam.score < m.awayTeam.score : m.homeTeam.score > m.awayTeam.score) ? "text-zinc-100" : (m.status === 'STATUS_IN_PROGRESS' ? "text-zinc-200" : "text-zinc-500")
+                      )}>
+                         {(m.metadata?.lowerScoreWins ? m.homeTeam.score < m.awayTeam.score : m.homeTeam.score > m.awayTeam.score) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-300"></div>}
+                         {m.homeTeam.score ?? 0}
+                      </div>
+
+                      {/* Home Hot Bar */}
+                      {mCounts.total > 0 && (
+                        <div className="w-full flex flex-col items-center relative -mt-0.5">
+                          <div className="w-10 sm:w-12 h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden flex justify-start shadow-sm">
+                             <div className={cn("h-full rounded-full transition-all duration-500", homeHotPct >= 50 ? "bg-gradient-to-r from-red-500 to-red-500" : "bg-zinc-700")} style={{ width: `${homeHotPct}%` }}></div>
+                          </div>
+                          {homeHotPct >= 50 && (
+                             <div className="absolute top-2 w-full flex justify-center">
+                                <div className="text-[10px] font-bold text-red-500 flex items-center justify-center tracking-wider gap-0.5 drop-shadow-md">Hot <span className="text-xs">🔥</span></div>
+                             </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
