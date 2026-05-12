@@ -193,6 +193,9 @@ function AdminMatchups() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [leagueFilter, setLeagueFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [activeFilter, setActiveFilter] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
   const [pickCounts, setPickCounts] = useState<Record<string, number>>({});
 
   const fetchData = async () => {
@@ -415,10 +418,29 @@ function AdminMatchups() {
 
   if (loading) return <div className="p-8 text-zinc-500">Loading matchups...</div>;
 
+  const statuses = Array.from(new Set(data.map(m => m.status))).filter(Boolean);
+
+  const filteredData = data.filter(row => {
+    if (row.abandoned || row.status === 'STATUS_FINAL') return false;
+    if (leagueFilter !== 'All' && row.league !== leagueFilter) return false;
+    if (statusFilter !== 'All' && row.status !== statusFilter) return false;
+    if (activeFilter !== 'All') {
+      const isActive = activeFilter === 'ACTIVE';
+      if (row.active !== isActive) return false;
+    }
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesTitle = row.title?.toLowerCase().includes(query);
+      const matchesLeague = row.league?.toLowerCase().includes(query);
+      if (!matchesTitle && !matchesLeague) return false;
+    }
+    return true;
+  });
+
   return (
     <div className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden shadow-xl flex flex-col h-full max-h-[85vh]">
       <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-[#18181A]">
-        <h3 className="font-bold text-lg">Matchups Management ({data.filter(m => !m.abandoned && m.status !== 'STATUS_FINAL' && (leagueFilter === 'All' || m.league === leagueFilter)).length})</h3>
+        <h3 className="font-bold text-lg">Matchups Management ({filteredData.length})</h3>
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
@@ -433,9 +455,18 @@ function AdminMatchups() {
             <option value="All">All Leagues</option>
             {["MLB", "NBA", "NHL", "PGA", "WNBA", "NFL", "WBB", "MBB", "MLS", "EPL", "NWSL", "COLLEGE-FOOTBALL", "COLLEGE-BASEBALL", "FIFA", "FRA", "TUR", "RPL", "CHN"].map(l => <option key={l} value={l}>{l}</option>)}
           </select>
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-zinc-700 text-zinc-300">
+            <option value="All">All Statuses</option>
+            {statuses.map(s => <option key={s as string} value={s as string}>{s as string}</option>)}
+          </select>
+          <select value={activeFilter} onChange={(e) => setActiveFilter(e.target.value)} className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-zinc-700 text-zinc-300">
+            <option value="All">All Active States</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-500" />
-            <input type="text" placeholder="Search Matchups..." className="bg-zinc-900 border border-zinc-800 rounded-lg pl-9 pr-4 py-1.5 text-sm focus:outline-none focus:border-zinc-700 w-64" />
+            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search Matchups..." className="bg-zinc-900 border border-zinc-800 rounded-lg pl-9 pr-4 py-1.5 text-sm focus:outline-none focus:border-zinc-700 w-64" />
           </div>
           <Button variant="secondary" size="sm" onClick={fetchData}>Refresh</Button>
         </div>
@@ -459,7 +490,7 @@ function AdminMatchups() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800">
-              {data.filter(row => !row.abandoned && row.status !== 'STATUS_FINAL' && (leagueFilter === 'All' || row.league === leagueFilter)).sort((a, b) => (a.startTime || 0) - (b.startTime || 0)).map(row => (
+              {filteredData.sort((a, b) => (a.startTime || 0) - (b.startTime || 0)).map(row => (
                 <tr key={row.id} className="hover:bg-zinc-800/30 transition-colors">
                   <td className="px-4 py-3 font-bold text-zinc-300">{row.league}</td>
                   <td className="px-4 py-3 text-zinc-200">{row.title}</td>
