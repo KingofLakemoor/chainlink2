@@ -102,6 +102,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const mergedProfile = { id: document.id, ...data };
         setProfile(mergedProfile);
+      } else if (import.meta.env.DEV && user.uid === 'mock-user-123') {
+        // preserve the mock profile
+      } else {
+        setProfile(null);
       }
       setLoading(false);
     });
