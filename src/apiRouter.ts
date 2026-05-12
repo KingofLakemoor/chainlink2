@@ -10,6 +10,32 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
 
 export const apiRouter = express.Router();
 
+const validateAdmin = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const idToken = authHeader.split('Bearer ')[1];
+    if (!adminAuth || !adminDb) return res.status(500).json({ success: false, error: "admin tools not initialized" });
+
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    const userDoc = await adminDb.collection('users').doc(uid).get();
+    if (!userDoc.exists || userDoc.data()?.role !== 'ADMIN') {
+      return res.status(403).json({ success: false, error: 'Forbidden: Admin access required' });
+    }
+
+    (req as any).uid = uid;
+    next();
+  } catch (e: any) {
+    console.error("Admin validation error:", e.message);
+    res.status(401).json({ success: false, error: 'Unauthorized' });
+  }
+};
+
 apiRouter.post('/stripe/create-checkout-session', async (req, res) => {
   try {
     const { itemType, amount } = req.body;
@@ -271,7 +297,7 @@ apiRouter.post("/picks/make-pick", async (req, res) => {
   }
 });
 
-apiRouter.post("/admin/sync-schedules", async (req, res) => {
+apiRouter.post("/admin/sync-schedules", validateAdmin, async (req, res) => {
   try {
     const { league } = req.body;
     const result = await scrapeLeagueSchedules(league);
@@ -460,7 +486,7 @@ apiRouter.post("/user/equip" , async (req, res) => {
   }
 });
 
-apiRouter.post("/admin/grade-matchup", async (req, res) => {
+apiRouter.post("/admin/grade-matchup", validateAdmin, async (req, res) => {
   try {
     const { gameId } = req.body;
     if (!adminDb) return res.status(500).json({ success: false, error: "adminDb not initialized" });
