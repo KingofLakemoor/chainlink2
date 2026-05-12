@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, getStorage } from 'firebase/storage';
 import { db, storage } from '../../../lib/firebase';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
@@ -171,10 +171,10 @@ export default function EditSponsorPage() {
 
                           setIsUploading(true);
                           try {
-                            const fileRef = ref(storage, `sponsors/${Date.now()}_${file.name}`);
+                            const fileRef = ref(getStorage(), `sponsors/${Date.now()}_${file.name}`);
                             await uploadBytes(fileRef, file);
                             const downloadUrl = await getDownloadURL(fileRef);
-                            form.setValue("image", downloadUrl);
+                            form.setValue("image", downloadUrl, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
                           } catch (error) {
                             console.error("Error uploading image:", error);
                             alert("Failed to upload image");
