@@ -9,8 +9,6 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
   const response = await scrapeLeagueSchedules(league, scoreboardOnly);
 
   if (response.data && response.data.length > 0 && adminDb) {
-    console.log(`[Sync] Fetched ${response.data.length} matchups for ${league}. Writing to Firestore...`);
-
     try {
       const leagueSettingsSnap = await adminDb.collection('leagueSettings').doc(league).get();
       let defaultActive = true;
@@ -295,7 +293,6 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
       response.scoreMatchupsCreated = newCount;
       response.matchupsUpdated = updateCount;
-      console.log(`[Sync] ${league} complete: inserted ${newCount}, updated ${updateCount}.`);
     } catch (e: any) {
       console.error(`[Sync] Error writing to Firestore for ${league}:`, e);
       response.error = e.message;
