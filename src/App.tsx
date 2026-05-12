@@ -455,6 +455,12 @@ function PlayDashboard() {
 
   const handleCancelPick = async (matchup: any) => {
     if (!user || !profile) return;
+
+    if (matchup.status !== 'STATUS_SCHEDULED') {
+      alert("This game has already started and cannot be cancelled.");
+      return;
+    }
+
     try {
       if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
         setUserPicks(prev => {
@@ -718,9 +724,13 @@ function PlayDashboard() {
 
              {hasPicked ? (
                 pickData?.pick?.id === m.awayTeam.id || pickData?.pick?.id === m.homeTeam.id || (m.type === 'OVER_UNDER' && (pickData?.pick?.id === 'OVER' || pickData?.pick?.id === 'UNDER')) ? (
-                  <button onClick={() => handleCancelPick(m)} className="text-xs font-bold text-red-500 uppercase tracking-wide flex items-center gap-1 hover:text-red-400">
-                     <X className="w-3 h-3" /> Cancel
-                  </button>
+                  isScheduled ? (
+                    <button onClick={() => handleCancelPick(m)} className="text-xs font-bold text-red-500 uppercase tracking-wide flex items-center gap-1 hover:text-red-400">
+                       <X className="w-3 h-3" /> Cancel
+                    </button>
+                  ) : (
+                    <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
+                  )
                 ) : (
                   <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
                 )
