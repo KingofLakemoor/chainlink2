@@ -11,7 +11,7 @@ import {
   ShoppingCart, Gamepad2, Settings, Users, LogOut, ShieldAlert, Menu, X, Flame
 } from 'lucide-react';
 import {
-  MdOutlineSportsSoccer, MdOutlineSportsBasketball, MdOutlineSportsHockey, MdOutlineSportsBaseball
+  MdOutlineSportsSoccer, MdOutlineSportsBasketball, MdOutlineSportsHockey, MdOutlineSportsBaseball, MdOutlineSportsTennis
 } from 'react-icons/md';
 
 
@@ -444,6 +444,7 @@ function PlayDashboard() {
       if (selectedSport === 'BASKETBALL' && !['NBA', 'MBB', 'WBB', 'WNBA'].includes(m.league)) return false;
       if (selectedSport === 'HOCKEY' && !['NHL'].includes(m.league)) return false;
       if (selectedSport === 'BASEBALL' && !['MLB', 'COLLEGE-BASEBALL'].includes(m.league)) return false;
+      if (selectedSport === 'TENNIS' && !['ATP', 'WTA'].includes(m.league)) return false;
 
       return true;
     });
@@ -778,6 +779,7 @@ function PlayDashboard() {
           <Button variant="ghost" onClick={() => setSelectedSport('BASKETBALL')} className={cn("rounded-lg px-3 h-9", selectedSport === 'BASKETBALL' ? "bg-zinc-950 text-zinc-100" : "text-zinc-400 hover:text-zinc-200")}><MdOutlineSportsBasketball className="w-5 h-5" /></Button>
           <Button variant="ghost" onClick={() => setSelectedSport('HOCKEY')} className={cn("rounded-lg px-3 h-9", selectedSport === 'HOCKEY' ? "bg-zinc-950 text-zinc-100" : "text-zinc-400 hover:text-zinc-200")}><MdOutlineSportsHockey className="w-5 h-5" /></Button>
           <Button variant="ghost" onClick={() => setSelectedSport('BASEBALL')} className={cn("rounded-lg px-3 h-9", selectedSport === 'BASEBALL' ? "bg-zinc-950 text-zinc-100" : "text-zinc-400 hover:text-zinc-200")}><MdOutlineSportsBaseball className="w-5 h-5" /></Button>
+          <Button variant="ghost" onClick={() => setSelectedSport('TENNIS')} className={cn("rounded-lg px-3 h-9", selectedSport === 'TENNIS' ? "bg-zinc-950 text-zinc-100" : "text-zinc-400 hover:text-zinc-200")}><MdOutlineSportsTennis className="w-5 h-5" /></Button>
         </div>
       </div>
 

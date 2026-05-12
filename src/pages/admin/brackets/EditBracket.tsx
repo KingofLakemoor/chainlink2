@@ -127,6 +127,8 @@ export default function EditBracket() {
                 <option value="NFL">NFL</option>
                 <option value="NHL">NHL</option>
                 <option value="MLB">MLB</option>
+                <option value="ATP">ATP</option>
+                <option value="WTA">WTA</option>
                 <option value="NCAA">NCAA Basketball</option>
               </select>
             </div>
