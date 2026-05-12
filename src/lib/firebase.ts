@@ -1,6 +1,6 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, signOut, Auth, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, Firestore } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, Firestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -38,12 +38,12 @@ export const initFirebase = async () => {
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 
-const ensureUserProfile = async (user: User, username?: string) => {
+const ensureUserProfile = async (user: User, username?: string, referrerId?: string) => {
   // Check if user exists, if not create default profile
   const userRef = doc(db, 'users', user.uid);
   const userSnap = await getDoc(userRef);
   if (!userSnap.exists()) {
-    await setDoc(userRef, {
+    const defaultData: any = {
       email: user.email,
       name: user.displayName || 'Anonymous',
       username: username || 'User' + Math.floor(Math.random() * 1000000),
@@ -54,7 +54,28 @@ const ensureUserProfile = async (user: User, username?: string) => {
       stats: { wins: 0, losses: 0, pushes: 0 },
       createdAt: Date.now(),
       updatedAt: Date.now(),
-    });
+    };
+
+    if (referrerId) {
+      defaultData.referrerId = referrerId;
+    }
+
+    await setDoc(userRef, defaultData);
+
+    // If they were referred, update the referrer's count
+    if (referrerId) {
+      try {
+        const referrerRef = doc(db, 'users', referrerId);
+        const referrerSnap = await getDoc(referrerRef);
+        if (referrerSnap.exists()) {
+           await updateDoc(referrerRef, {
+             referralsCount: increment(1)
+           });
+        }
+      } catch (e) {
+        console.error("Failed to update referrer count", e);
+      }
+    }
 
     // Initialize an empty chain for them
     const chainRef = doc(db, 'chains', user.uid + '_current');
@@ -97,16 +118,16 @@ export const loginWithEmail = async (email: string, pass: string) => {
   }
 };
 
-export const signupWithEmail = async (email: string, pass: string, username: string) => {
+export const signupWithEmail = async (email: string, pass: string, username: string, referrerId?: string) => {
   if (import.meta.env.DEV && (!app.options.apiKey || app.options.apiKey === 'MY_FIREBASE_API_KEY')) {
     console.log('Mock login triggered (no valid API key in dev mode)');
-    window.dispatchEvent(new CustomEvent('mock-login', { detail: { email, username } }));
+    window.dispatchEvent(new CustomEvent('mock-login', { detail: { email, username, referrerId } }));
     return;
   }
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     if (userCredential && userCredential.user) {
-      await ensureUserProfile(userCredential.user, username);
+      await ensureUserProfile(userCredential.user, username, referrerId);
     }
   } catch (error: any) {
     if (error.code === 'auth/email-already-in-use') {
@@ -132,7 +153,9 @@ export const loginWithGoogle = async () => {
   try {
     const userCredential = await signInWithPopup(auth, provider);
     if (userCredential && userCredential.user) {
-      await ensureUserProfile(userCredential.user);
+      const referrerId = localStorage.getItem('chainlink_referrer_id') || undefined;
+      await ensureUserProfile(userCredential.user, undefined, referrerId);
+      if (referrerId) localStorage.removeItem('chainlink_referrer_id');
     }
   } catch (error: any) {
     if (error.code === 'auth/account-exists-with-different-credential') {
@@ -163,7 +186,9 @@ export const handleAuthRedirect = async () => {
     const result = await getRedirectResult(auth);
     if (result && result.user) {
       const user = result.user;
-      await ensureUserProfile(user);
+      const referrerId = localStorage.getItem('chainlink_referrer_id') || undefined;
+      await ensureUserProfile(user, undefined, referrerId);
+      if (referrerId) localStorage.removeItem('chainlink_referrer_id');
       return user;
     }
     return null;

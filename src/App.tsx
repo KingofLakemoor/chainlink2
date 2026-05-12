@@ -91,6 +91,18 @@ function Landing() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Check for referral code in URL
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const referrerId = searchParams.get('ref') || undefined;
+
+  // Auto-switch to sign up if referral code is present
+  useEffect(() => {
+    if (referrerId) {
+      setIsSignUp(true);
+    }
+  }, [referrerId]);
+
   if (loading) return null;
   if (user) return <Navigate to="/play" replace />;
 
@@ -101,7 +113,7 @@ function Landing() {
 
     try {
       if (isSignUp) {
-        await signupWithEmail(email, password, username);
+        await signupWithEmail(email, password, username, referrerId);
       } else {
         await loginWithEmail(email, password);
       }
@@ -193,7 +205,13 @@ function Landing() {
             variant="outline"
             size="lg"
             className="w-full h-12 border-[#3f3f46] hover:bg-zinc-800/50 flex items-center justify-center gap-2"
-            onClick={loginWithGoogle}
+            onClick={() => {
+              if (referrerId) {
+                // Store in local storage temporarily before redirect
+                localStorage.setItem('chainlink_referrer_id', referrerId);
+              }
+              loginWithGoogle();
+            }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />

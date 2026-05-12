@@ -23,6 +23,7 @@ import CreateSponsorPage from './sponsors/CreateSponsorPage';
 import EditSponsorPage from './sponsors/EditSponsorPage';
 import PickEmAdminPage from './pickem/PickEmAdminPage';
 import BracketsAdminPage from './brackets/BracketsAdminPage';
+import ReferralsAdminPage from './referrals/ReferralsAdminPage';
 import {
   Users, Gamepad2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
@@ -78,6 +79,7 @@ const ADMIN_MENU = [
   },
   { id: 'challenges', label: 'Challenges', icon: Target, path: '/admin/challenges' },
   { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
+  { id: 'referrals', label: 'Referrals', icon: Users, path: '/admin/referrals' },
   { id: 'notifications', label: 'Notifications', icon: Bell, path: '/admin/notifications' },
   { id: 'actions', label: 'Actions', icon: Shield, path: '/admin/actions' },
   {
@@ -1205,6 +1207,7 @@ export default function AdminDashboard() {
                 <Route path="brackets/*" element={<BracketsAdminPage />} />
                 <Route path="challenges" element={<GenericTable collectionName="globalQuiz" />} />
                 <Route path="users" element={<GenericTable collectionName="users" />} />
+                <Route path="referrals" element={<ReferralsAdminPage />} />
                 <Route path="actions" element={<AdminPlaceholder title="Admin Actions Log" />} />
 
                 {/* Notifications */}
