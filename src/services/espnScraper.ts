@@ -365,7 +365,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
               finalStatus = "STATUS_FINAL";
           } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || (rawStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0))) {
               finalStatus = "STATUS_IN_PROGRESS";
-              if (league === "MLB") {
+              if (league === "MLB" || league === "COLLEGE-BASEBALL") {
                   const detailStr = competition.status?.type?.detail || competition.status?.type?.shortDetail;
                   if (detailStr) {
                       if (detailStr.includes("Bot ")) {
