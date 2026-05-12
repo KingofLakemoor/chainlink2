@@ -58,7 +58,7 @@ function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) =>
         <div className="mt-6 mb-2 px-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">ChainLink</div>
         <NavItem icon={PlayCircle} label="Play ChainLink" path="/play" />
         <NavItem icon={Gamepad2} label="My Picks" path="/mypicks" />
-        <NavItem icon={Layers} label="Pick'em" path="/pickem" />
+        {/* <NavItem icon={Layers} label="Pick'em" path="/pickem" /> */}
         <NavItem icon={Trophy} label="Brackets" path="/brackets" />
         <NavItem icon={Trophy} label="Leaderboards" path="/leaderboards" />
         <NavItem icon={ShoppingCart} label="Link Shop" path="/shop" />
