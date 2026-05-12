@@ -44,6 +44,7 @@ export default function DashboardPage() {
   const [inventoryItems, setInventoryItems] = React.useState<any[]>([]);
   const [allFetchedMatchups, setAllFetchedMatchups] = React.useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [sponsors, setSponsors] = React.useState<any[]>([]);
 
   React.useEffect(() => {
     if (!user) return;
@@ -132,6 +133,20 @@ export default function DashboardPage() {
       unsubMatchups();
     };
   }, [user]);
+
+  React.useEffect(() => {
+    const unsubSponsors = onSnapshot(query(collection(db, 'sponsors'), where('active', '==', true)), (snap) => {
+      if (!snap.empty) {
+        setSponsors(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } else {
+        setSponsors([]);
+      }
+    });
+
+    return () => {
+      unsubSponsors();
+    };
+  }, []);
 
   const currentMonthStats = React.useMemo(() => {
     if (!picks || picks.length === 0) return { wins: 0, losses: 0, pushes: 0, longestWinChain: 0, longestLossChain: 0, streak: 0 };
@@ -304,14 +319,29 @@ export default function DashboardPage() {
       </div>
 
       {/* Sponsor Badges */}
-      <div className="pt-6 border-t border-zinc-800/50 mt-8">
-          <p className="text-center text-xs text-zinc-500 uppercase font-bold tracking-wider mb-4">Sponsored By</p>
-          <div className="flex flex-wrap items-center justify-center gap-8 opacity-50 grayscale hover:grayscale-0 transition-all duration-300">
-             <div className="text-zinc-400 font-bold text-lg font-display tracking-tight">SponsorOne</div>
-             <div className="text-zinc-400 font-bold text-lg font-display tracking-tight">BrandCo</div>
-             <div className="text-zinc-400 font-bold text-lg font-display tracking-tight">GlobalSports</div>
-          </div>
-      </div>
+      {sponsors.length > 0 && (
+        <div className="pt-6 border-t border-zinc-800/50 mt-8">
+            <p className="text-center text-xs text-zinc-500 uppercase font-bold tracking-wider mb-4">Sponsored By</p>
+            <div className="flex flex-wrap items-center justify-center gap-8 transition-all duration-300">
+               {sponsors.sort((a, b) => (a.order || 0) - (b.order || 0)).map(sponsor => (
+                 <a
+                   key={sponsor.id}
+                   href={sponsor.url || '#'}
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center grayscale hover:grayscale-0"
+                   title={sponsor.name}
+                 >
+                   {sponsor.image ? (
+                     <img src={sponsor.image} alt={sponsor.name} className="h-8 md:h-12 object-contain" />
+                   ) : (
+                     <div className="text-zinc-400 font-bold text-lg font-display tracking-tight">{sponsor.name}</div>
+                   )}
+                 </a>
+               ))}
+            </div>
+        </div>
+      )}
     </div>
   );
 }
