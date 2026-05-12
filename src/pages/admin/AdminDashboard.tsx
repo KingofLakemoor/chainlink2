@@ -23,6 +23,7 @@ import CreateSponsorPage from './sponsors/CreateSponsorPage';
 import EditSponsorPage from './sponsors/EditSponsorPage';
 import PickEmAdminPage from './pickem/PickEmAdminPage';
 import BracketsAdminPage from './brackets/BracketsAdminPage';
+import AdminPicksPage from './picks/AdminPicksPage';
 import ReferralsAdminPage from './referrals/ReferralsAdminPage';
 import {
   Users, Gamepad2, ShoppingCart, Layers, Trophy,
@@ -1173,7 +1174,7 @@ export default function AdminDashboard() {
                 {/* Matchups routes */}
                 <Route path="matchups" element={<AdminMatchups />} />
 
-                <Route path="picks" element={<GenericTable collectionName="picks" />} />
+                <Route path="picks" element={<AdminPicksPage />} />
                 {/* Picks Routes */}
                 <Route path="picks/edit/:id" element={
                   <React.Suspense fallback={<div className="p-8 text-zinc-500">Loading...</div>}>
