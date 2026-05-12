@@ -799,7 +799,32 @@ function PlayDashboard() {
         </div>
       )}
 
-      <div className="mt-12 mb-8 px-4 text-center text-[10px] text-zinc-600/40 max-w-4xl mx-auto leading-relaxed">
+      {/* Sponsor Badges */}
+      {sponsors.length > 0 && (
+        <div className="pt-12 mt-12 mb-4 border-t border-zinc-800/50">
+            <p className="text-center text-xs text-zinc-500 uppercase font-bold tracking-wider mb-6">Sponsored By</p>
+            <div className="flex flex-wrap items-center justify-center gap-8 transition-all duration-300">
+               {sponsors.sort((a, b) => (a.order || 0) - (b.order || 0)).map(sponsor => (
+                 <a
+                   key={sponsor.id}
+                   href={sponsor.url || '#'}
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center grayscale hover:grayscale-0"
+                   title={sponsor.name}
+                 >
+                   {sponsor.image ? (
+                     <img src={sponsor.image} alt={sponsor.name} className="h-8 md:h-12 object-contain" />
+                   ) : (
+                     <div className="text-zinc-400 font-bold text-lg font-display tracking-tight">{sponsor.name}</div>
+                   )}
+                 </a>
+               ))}
+            </div>
+        </div>
+      )}
+
+      <div className="mt-8 mb-8 px-4 text-center text-[10px] text-zinc-600/40 max-w-4xl mx-auto leading-relaxed">
         <p>&copy; {new Date().getFullYear()} Club 602. All rights reserved.</p>
         <p className="mt-1">
           DISCLAIMER: This site is not affiliated, associated, authorized, endorsed by, or in any way officially connected with any network, team, league or its subsidiaries or its affiliates. All logos, brands, and other trademarks or images featured or referred to within this website are the property of their respective trademark holders.
