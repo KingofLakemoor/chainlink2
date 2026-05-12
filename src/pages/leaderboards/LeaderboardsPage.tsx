@@ -34,8 +34,16 @@ export default function LeaderboardsPage() {
                const winRate = total > 0 ? (wins / total) * 100 : 0;
                return { ...player, winRate, totalDecisions: total };
            }).sort((a, b) => {
-               if (b.winRate !== a.winRate) return b.winRate - a.winRate;
-               return b.stats.wins - a.stats.wins;
+               const aCurrentChain = a.currentChain || 0;
+               const bCurrentChain = b.currentChain || 0;
+               if (bCurrentChain !== aCurrentChain) return bCurrentChain - aCurrentChain;
+               const aBestChain = a.bestChain || 0;
+               const bBestChain = b.bestChain || 0;
+               if (bBestChain !== aBestChain) return bBestChain - aBestChain;
+               const aWins = a.stats?.wins || 0;
+               const bWins = b.stats?.wins || 0;
+               if (bWins !== aWins) return bWins - aWins;
+               return (b.winRate || 0) - (a.winRate || 0);
            });
 
            setLeaderboardData(processedMock);
@@ -101,12 +109,18 @@ export default function LeaderboardsPage() {
             };
         });
 
-        // Default sort by best win rate, then wins
+        // Default sort by Current Chain, Longest Chain, Most Wins, Win Percentage
         mergedData.sort((a, b) => {
-            if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+            const aCurrentChain = a.currentChain || 0;
+            const bCurrentChain = b.currentChain || 0;
+            if (bCurrentChain !== aCurrentChain) return bCurrentChain - aCurrentChain;
+            const aBestChain = a.bestChain || 0;
+            const bBestChain = b.bestChain || 0;
+            if (bBestChain !== aBestChain) return bBestChain - aBestChain;
             const aWins = a.stats?.wins || 0;
             const bWins = b.stats?.wins || 0;
-            return bWins - aWins;
+            if (bWins !== aWins) return bWins - aWins;
+            return (b.winRate || 0) - (a.winRate || 0);
         });
 
         setLeaderboardData(mergedData);
