@@ -321,7 +321,10 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
           const extractLine = (val: any) => {
             if (val === null || val === undefined) return null;
             if (typeof val === 'number') return val;
-            if (typeof val === 'string') return parseFloat(val.replace(/[ou]/gi, ''));
+            if (typeof val === 'string') {
+              const parsed = parseFloat(val.replace(/[ou]/gi, ''));
+              return isNaN(parsed) ? null : parsed;
+            }
             return null;
           };
 
@@ -344,6 +347,17 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
             const mlHomeNum = parseInt(mlHome, 10);
             if (!isNaN(mlHomeNum) && mlHomeNum <= -300) {
               active = false;
+            }
+          }
+
+          const details = competition.odds?.[0]?.details;
+          if (details && details !== "EVEN") {
+            const match = details.match(/(-?\d+)/);
+            if (match) {
+              const detailsNum = parseInt(match[0], 10);
+              if (!isNaN(detailsNum) && detailsNum <= -300) {
+                active = false;
+              }
             }
           }
 
