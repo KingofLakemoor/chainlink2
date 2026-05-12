@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect } from 'react';
-import { collection, getDocs, deleteDoc, doc, setDoc, updateDoc, writeBatch, query, where } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, setDoc, updateDoc, writeBatch, query, where, documentId } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { scrapeLeagueSchedules } from '../../services/espnScraper';
 import { useAuth } from '../../lib/auth-context';
@@ -644,23 +644,37 @@ function AdminEditMatchup() {
         }
 
         const picksSnap = await getDocs(query(collection(db, 'picks'), where('matchupId', '==', id)));
+        const rawPicks = picksSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-        const picksData = await Promise.all(picksSnap.docs.map(async (pDoc) => {
-            const p = pDoc.data();
-            let userName = p.userId;
-            let userImage = "";
-            try {
-                const uSnap = await getDocs(query(collection(db, 'users'), where('__name__', '==', p.userId)));
-                if (!uSnap.empty) {
-                    const u = uSnap.docs[0].data();
-                    userName = u.username || u.name || p.userId;
-                    userImage = u.image || "";
-                }
-            } catch (e) {
-                console.error(e);
+        // Batch fetch users to avoid N+1 query
+        const userMap = new Map<string, { name: string, image: string }>();
+        const userIds = Array.from(new Set(rawPicks.map(p => p.userId).filter(Boolean)));
+
+        if (userIds.length > 0) {
+            const chunkArray = (arr: any[], size: number): any[][] =>
+                arr.length ? [arr.slice(0, size), ...chunkArray(arr.slice(size), size)] : [];
+
+            const userChunks = chunkArray(userIds, 30);
+            for (const chunk of userChunks) {
+                const uSnap = await getDocs(query(collection(db, 'users'), where(documentId(), 'in', chunk)));
+                uSnap.forEach(uDoc => {
+                    const u = uDoc.data();
+                    userMap.set(uDoc.id, {
+                        name: u.username || u.name || uDoc.id,
+                        image: u.image || ""
+                    });
+                });
             }
-            return { id: pDoc.id, ...p, userName, userImage };
-        }));
+        }
+
+        const picksData = rawPicks.map((p) => {
+            const userData = userMap.get(p.userId);
+            return {
+                ...p,
+                userName: userData?.name || p.userId,
+                userImage: userData?.image || ""
+            };
+        });
 
         setPicks(picksData);
       } catch (e) {
