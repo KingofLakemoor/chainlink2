@@ -103,7 +103,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
       case "COLLEGE-FOOTBALL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${date}`);
       case "COLLEGE-BASEBALL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates=${date}&limit=500`);
       case "WNBA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/scoreboard?dates=${date}`);
-      default: return [];
+      default: throw new Error(`Unsupported league: ${league}`);
     }
   }
 
@@ -123,7 +123,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
     case "COLLEGE-FOOTBALL": return [`https://cdn.espn.com/core/college-football/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "COLLEGE-BASEBALL": return [`https://cdn.espn.com/core/college-baseball/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "WNBA": return [`https://cdn.espn.com/core/wnba/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
-    default: return [];
+    default: throw new Error(`Unsupported league: ${league}`);
   }
 }
 
@@ -182,9 +182,11 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
     data: []
   };
 
-  const endpoints = getScheduleEndpoints(league, scoreboardOnly);
-  if (!endpoints || endpoints.length === 0) {
-    response.error = `No endpoints for ${league}`;
+  let endpoints: string[] = [];
+  try {
+    endpoints = getScheduleEndpoints(league, scoreboardOnly);
+  } catch (err: any) {
+    response.error = err.message;
     return response;
   }
 

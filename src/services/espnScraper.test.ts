@@ -7,6 +7,7 @@ import {
   MATCHUP_POSTPONED_STATUSES,
   MATCHUP_SCHEDULED_STATUSES,
   MATCHUP_UNKNOWN_STATUSES,
+  getScheduleEndpoints,
 } from './espnScraper.ts';
 
 test('MATCHUP_FINAL_STATUSES contains expected values', () => {
@@ -72,4 +73,34 @@ test('MATCHUP_SCHEDULED_STATUSES contains expected values', () => {
 test('MATCHUP_UNKNOWN_STATUSES contains expected values', () => {
   const expected = ["STATUS_UNKNOWN"];
   assert.deepStrictEqual(MATCHUP_UNKNOWN_STATUSES, expected);
+});
+
+test('getScheduleEndpoints throws error for unsupported league', () => {
+  assert.throws(() => {
+    getScheduleEndpoints('INVALID-LEAGUE' as any);
+  }, /Unsupported league: INVALID-LEAGUE/);
+});
+
+test('getScheduleEndpoints returns correct endpoints for NFL', () => {
+  const endpoints = getScheduleEndpoints('NFL');
+  assert.strictEqual(endpoints.length, 1);
+  assert.ok(endpoints[0].includes('cdn.espn.com/core/nfl/schedule'));
+});
+
+test('getScheduleEndpoints returns correct endpoints for NFL scoreboardOnly', () => {
+  const endpoints = getScheduleEndpoints('NFL', true);
+  assert.strictEqual(endpoints.length, 4);
+  assert.ok(endpoints[0].includes('site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard'));
+});
+
+test('getScheduleEndpoints returns correct endpoints for MBB (always scoreboard)', () => {
+  const endpoints = getScheduleEndpoints('MBB');
+  assert.strictEqual(endpoints.length, 4);
+  assert.ok(endpoints[0].includes('mens-college-basketball/scoreboard'));
+});
+
+test('getScheduleEndpoints returns correct endpoints for PGA', () => {
+  const endpoints = getScheduleEndpoints('PGA');
+  assert.strictEqual(endpoints.length, 1);
+  assert.ok(endpoints[0].includes('golf/leaderboard?league=pga'));
 });
