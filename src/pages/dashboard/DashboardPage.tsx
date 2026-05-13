@@ -321,7 +321,7 @@ export default function DashboardPage() {
              {isLoading ? (
                 <DashboardPickSkeleton />
              ) : (
-                <DashboardPick activePick={activePick} activeMatchup={activeMatchup} />
+                <DashboardPick activePick={activePick} activeMatchup={activeMatchup} sponsors={sponsors} />
              )}
           </div>
       </div>
