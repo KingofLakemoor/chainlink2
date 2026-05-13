@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { doc, setDoc, getDocs, collection, query, where } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Gamepad2 } from 'lucide-react';
+import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 
 export default function CreateMatchupPage() {
@@ -111,7 +111,7 @@ export default function CreateMatchupPage() {
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Gamepad2 className="text-indigo-500" />
+          <CheckCircle2 className="text-indigo-500" />
           Create Matchup
         </h1>
       </div>

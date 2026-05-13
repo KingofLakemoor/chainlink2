@@ -26,7 +26,7 @@ import BracketsAdminPage from './brackets/BracketsAdminPage';
 import AdminPicksPage from './picks/AdminPicksPage';
 import ReferralsAdminPage from './referrals/ReferralsAdminPage';
 import {
-  Users, Gamepad2, ShoppingCart, Layers, Trophy,
+  Users, CheckCircle2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
   FileText, Diamond, Target, Bell, Shield, Coins, Menu, X, Settings, GitMerge, Flag
 } from 'lucide-react';
@@ -38,7 +38,7 @@ const ADMIN_MENU = [
   {
     id: 'matchups',
     label: 'Matchups',
-    icon: Gamepad2,
+    icon: CheckCircle2,
     subItems: [
       { id: 'matchups-all', label: 'All Matchups', path: '/admin/matchups' },
       { id: 'matchups-picks', label: 'Picks', path: '/admin/picks' },
