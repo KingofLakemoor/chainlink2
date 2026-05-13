@@ -250,10 +250,12 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                   let finalStatus = "STATUS_SCHEDULED";
 
                   const compState = comp.status?.type?.state || "";
+                  const descLower = finalStatusDesc.toLowerCase();
+                  const detailLower = (comp.status?.type?.detail || "").toLowerCase();
 
-                  if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || finalStatusDesc.toLowerCase().includes('final') || compState === 'post') {
+                  if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || descLower.includes('final') || compState === 'post') {
                       finalStatus = "STATUS_FINAL";
-                  } else if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus)) {
+          } else if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus) || descLower.includes('postponed') || descLower.includes('canceled') || descLower.includes('cancelled') || descLower.includes('suspended') || descLower.includes('abandoned') || detailLower.includes('postponed') || detailLower.includes('canceled') || detailLower.includes('cancelled') || detailLower.includes('suspended') || detailLower.includes('abandoned')) {
                       finalStatus = "STATUS_POSTPONED";
                   } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus)) {
                       finalStatus = "STATUS_DELAYED";
@@ -274,6 +276,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                      startTime: new Date(comp.date).getTime(),
                      active: true,
                      featured: false,
+                     title: `Who will win? ${awayCompetitor.athlete?.displayName || awayCompetitor.team?.displayName || 'Away'} @ ${homeCompetitor.athlete?.displayName || homeCompetitor.team?.displayName || 'Home'}`,
                      league,
                      type: "MONEYLINE",
                      status: finalStatus,
@@ -392,8 +395,13 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
           let finalStatusDesc = competition.status?.type?.shortDetail || "Upcoming";
           let finalStatus = "STATUS_SCHEDULED";
 
-          if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || finalStatusDesc.toLowerCase().includes('final')) {
+          const descLower = finalStatusDesc.toLowerCase();
+          const detailLower = (competition.status?.type?.detail || "").toLowerCase();
+
+          if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || descLower.includes('final')) {
               finalStatus = "STATUS_FINAL";
+          } else if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus) || descLower.includes('postponed') || descLower.includes('canceled') || descLower.includes('cancelled') || descLower.includes('suspended') || descLower.includes('abandoned') || detailLower.includes('postponed') || detailLower.includes('canceled') || detailLower.includes('cancelled') || detailLower.includes('suspended') || detailLower.includes('abandoned')) {
+              finalStatus = "STATUS_POSTPONED";
           } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || (rawStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0))) {
               finalStatus = "STATUS_IN_PROGRESS";
               if (league === "MLB" || league === "COLLEGE-BASEBALL") {
@@ -408,8 +416,6 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                       }
                   }
               }
-          } else if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus)) {
-              finalStatus = "STATUS_POSTPONED";
           } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus)) {
               finalStatus = "STATUS_DELAYED";
           } else {

@@ -8,7 +8,7 @@ import { cn } from './lib/utils';
 import { useNotifications } from './hooks/useNotifications';
 import {
   Link2, LayoutDashboard, User as UserIcon, PlayCircle, Layers, Trophy,
-  ShoppingCart, Gamepad2, Settings, Users, LogOut, ShieldAlert, Menu, X, Flame
+  ShoppingCart, CheckCircle2, Settings, Users, LogOut, ShieldAlert, Menu, X, Flame
 } from 'lucide-react';
 import {
   MdOutlineSportsSoccer, MdOutlineSportsBasketball, MdOutlineSportsHockey, MdOutlineSportsBaseball, MdOutlineSportsTennis
@@ -57,7 +57,7 @@ function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) =>
 
         <div className="mt-6 mb-2 px-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">ChainLink</div>
         <NavItem icon={PlayCircle} label="Play ChainLink" path="/play" />
-        <NavItem icon={Gamepad2} label="My Picks" path="/mypicks" />
+        <NavItem icon={CheckCircle2} label="My Picks" path="/mypicks" />
         {/* <NavItem icon={Layers} label="Pick'em" path="/pickem" /> */}
         <NavItem icon={Trophy} label="Brackets" path="/brackets" />
         <NavItem icon={Trophy} label="Leaderboards" path="/leaderboards" />
@@ -835,7 +835,7 @@ function PlayDashboard() {
 
       {matchups.length === 0 ? (
         <div className="text-center py-20 text-zinc-500">
-          <Gamepad2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
+          <CheckCircle2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
           <p>No matchups available right now.</p>
           {profile?.role === "ADMIN" && (
             <p className="text-sm mt-2">Click "Admin: Sync ESPN Games" to fetch active schedules.</p>
