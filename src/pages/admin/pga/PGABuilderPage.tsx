@@ -27,7 +27,7 @@ export default function PGABuilderPage() {
           return {
             id: String(c.id),
             name: golfer.displayName || golfer.name || 'Unknown',
-            score: c.score || c.displayValue || 'E',
+            score: c.score?.displayValue ?? (typeof c.score === 'string' || typeof c.score === 'number' ? c.score : c.displayValue) ?? 'E',
             image: golfer.flag?.href || '/icons/icon-256x256.png',
             raw: c
           };
