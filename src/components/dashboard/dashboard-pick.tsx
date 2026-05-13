@@ -14,7 +14,7 @@ export function DashboardPick({ activePick, activeMatchup, sponsors = [] }: Dash
   let featuredColor = "";
   let featuredName = "Featured Sponsor";
   let glowStyle = {};
-  let currentSponsor = null;
+  let currentSponsor: any = null;
 
   if (activeMatchup?.featured) {
       if (activeMatchup.featuredType === 'ChainBuilder') {
@@ -30,6 +30,32 @@ export function DashboardPick({ activePick, activeMatchup, sponsors = [] }: Dash
           borderColor: featuredColor
       };
   }
+
+  const renderFeaturedTag = () => {
+      if (!activeMatchup?.featured) return null;
+
+      const content = (
+          <>
+              {currentSponsor?.image && (
+                  <img src={currentSponsor.image} alt={featuredName} className="h-3 w-3 rounded-sm object-contain" />
+              )}
+              <span>{featuredName}</span>
+          </>
+      );
+
+      const TagType = currentSponsor?.url ? 'a' : 'span';
+      const tagProps = currentSponsor?.url ? { href: currentSponsor.url, target: '_blank', rel: 'noopener noreferrer' } : {};
+
+      return (
+          <TagType
+              {...tagProps}
+              className="ml-2 px-1.5 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+              style={{ backgroundColor: `${featuredColor}33`, color: featuredColor }}
+          >
+              {content}
+          </TagType>
+      );
+  };
 
   return (
     <div className={cn("bg-[#121212] border border-zinc-800 rounded-2xl p-6 h-full transition-colors relative group", activeMatchup?.featured && "border-transparent")} style={glowStyle}>
@@ -47,12 +73,7 @@ export function DashboardPick({ activePick, activeMatchup, sponsors = [] }: Dash
           <div className="p-5 flex flex-col items-center text-center">
             <div className="flex items-center gap-2 mb-2">
                 <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">{activeMatchup.league}</span>
-                {activeMatchup.featured && (
-                    <span className="px-1.5 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded"
-                          style={{ backgroundColor: `${featuredColor}33`, color: featuredColor }}>
-                       {featuredName}
-                    </span>
-                 )}
+                {renderFeaturedTag()}
             </div>
             <div className="text-lg font-bold text-zinc-100 mb-6">{activeMatchup.title}</div>
 
