@@ -233,6 +233,11 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                       homeCompetitor = b;
                   }
 
+                  const homeName = homeCompetitor.athlete?.displayName || "";
+                  const awayName = awayCompetitor.athlete?.displayName || "";
+
+                  if (homeName.includes("TBD") || awayName.includes("TBD")) continue;
+
                   const homeScore = homeCompetitor.linescores ? homeCompetitor.linescores.filter((ls: any) => ls.winner === true).length : 0;
                   const awayScore = awayCompetitor.linescores ? awayCompetitor.linescores.filter((ls: any) => ls.winner === true).length : 0;
 
