@@ -590,7 +590,7 @@ function PlayDashboard() {
         const content = (
             <>
                 {featuredSponsorObj?.image && (
-                    <img src={featuredSponsorObj.image} alt={featuredName} className="h-3 w-3 rounded-sm object-contain" />
+                    <img src={featuredSponsorObj.image} alt={featuredName} className="h-5 w-5 rounded object-contain" />
                 )}
                 <span>{featuredName}</span>
             </>
@@ -602,7 +602,7 @@ function PlayDashboard() {
         return (
             <TagType
                 {...tagProps}
-                className="ml-2 px-1.5 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                className="ml-2 pl-1 pr-2 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded flex items-center gap-1.5 hover:opacity-80 transition-opacity"
                 style={{ backgroundColor: `${featuredColor}33`, color: featuredColor }}
             >
                 {content}
