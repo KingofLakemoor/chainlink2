@@ -261,6 +261,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                      startTime: new Date(comp.date).getTime(),
                      active: true,
                      featured: false,
+                     title: `Who will win? ${awayCompetitor.athlete?.displayName || awayCompetitor.team?.displayName || 'Away'} @ ${homeCompetitor.athlete?.displayName || homeCompetitor.team?.displayName || 'Home'}`,
                      league,
                      type: "MONEYLINE",
                      status: finalStatus,
