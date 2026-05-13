@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
-import { ShoppingCart, Trophy, Link2, Coins, ChevronRight, Mail, Calendar, Gamepad2 } from 'lucide-react';
+import { ShoppingCart, Trophy, Link2, Coins, ChevronRight, Mail, Calendar,  } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { db } from '../../lib/firebase';
