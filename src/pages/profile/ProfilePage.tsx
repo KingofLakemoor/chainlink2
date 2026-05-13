@@ -19,6 +19,7 @@ import { OceanBanner } from '../../components/ui/profile-banners/ocean';
 import { PhantomStarBanner } from '../../components/ui/profile-banners/phantom-star';
 import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-syndicate';
 import { PrimeCircuitRing } from '../../components/ui/avatar-backgrounds/prime-circuit-ring';
+import { TitleMap } from '../../components/ui/titles';
 
 const AvatarBackgroundMap: Record<string, React.FC<any>> = {
   'Hexagons': Hexagons,
@@ -296,6 +297,7 @@ export default function ProfilePage() {
   const equippedRingItem = inventoryItems.find(i => i.id === profile?.equippedCosmetics?.AVATAR_RING);
   const equippedRingImage = equippedRingItem?.image;
   const RingComponent = AvatarBackgroundMap[equippedRingImage || ''];
+  const TitleComponent = profile?.equippedCosmetics?.TITLE ? TitleMap[inventoryItems.find(i => i.id === profile.equippedCosmetics.TITLE)?.image || ''] : null;
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
@@ -317,14 +319,16 @@ export default function ProfilePage() {
          )}
 
          <div className="relative">
-            <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full shadow-xl z-10 relative ${
-               RingComponent ? 'p-1.5 md:p-2 overflow-hidden' : `overflow-hidden border-4 ${equippedRingImage || 'border-[#27272a]'}`
+            {RingComponent && (
+               <div className="absolute inset-0 z-0 transform scale-150 pointer-events-none">
+                  <RingComponent isStatic={false} />
+               </div>
+            )}
+            <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full shadow-xl z-10 relative flex-shrink-0 ${
+               RingComponent
+                 ? 'border-transparent'
+                 : `overflow-hidden border-4 ${equippedRingImage || 'border-[#27272a]'}`
             }`}>
-               {RingComponent && (
-                  <div className="absolute inset-0 z-0">
-                     <RingComponent isStatic={false} />
-                  </div>
-               )}
                <div
                  className={`relative z-10 w-full h-full rounded-full overflow-hidden group cursor-pointer ${RingComponent ? 'border-2 border-black/50' : ''}`}
                  onClick={() => {
@@ -354,7 +358,11 @@ export default function ProfilePage() {
          <div className="flex-1 text-center md:text-left z-10">
             <h1 className="text-3xl md:text-4xl font-bold text-zinc-100 mb-1 font-display drop-shadow-md">{profile.username || profile.name}</h1>
 
-            {profile?.equippedCosmetics?.TITLE && (() => {
+            {TitleComponent ? (
+               <div className="mb-3 inline-block">
+                  <TitleComponent isStatic={false} />
+               </div>
+            ) : profile?.equippedCosmetics?.TITLE ? (() => {
                const titleItem = inventoryItems.find(i => i.id === profile.equippedCosmetics.TITLE);
                return (
                <div className="mb-3 inline-block">
@@ -363,7 +371,7 @@ export default function ProfilePage() {
                   </span>
                </div>
                );
-            })()}
+            })() : null}
 
             <div className="flex flex-col md:flex-row gap-2 md:gap-4 text-sm text-zinc-300 justify-center md:justify-start drop-shadow-md font-medium">
                <div className="flex items-center gap-1.5 justify-center md:justify-start">

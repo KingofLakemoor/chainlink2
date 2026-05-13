@@ -19,6 +19,7 @@ import { OceanBanner } from '../../components/ui/profile-banners/ocean';
 import { PhantomStarBanner } from '../../components/ui/profile-banners/phantom-star';
 import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-syndicate';
 import { PrimeCircuitRing } from '../../components/ui/avatar-backgrounds/prime-circuit-ring';
+import { TitleMap } from '../../components/ui/titles';
 import { cn } from '../../lib/utils';
 
 const AvatarBackgroundMap: Record<string, React.FC<any>> = {
@@ -190,6 +191,7 @@ export default function DashboardPage() {
   const equippedRingItem = inventoryItems.find(i => i.id === profile?.equippedCosmetics?.AVATAR_RING);
   const equippedRingImage = equippedRingItem?.image;
   const RingComponent = AvatarBackgroundMap[equippedRingImage || ''];
+  const TitleComponent = profile?.equippedCosmetics?.TITLE ? TitleMap[inventoryItems.find(i => i.id === profile.equippedCosmetics.TITLE)?.image || ''] : null;
 
   const activePick = picks.find(p => p.status === 'PENDING');
   const activeMatchup = activePick ? allFetchedMatchups.find(m => m.gameId === activePick.matchupId) : null;
@@ -216,14 +218,16 @@ export default function DashboardPage() {
          )}
 
          <div className="relative">
-            <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full shadow-xl z-10 relative ${
-               RingComponent ? 'p-1.5 md:p-2 overflow-hidden' : `overflow-hidden border-4 ${equippedRingImage || 'border-[#27272a]'}`
+            {RingComponent && (
+               <div className="absolute inset-0 z-0 transform scale-150 pointer-events-none">
+                  <RingComponent isStatic={false} />
+               </div>
+            )}
+            <div className={`w-24 h-24 md:w-32 md:h-32 rounded-full shadow-xl z-10 relative flex-shrink-0 ${
+               RingComponent
+                 ? 'border-transparent'
+                 : `overflow-hidden border-4 ${equippedRingImage || 'border-[#27272a]'}`
             }`}>
-               {RingComponent && (
-                  <div className="absolute inset-0 z-0">
-                     <RingComponent isStatic={false} />
-                  </div>
-               )}
                <div className={`relative z-10 w-full h-full rounded-full overflow-hidden ${RingComponent ? 'border-2 border-black/50' : ''}`}>
                  {profile.image ? (
                    <img src={profile.image} alt={profile.username || profile.name} className="w-full h-full object-cover" />
@@ -238,13 +242,17 @@ export default function DashboardPage() {
 
          <div className="flex-1 text-center md:text-left z-10">
             <h1 className="text-3xl md:text-4xl font-bold text-zinc-100 mb-1 font-display drop-shadow-md">{profile.username || profile.name}</h1>
-            {profile?.equippedCosmetics?.TITLE && (
+            {TitleComponent ? (
+               <div className="mb-3 inline-block">
+                  <TitleComponent isStatic={false} />
+               </div>
+            ) : profile?.equippedCosmetics?.TITLE ? (
                <div className="mb-3 inline-block">
                   <span className="text-sm font-bold text-[#22c55e] px-2 py-0.5 rounded bg-black/40 border border-[#22c55e]/30 shadow-sm backdrop-blur-sm">
                      {inventoryItems.find(i => i.id === profile.equippedCosmetics.TITLE)?.name || 'Title'}
                   </span>
                </div>
-            )}
+            ) : null}
             <div className="flex flex-col md:flex-row gap-2 md:gap-4 text-sm text-zinc-300 justify-center md:justify-start drop-shadow-md font-medium">
                <div className="flex items-center gap-1.5 justify-center md:justify-start">
                  <Mail className="w-4 h-4 opacity-70" />

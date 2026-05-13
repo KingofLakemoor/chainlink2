@@ -7,11 +7,31 @@ import { cn } from '../../lib/utils';
 import { Trophy, Download, Medal, Flame, CheckCircle2, Percent, Users } from 'lucide-react';
 import { format } from 'date-fns';
 
+import { Hexagons } from '../../components/ui/avatar-backgrounds/hexagons';
+import { Hip } from '../../components/ui/avatar-backgrounds/hip';
+import { Inferno } from '../../components/ui/avatar-backgrounds/inferno';
+import { Mandala } from '../../components/ui/avatar-backgrounds/mandala';
+import { Ocean } from '../../components/ui/avatar-backgrounds/ocean';
+import { PhantomStar } from '../../components/ui/avatar-backgrounds/phantomstar';
+import { PrimeCircuitRing } from '../../components/ui/avatar-backgrounds/prime-circuit-ring';
+import { TitleMap } from '../../components/ui/titles';
+
+const AvatarBackgroundMap: Record<string, React.FC<any>> = {
+  'Hexagons': Hexagons,
+  'Hip': Hip,
+  'Inferno': Inferno,
+  'Mandala': Mandala,
+  'Ocean': Ocean,
+  'PhantomStar': PhantomStar,
+  'PrimeCircuitRing': PrimeCircuitRing
+};
+
 export default function LeaderboardsPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState('current'); // current by default
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
+  const [inventoryItems, setInventoryItems] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,6 +94,10 @@ export default function LeaderboardsPage() {
             const data = doc.data();
             chainsMap.set(data.userId, data);
         });
+
+        const shopItemsSnap = await getDocs(collection(db, 'shopItems'));
+        const items = shopItemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setInventoryItems(items);
 
         const mergedData = usersSnap.docs.map(doc => {
             const userData = doc.data();
@@ -325,16 +349,40 @@ export default function LeaderboardsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden border border-zinc-700 flex-shrink-0">
-                          {player.image ? (
-                            <img src={player.image} alt={player.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-xs font-bold text-zinc-500">{(player.username || player.name || '?').charAt(0).toUpperCase()}</span>
-                          )}
+                        <div className="relative">
+                          {player.equippedCosmetics?.AVATAR_RING && (() => {
+                            const ringImage = inventoryItems.find(i => i.id === player.equippedCosmetics.AVATAR_RING)?.image;
+                            const RingComponent = AvatarBackgroundMap[ringImage || ''];
+                            if (!RingComponent) return null;
+                            return (
+                              <div className="absolute inset-0 z-0 transform scale-150 pointer-events-none">
+                                <RingComponent isStatic={true} />
+                              </div>
+                            )
+                          })()}
+                          <div className={`w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden border flex-shrink-0 relative z-10 ${player.equippedCosmetics?.AVATAR_RING ? 'border-transparent' : 'border-zinc-700'}`}>
+                            {player.image ? (
+                              <img src={player.image} alt={player.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-xs font-bold text-zinc-500">{(player.username || player.name || '?').charAt(0).toUpperCase()}</span>
+                            )}
+                          </div>
                         </div>
-                        <div className="font-medium text-zinc-200">
-                          {player.username || player.name}
-                          {user?.uid === player.id && <span className="ml-2 text-[10px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded font-bold uppercase">You</span>}
+                        <div className="flex flex-col justify-center min-h-[32px]">
+                           <div className="flex items-center gap-2 leading-none">
+                             <span className="font-medium text-zinc-200">{player.username || player.name}</span>
+                             {user?.uid === player.id && <span className="text-[10px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded font-bold uppercase">You</span>}
+                           </div>
+                           {player.equippedCosmetics?.TITLE && (() => {
+                             const titleImage = inventoryItems.find(i => i.id === player.equippedCosmetics.TITLE)?.image;
+                             const TitleComponent = TitleMap[titleImage || ''];
+                             if (!TitleComponent) return null;
+                             return (
+                               <div className="mt-1 transform scale-75 origin-left">
+                                  <TitleComponent isStatic={true} />
+                               </div>
+                             )
+                           })()}
                         </div>
                       </div>
                     </td>
