@@ -516,12 +516,22 @@ apiRouter.post("/admin/matchups/external", async (req, res) => {
 
     const matchupRef = adminDb.collection('matchups').doc(gameId);
     const existingDoc = await matchupRef.get();
+    const existingData = existingDoc.exists ? existingDoc.data() : null;
+
+    let finalStartTime = startTime || Date.now();
+    if (league === 'PUTTING' && !existingDoc.exists) {
+      finalStartTime = Date.now() + 15 * 60 * 1000;
+    } else if (league === 'PUTTING' && existingDoc.exists) {
+      finalStartTime = existingData?.startTime || finalStartTime;
+    }
+
+    const isLocked = Date.now() >= finalStartTime;
 
     const matchupData: any = {
       gameId,
       title: title || `${awayTeam.name} @ ${homeTeam.name}`,
       league,
-      startTime: startTime || Date.now(),
+      startTime: finalStartTime,
       homeTeam: {
         id: homeTeam.id,
         name: homeTeam.name,
@@ -535,7 +545,7 @@ apiRouter.post("/admin/matchups/external", async (req, res) => {
         score: awayTeam.score || 0
       },
       status: status || 'STATUS_SCHEDULED',
-      active: active !== undefined ? active : true,
+      active: (league === 'DARTS' || league === 'PUTTING') ? !isLocked : (active !== undefined ? active : true),
       type: "SCORE",
       updatedAt: Date.now()
     };
