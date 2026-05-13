@@ -644,7 +644,7 @@ function AdminEditMatchup() {
         }
 
         const picksSnap = await getDocs(query(collection(db, 'picks'), where('matchupId', '==', id)));
-        const rawPicks = picksSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const rawPicks = picksSnap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
 
         // Batch fetch users to avoid N+1 query
         const userMap = new Map<string, { name: string, image: string }>();

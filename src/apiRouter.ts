@@ -504,3 +504,65 @@ apiRouter.post("/admin/grade-matchup", validateAdmin, async (req, res) => {
     res.status(500).json({ success: false, error: e.message });
   }
 });
+
+apiRouter.post("/admin/matchups/external", async (req, res) => {
+  if (!adminDb) return res.status(500).json({ error: "adminDb not configured" });
+  try {
+    const { gameId, title, league, startTime, homeTeam, awayTeam, status, active } = req.body;
+
+    if (!gameId || !league || !homeTeam || !awayTeam) {
+       return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const matchupRef = adminDb.collection('matchups').doc(gameId);
+    const existingDoc = await matchupRef.get();
+    const existingData = existingDoc.exists ? existingDoc.data() : null;
+
+    let finalStartTime = startTime || Date.now();
+    if (league === 'PUTTING' && !existingDoc.exists) {
+      finalStartTime = Date.now() + 15 * 60 * 1000;
+    } else if (league === 'PUTTING' && existingDoc.exists) {
+      finalStartTime = existingData?.startTime || finalStartTime;
+    }
+
+    const isLocked = Date.now() >= finalStartTime;
+
+    const matchupData: any = {
+      gameId,
+      title: title || `${awayTeam.name} @ ${homeTeam.name}`,
+      league,
+      startTime: finalStartTime,
+      homeTeam: {
+        id: homeTeam.id,
+        name: homeTeam.name,
+        image: homeTeam.image || "/icons/icon-256x256.png",
+        score: homeTeam.score || 0
+      },
+      awayTeam: {
+        id: awayTeam.id,
+        name: awayTeam.name,
+        image: awayTeam.image || "/icons/icon-256x256.png",
+        score: awayTeam.score || 0
+      },
+      status: status || 'STATUS_SCHEDULED',
+      active: (league === 'DARTS' || league === 'PUTTING') ? !isLocked : (active !== undefined ? active : true),
+      type: "SCORE",
+      updatedAt: Date.now()
+    };
+
+    if (!existingDoc.exists) {
+      matchupData.createdAt = Date.now();
+    }
+
+    await matchupRef.set(matchupData, { merge: true });
+
+    if (matchupData.status === 'STATUS_FINAL' || matchupData.status === 'STATUS_POSTPONED') {
+      await gradeMatchups([matchupData]);
+    }
+
+    res.json({ success: true, message: "Matchup synced successfully", matchup: matchupData });
+  } catch (e: any) {
+    console.error("External matchup sync error:", e);
+    res.status(500).json({ error: e.message });
+  }
+});
