@@ -566,6 +566,7 @@ function PlayDashboard() {
 
     let featuredColor = "";
     let featuredName = "Featured Sponsor";
+    let featuredSponsorObj: any = null;
     let glowStyle = {};
     if (m.featured) {
         if (m.featuredType === 'ChainBuilder') {
@@ -573,6 +574,7 @@ function PlayDashboard() {
             featuredName = "Chain Builder";
         } else {
             const sponsor = sponsors.find(s => s.id === m.featuredType);
+            featuredSponsorObj = sponsor;
             featuredColor = sponsor?.color || "#06b6d4";
             featuredName = sponsor?.name || "Featured Sponsor";
         }
@@ -582,18 +584,39 @@ function PlayDashboard() {
         };
     }
 
+    const renderFeaturedTag = () => {
+        if (!m.featured) return null;
+
+        const content = (
+            <>
+                {featuredSponsorObj?.image && (
+                    <img src={featuredSponsorObj.image} alt={featuredName} className="h-3 w-3 rounded-sm object-contain" />
+                )}
+                <span>{featuredName}</span>
+            </>
+        );
+
+        const TagType = featuredSponsorObj?.url ? 'a' : 'span';
+        const tagProps = featuredSponsorObj?.url ? { href: featuredSponsorObj.url, target: '_blank', rel: 'noopener noreferrer' } : {};
+
+        return (
+            <TagType
+                {...tagProps}
+                className="ml-2 px-1.5 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+                style={{ backgroundColor: `${featuredColor}33`, color: featuredColor }}
+            >
+                {content}
+            </TagType>
+        );
+    };
+
     return (
       <div id={`matchup-card-${m.gameId}`} key={isMyPick ? `my-pick-${m.gameId}` : m.gameId} className={cn("bg-[#131415] border border-[#27272a] hover:border-zinc-700 rounded-xl overflow-hidden transition-colors relative group")} style={glowStyle}>
         {/* Header info */}
         <div className="bg-[#161d2b] px-4 py-2 border-b border-[#27272a] flex justify-between items-center bg-gradient-to-r from-[#111f38] to-[#121212]">
           <div className="flex items-center gap-2 font-bold text-sm text-zinc-200 tracking-tight">
              <Trophy className="w-3.5 h-3.5" /> {m.league}
-             {m.featured && (
-                <span className="ml-2 px-1.5 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded"
-                      style={{ backgroundColor: `${featuredColor}33`, color: featuredColor }}>
-                   {featuredName}
-                </span>
-             )}
+             {renderFeaturedTag()}
           </div>
           <div className="flex flex-col items-end">
             {m.status !== 'STATUS_SCHEDULED' && m.statusDesc !== 'Upcoming' && <span className="text-[10px] text-zinc-500 uppercase">last update:</span>}
