@@ -341,7 +341,7 @@ export default function DashboardPage() {
                    title={sponsor.name}
                  >
                    {sponsor.image ? (
-                     <img src={sponsor.image} alt={sponsor.name} className="h-8 md:h-12 object-contain" />
+                     <img src={sponsor.image} alt={sponsor.name} className="h-16 md:h-24 object-contain" />
                    ) : (
                      <div className="text-zinc-400 font-bold text-lg font-display tracking-tight">{sponsor.name}</div>
                    )}
