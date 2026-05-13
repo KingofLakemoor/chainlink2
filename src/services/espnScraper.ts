@@ -249,21 +249,28 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                   let finalStatusDesc = comp.status?.type?.shortDetail || "Upcoming";
                   let finalStatus = "STATUS_SCHEDULED";
 
+                  const compState = comp.status?.type?.state || "";
                   const descLower = finalStatusDesc.toLowerCase();
                   const detailLower = (comp.status?.type?.detail || "").toLowerCase();
 
-                  if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || descLower.includes('final')) {
+                  if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || descLower.includes('final') || compState === 'post') {
                       finalStatus = "STATUS_FINAL";
           } else if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus) || descLower.includes('postponed') || descLower.includes('canceled') || descLower.includes('cancelled') || descLower.includes('suspended') || descLower.includes('abandoned') || detailLower.includes('postponed') || detailLower.includes('canceled') || detailLower.includes('cancelled') || detailLower.includes('suspended') || detailLower.includes('abandoned')) {
                       finalStatus = "STATUS_POSTPONED";
                   } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus)) {
                       finalStatus = "STATUS_DELAYED";
-                  } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || (rawStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0))) {
+                  } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || compState === 'in') {
                       finalStatus = "STATUS_IN_PROGRESS";
+                      if (comp.status?.type?.detail) {
+                          finalStatusDesc = comp.status.type.detail;
+                      }
                   } else {
                       finalStatus = "STATUS_SCHEDULED";
                       finalStatusDesc = "Upcoming";
                   }
+
+                  const homeLinescores = homeCompetitor.linescores ? homeCompetitor.linescores.map((ls: any) => ls.value || 0) : [];
+                  const awayLinescores = awayCompetitor.linescores ? awayCompetitor.linescores.map((ls: any) => ls.value || 0) : [];
 
                   parsedMatchups.push({
                      startTime: new Date(comp.date).getTime(),
@@ -290,7 +297,9 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                      cost: 0,
                      metadata: {
                        network: comp.geoBroadcasts?.[0]?.media?.shortName || "N/A",
-                       tournament: tournamentName
+                       tournament: tournamentName,
+                       homeLinescores,
+                       awayLinescores
                      }
                   });
               }
