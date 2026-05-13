@@ -2,7 +2,7 @@ import React from 'react';
 import { useState } from 'react';
 import { collection, addDoc, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, getStorage } from 'firebase/storage';
-import { db, storage } from '../../../lib/firebase';
+import { db, app } from '../../../lib/firebase';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
@@ -231,7 +231,7 @@ export default function CreateAchievementPage() {
 
                           setIsUploading(true);
                           try {
-                            const fileRef = ref(getStorage(), `achievements/${Date.now()}_${file.name}`);
+                            const fileRef = ref(getStorage(app), `achievements/${Date.now()}_${file.name}`);
                             await uploadBytes(fileRef, file);
                             const downloadUrl = await getDownloadURL(fileRef);
                             form.setValue("image", downloadUrl, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
