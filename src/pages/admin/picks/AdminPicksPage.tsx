@@ -17,7 +17,7 @@ export default function AdminPicksPage() {
       const q = filterPending ? query(collection(db, 'picks'), where('status', '==', 'PENDING')) : collection(db, 'picks');
       const snap = await getDocs(q);
 
-      const rawPicks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const rawPicks = snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
 
       const userIds = Array.from(new Set(rawPicks.map(p => p.userId).filter(Boolean)));
       const matchupIds = Array.from(new Set(rawPicks.map(p => p.matchupId).filter(Boolean)));
