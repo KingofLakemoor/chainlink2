@@ -443,7 +443,7 @@ function PlayDashboard() {
       if (selectedSport === 'SOCCER' && !['MLS', 'EPL', 'NWSL', 'FIFA', 'FRA', 'TUR', 'RPL', 'CHN'].includes(m.league)) return false;
       if (selectedSport === 'BASKETBALL' && !['NBA', 'MBB', 'WBB', 'WNBA'].includes(m.league)) return false;
       if (selectedSport === 'HOCKEY' && !['NHL'].includes(m.league)) return false;
-      if (selectedSport === 'BASEBALL' && !['MLB', 'COLLEGE-BASEBALL'].includes(m.league)) return false;
+      if (selectedSport === 'BASEBALL' && !['MLB', 'CBASE'].includes(m.league)) return false;
       if (selectedSport === 'TENNIS' && !['ATP', 'WTA'].includes(m.league)) return false;
 
       return true;
