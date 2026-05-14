@@ -1,4 +1,4 @@
-export type League = "NFL" | "NBA" | "NHL" | "MLB" | "MLS" | "EPL" | "MBB" | "WBB" | "NWSL" | "COLLEGE-FOOTBALL" | "COLLEGE-BASEBALL" | "ATP" | "WTA" | "WNBA" | "PGA" | "FIFA" | "FRA" | "TUR" | "RPL" | "CHN" | string;
+export type League = "NFL" | "NBA" | "NHL" | "MLB" | "MLS" | "EPL" | "MBB" | "WBB" | "NWSL" | "COLLEGE-FOOTBALL" | "CBASE" | "ATP" | "WTA" | "WNBA" | "PGA" | "FIFA" | "FRA" | "TUR" | "RPL" | "CHN" | string;
 
 
 export const MATCHUP_FINAL_STATUSES = [
@@ -73,7 +73,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
   if (league === "WBB") {
     return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/basketball/womens-college-basketball/scoreboard?groups=50&dates=${date}&limit=500`);
   }
-  if (league === "COLLEGE-BASEBALL") {
+  if (league === "CBASE") {
     return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates=${date}&limit=500`);
   }
   if (league === "PGA") {
@@ -101,7 +101,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
       case "RPL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/rus.1/scoreboard?dates=${date}`);
       case "CHN": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/chn.1/scoreboard?dates=${date}`);
       case "COLLEGE-FOOTBALL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${date}`);
-      case "COLLEGE-BASEBALL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates=${date}&limit=500`);
+      case "CBASE": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates=${date}&limit=500`);
       case "WNBA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/scoreboard?dates=${date}`);
       default: throw new Error(`Unsupported league: ${league}`);
     }
@@ -121,7 +121,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
     case "RPL": return [`https://cdn.espn.com/core/soccer/schedule/_/league/rus.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "CHN": return [`https://cdn.espn.com/core/soccer/schedule/_/league/chn.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "COLLEGE-FOOTBALL": return [`https://cdn.espn.com/core/college-football/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
-    case "COLLEGE-BASEBALL": return [`https://cdn.espn.com/core/college-baseball/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
+    case "CBASE": return [`https://cdn.espn.com/core/college-baseball/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "WNBA": return [`https://cdn.espn.com/core/wnba/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     default: throw new Error(`Unsupported league: ${league}`);
   }
@@ -133,7 +133,7 @@ export async function fetchScheduleData(endpoint: string, league: League, isScor
   const scheduleData: Record<string, any> = {};
 
   // For scoreboards or leagues already using scoreboard
-  if (league === "MBB" || league === "WBB" || league === "PGA" || league === "COLLEGE-BASEBALL" || league === "ATP" || league === "WTA" || isScoreboardOnly) {
+  if (league === "MBB" || league === "WBB" || league === "PGA" || league === "CBASE" || league === "ATP" || league === "WTA" || isScoreboardOnly) {
     const seenGameIds = new Set<string>();
     const uniqueEvents = [];
 
@@ -404,7 +404,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
               finalStatus = "STATUS_POSTPONED";
           } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || (rawStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0))) {
               finalStatus = "STATUS_IN_PROGRESS";
-              if (league === "MLB" || league === "COLLEGE-BASEBALL") {
+              if (league === "MLB" || league === "CBASE") {
                   const detailStr = competition.status?.type?.detail || competition.status?.type?.shortDetail;
                   if (detailStr) {
                       if (detailStr.includes("Bot ")) {
