@@ -35,6 +35,131 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
       const scrapedGameIds = new Set<string>();
 
       for (const scrapedMatchup of response.data) {
+        if (scrapedMatchup.isRawPGAData) {
+          const competitors = scrapedMatchup.competition.competitors || [];
+
+          for (const [existingGameId, doc] of existingMap.entries()) {
+            const data = doc.data();
+            if (data.league !== 'PGA' || data.abandoned) continue;
+
+            const homeGolferId = data.homeTeam?.id;
+            const awayGolferId = data.awayTeam?.id;
+
+            const homeComp = competitors.find((c: any) => String(c.id) === homeGolferId);
+            const awayComp = competitors.find((c: any) => String(c.id) === awayGolferId);
+
+            if (homeComp && awayComp) {
+              const period = data.metadata?.period || 1;
+              const isRoundScore = data.metadata?.matchupType === 'ROUND_SCORE';
+
+              let homeScore = 0;
+              let awayScore = 0;
+
+              let homeFinal = false;
+              let awayFinal = false;
+              let homeStarted = false;
+              let awayStarted = false;
+
+              const parseGolfScore = (val: any) => {
+                 if (val === null || val === undefined) return 0;
+                 const strVal = String(val).toUpperCase();
+                 if (strVal === 'E' || strVal === 'EVEN' || strVal === 'WD' || strVal === 'MC') return 0;
+                 const parsed = parseFloat(strVal);
+                 return isNaN(parsed) ? 0 : parsed;
+              };
+
+              if (isRoundScore) {
+                 const homeLs = homeComp.linescores?.find((ls: any) => ls.period === period);
+                 const awayLs = awayComp.linescores?.find((ls: any) => ls.period === period);
+
+                 homeScore = homeLs ? parseGolfScore(homeLs.displayValue || homeLs.value) : 0;
+                 awayScore = awayLs ? parseGolfScore(awayLs.displayValue || awayLs.value) : 0;
+
+                 const now = Date.now();
+                 homeStarted = !!(homeLs?.teeTime && new Date(homeLs.teeTime).getTime() <= now);
+                 awayStarted = !!(awayLs?.teeTime && new Date(awayLs.teeTime).getTime() <= now);
+
+                 // If the whole tournament is post or they have finished their specific round
+                 // Note: ESPN doesn't always cleanly mark individual rounds as 'post', so we rely on teeTimes and general status if needed
+                 // But typically if they are on a later round, the previous round is final.
+                 const currentRound = homeComp.status?.period || 1;
+                 if (homeComp.status?.type?.state === 'post' || currentRound > period || (currentRound === period && homeComp.status?.type?.completed)) homeFinal = true;
+
+                 const awayCurrentRound = awayComp.status?.period || 1;
+                 if (awayComp.status?.type?.state === 'post' || awayCurrentRound > period || (awayCurrentRound === period && awayComp.status?.type?.completed)) awayFinal = true;
+
+              } else {
+                 homeScore = parseGolfScore(homeComp.score?.displayValue || homeComp.score?.value || homeComp.score);
+                 awayScore = parseGolfScore(awayComp.score?.displayValue || awayComp.score?.value || awayComp.score);
+
+                 if (homeComp.status?.type?.state === 'post') homeFinal = true;
+                 if (awayComp.status?.type?.state === 'post') awayFinal = true;
+
+                 if (homeComp.status?.type?.state === 'in' || homeFinal) homeStarted = true;
+                 if (awayComp.status?.type?.state === 'in' || awayFinal) awayStarted = true;
+              }
+
+              let newStatus = data.status;
+              let newActive = data.active;
+
+              if (homeFinal && awayFinal) {
+                newStatus = 'STATUS_FINAL';
+                newActive = false;
+              } else if (homeStarted || awayStarted) {
+                newStatus = 'STATUS_IN_PROGRESS';
+                newActive = false;
+              }
+
+              const needsUpdate = data.status !== newStatus ||
+                  data.homeTeam?.score !== homeScore ||
+                  data.awayTeam?.score !== awayScore ||
+                  data.active !== newActive;
+
+              if (needsUpdate) {
+                const updateData: any = {
+                  ...data,
+                  status: newStatus,
+                  statusDesc: newStatus === 'STATUS_FINAL' ? 'Final' : newStatus === 'STATUS_IN_PROGRESS' ? 'In Progress' : 'Upcoming',
+                  active: newActive,
+                  homeTeam: {
+                      ...data.homeTeam,
+                      score: homeScore
+                  },
+                  awayTeam: {
+                      ...data.awayTeam,
+                      score: awayScore
+                  },
+                  updatedAt: Date.now()
+                };
+
+                const flattenedUpdate: any = {
+                  active: updateData.active,
+                  status: updateData.status,
+                  statusDesc: updateData.statusDesc,
+                  'homeTeam.score': updateData.homeTeam.score,
+                  'awayTeam.score': updateData.awayTeam.score,
+                  updatedAt: updateData.updatedAt
+                };
+
+                batch.update(doc.ref, flattenedUpdate);
+                opCount++;
+                updateCount++;
+
+                if (newStatus === 'STATUS_FINAL' && data.status !== 'STATUS_FINAL') {
+                  matchupsToGrade.push({ ...data, ...updateData, id: existingGameId, gameId: existingGameId });
+                }
+
+                if (opCount >= 500) {
+                  await batch.commit();
+                  batch = adminDb.batch();
+                  opCount = 0;
+                }
+              }
+            }
+          }
+          continue;
+        }
+
         const gameId = scrapedMatchup.gameId;
         scrapedGameIds.add(gameId);
         const existingDoc = existingMap.get(gameId);
@@ -220,7 +345,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
         for (const [gameId, doc] of existingMap.entries()) {
           const data = doc.data();
           // If it was scheduled, not abandoned, and no longer in the scraped data
-          if (data.status === 'STATUS_SCHEDULED' && !data.abandoned && !scrapedGameIds.has(gameId)) {
+          if (data.status === 'STATUS_SCHEDULED' && !data.abandoned && !scrapedGameIds.has(gameId) && data.league !== 'PGA') {
             const pendingPicksSnap = await adminDb.collection('picks')
               .where('matchupId', '==', gameId)
               .where('status', '==', 'PENDING')
