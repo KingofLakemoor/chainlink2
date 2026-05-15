@@ -1,4 +1,4 @@
-export type League = "NFL" | "NBA" | "NHL" | "MLB" | "MLS" | "EPL" | "MBB" | "WBB" | "NWSL" | "COLLEGE-FOOTBALL" | "CBASE" | "ATP" | "WTA" | "WNBA" | "PGA" | "FIFA" | "FRA" | "TUR" | "RPL" | "CHN" | string;
+export type League = "NFL" | "NBA" | "NHL" | "MLB" | "MLS" | "EPL" | "MBB" | "WBB" | "NWSL" | "CFB" | "CBASE" | "ATP" | "WTA" | "WNBA" | "PGA" | "FIFA" | "FRA" | "TUR" | "RPL" | "CHN" | string;
 
 
 export const MATCHUP_FINAL_STATUSES = [
@@ -100,7 +100,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
       case "TUR": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/tur.1/scoreboard?dates=${date}`);
       case "RPL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/rus.1/scoreboard?dates=${date}`);
       case "CHN": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/chn.1/scoreboard?dates=${date}`);
-      case "COLLEGE-FOOTBALL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${date}`);
+      case "CFB": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${date}`);
       case "CBASE": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates=${date}&limit=500`);
       case "WNBA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/scoreboard?dates=${date}`);
       default: throw new Error(`Unsupported league: ${league}`);
@@ -120,7 +120,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
     case "TUR": return [`https://cdn.espn.com/core/soccer/schedule/_/league/tur.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "RPL": return [`https://cdn.espn.com/core/soccer/schedule/_/league/rus.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "CHN": return [`https://cdn.espn.com/core/soccer/schedule/_/league/chn.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
-    case "COLLEGE-FOOTBALL": return [`https://cdn.espn.com/core/college-football/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
+    case "CFB": return [`https://cdn.espn.com/core/college-football/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "CBASE": return [`https://cdn.espn.com/core/college-baseball/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "WNBA": return [`https://cdn.espn.com/core/wnba/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     default: throw new Error(`Unsupported league: ${league}`);
