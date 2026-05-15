@@ -195,7 +195,7 @@ function AdminMatchups() {
   const [syncing, setSyncing] = useState(false);
   const [leagueFilter, setLeagueFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [activeFilter, setActiveFilter] = useState('ACTIVE');
   const [searchQuery, setSearchQuery] = useState('');
   const [pickCounts, setPickCounts] = useState<Record<string, number>>({});
 
@@ -296,7 +296,8 @@ function AdminMatchups() {
                      existingData.awayTeam?.image !== scrapedMatchup.awayTeam?.image ||
                      existingData.awayTeam?.id !== scrapedMatchup.awayTeam?.id ||
                      existingData.metadata?.overUnder !== scrapedMatchup.metadata?.overUnder ||
-                     (existingData.type !== 'SPREAD' && existingData.metadata?.spread !== scrapedMatchup.metadata?.spread);
+                     (existingData.type !== 'SPREAD' && existingData.metadata?.spread !== scrapedMatchup.metadata?.spread) ||
+                     existingData.metadata?.mlHome !== scrapedMatchup.metadata?.mlHome;
 
                  if (existingDoc.id !== gameId) {
                    // Migrate to use gameId as the document ID
@@ -324,7 +325,8 @@ function AdminMatchups() {
                          ...(existingData.metadata || {}),
                          overUnder: scrapedMatchup.metadata?.overUnder,
                          spread: existingData.type === 'SPREAD' ? existingData.metadata?.spread : scrapedMatchup.metadata?.spread,
-                         network: scrapedMatchup.metadata?.network
+                         network: scrapedMatchup.metadata?.network,
+                         mlHome: scrapedMatchup.metadata?.mlHome
                      },
                      updatedAt: Date.now()
                    };
@@ -348,6 +350,7 @@ function AdminMatchups() {
                      'metadata.overUnder': scrapedMatchup.metadata?.overUnder,
                      'metadata.spread': existingData.type === 'SPREAD' ? existingData.metadata?.spread : scrapedMatchup.metadata?.spread,
                      'metadata.network': scrapedMatchup.metadata?.network,
+                     'metadata.mlHome': scrapedMatchup.metadata?.mlHome,
                      updatedAt: Date.now()
                    });
                    opCount++;
@@ -482,10 +485,10 @@ function AdminMatchups() {
               <tr>
                 <th className="px-4 py-3 font-medium">League</th>
                 <th className="px-4 py-3 font-medium">Title</th>
+                <th className="px-4 py-3 font-medium">ML</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Active</th>
                 <th className="px-4 py-3 font-medium">Start Time</th>
-                <th className="px-4 py-3 font-medium">Cost</th>
                 <th className="px-4 py-3 font-medium">Picks</th>
                 <th className="px-4 py-3 font-medium text-right">Actions</th>
               </tr>
@@ -495,6 +498,7 @@ function AdminMatchups() {
                 <tr key={row.id} className="hover:bg-zinc-800/30 transition-colors">
                   <td className="px-4 py-3 font-bold text-zinc-300">{row.league}</td>
                   <td className="px-4 py-3 text-zinc-200">{row.title}</td>
+                  <td className="px-4 py-3 text-zinc-400 font-mono">{row.metadata?.mlHome !== undefined && row.metadata?.mlHome !== null ? row.metadata.mlHome : '-'}</td>
                   <td className="px-4 py-3 text-zinc-400">
                     <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${row.status === 'STATUS_SCHEDULED' ? 'bg-zinc-800 text-zinc-300' : 'bg-green-500/10 text-green-400'}`}>
                       {row.status}
@@ -510,7 +514,6 @@ function AdminMatchups() {
                     </button>
                   </td>
                   <td className="px-4 py-3 text-zinc-500">{new Date(row.startTime).toLocaleString()}</td>
-                  <td className="px-4 py-3 text-cyan-400 font-mono">{row.cost} LNK</td>
                   <td className="px-4 py-3 text-zinc-300 font-mono">{pickCounts[row.id] || 0}</td>
                   <td className="px-4 py-3 text-right">
                     <Link to={`/admin/matchups/${row.id}`} className="text-zinc-500 hover:text-white mr-3 inline-block"><Edit className="w-4 h-4" /></Link>

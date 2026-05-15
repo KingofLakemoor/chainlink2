@@ -449,7 +449,8 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
              metadata: {
                network,
                overUnder,
-               spread
+               spread,
+               mlHome: mlHome ? parseInt(mlHome, 10) : null
              }
           });
         }
