@@ -365,17 +365,17 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
 
           if (mlHome) {
             const mlHomeNum = parseInt(mlHome, 10);
-            if (!isNaN(mlHomeNum) && mlHomeNum <= -300) {
+            if (!isNaN(mlHomeNum) && (mlHomeNum <= -300 || mlHomeNum >= 300)) {
               active = false;
             }
           }
 
           const details = competition.odds?.[0]?.details;
           if (details && details !== "EVEN") {
-            const match = details.match(/(-?\d+)/);
+            const match = details.match(/([+-]?\d+)/);
             if (match) {
               const detailsNum = parseInt(match[0], 10);
-              if (!isNaN(detailsNum) && detailsNum <= -300) {
+              if (!isNaN(detailsNum) && (detailsNum <= -300 || detailsNum >= 300)) {
                 active = false;
               }
             }
@@ -383,7 +383,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
 
           if (mlAway) {
             const mlAwayNum = parseInt(mlAway, 10);
-            if (!isNaN(mlAwayNum) && mlAwayNum <= -300) {
+            if (!isNaN(mlAwayNum) && (mlAwayNum <= -300 || mlAwayNum >= 300)) {
               active = false;
             }
           }
