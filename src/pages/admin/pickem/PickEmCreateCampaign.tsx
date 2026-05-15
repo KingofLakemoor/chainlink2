@@ -8,12 +8,12 @@ import { Button } from '../../../components/ui/button';
 export default function PickEmCreateCampaign() {
   const navigate = useNavigate();
   const [name, setName] = useState('');
-  const [leagues, setLeagues] = useState<string[]>(['COLLEGE-FOOTBALL']);
+  const [leagues, setLeagues] = useState<string[]>(['CFB']);
   const [defaultMatchType, setDefaultMatchType] = useState('STANDARD');
   const [pickLimit, setPickLimit] = useState<number>(0);
   const [loading, setLoading] = useState(false);
 
-  const availableLeagues = ['COLLEGE-FOOTBALL', 'CBASE', 'NFL', 'NBA'];
+  const availableLeagues = ['CFB', 'CBASE', 'NFL', 'NBA'];
 
   const handleLeagueToggle = (league: string) => {
     setLeagues(prev =>

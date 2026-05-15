@@ -49,8 +49,8 @@ export const MATCHUP_UNKNOWN_STATUSES = ["STATUS_UNKNOWN"];
 `;
 
 content = content.replace(
-  `export type League = "NFL" | "NBA" | "MLB" | "NHL" | "PGA" | "COLLEGE-FOOTBALL" | "MBB" | "WBB" | "WNBA" | "MLS" | "EPL" | "NWSL";`,
-  `export type League = "NFL" | "NBA" | "MLB" | "NHL" | "PGA" | "COLLEGE-FOOTBALL" | "MBB" | "WBB" | "WNBA" | "MLS" | "EPL" | "NWSL";\n` + constants
+  `export type League = "NFL" | "NBA" | "MLB" | "NHL" | "PGA" | "CFB" | "MBB" | "WBB" | "WNBA" | "MLS" | "EPL" | "NWSL";`,
+  `export type League = "NFL" | "NBA" | "MLB" | "NHL" | "PGA" | "CFB" | "MBB" | "WBB" | "WNBA" | "MLS" | "EPL" | "NWSL";\n` + constants
 );
 
 fs.writeFileSync(filePath, content, 'utf8');
