@@ -492,12 +492,12 @@ export default function ProfilePage() {
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 mt-auto">
-                           <div className="bg-zinc-800/30 rounded p-2 flex flex-col items-center">
-                              <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Max Win Chain</span>
+                           <div className="bg-zinc-800/30 rounded p-2 flex flex-col items-center text-center">
+                              <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Max Win<br />Chain</span>
                               <span className="text-green-400 font-bold font-mono">W{stat.longestWinChain}</span>
                            </div>
-                           <div className="bg-zinc-800/30 rounded p-2 flex flex-col items-center">
-                              <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Max Loss Chain</span>
+                           <div className="bg-zinc-800/30 rounded p-2 flex flex-col items-center text-center">
+                              <span className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider mb-1">Max Loss<br />Chain</span>
                               <span className="text-red-400 font-bold font-mono">L{stat.longestLossChain}</span>
                            </div>
                         </div>
