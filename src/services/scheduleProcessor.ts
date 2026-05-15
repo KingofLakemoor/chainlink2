@@ -110,7 +110,27 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                 newActive = false;
               }
 
+              let currentThruDesc = 'In Progress';
+              if (newStatus === 'STATUS_IN_PROGRESS') {
+                const homeThru = homeComp.status?.thru || 0;
+                const awayThru = awayComp.status?.thru || 0;
+                let minThru = 0;
+
+                if (homeThru > 0 && awayThru > 0) {
+                  minThru = Math.min(homeThru, awayThru);
+                } else if (homeThru > 0) {
+                  minThru = homeThru;
+                } else if (awayThru > 0) {
+                  minThru = awayThru;
+                }
+
+                if (minThru > 0) {
+                  currentThruDesc = `THRU ${minThru}`;
+                }
+              }
+
               const needsUpdate = data.status !== newStatus ||
+                  data.statusDesc !== (newStatus === 'STATUS_FINAL' ? 'Final' : newStatus === 'STATUS_IN_PROGRESS' ? currentThruDesc : 'Upcoming') ||
                   data.homeTeam?.score !== homeScore ||
                   data.awayTeam?.score !== awayScore ||
                   data.active !== newActive;
@@ -119,7 +139,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                 const updateData: any = {
                   ...data,
                   status: newStatus,
-                  statusDesc: newStatus === 'STATUS_FINAL' ? 'Final' : newStatus === 'STATUS_IN_PROGRESS' ? 'In Progress' : 'Upcoming',
+                  statusDesc: newStatus === 'STATUS_FINAL' ? 'Final' : newStatus === 'STATUS_IN_PROGRESS' ? currentThruDesc : 'Upcoming',
                   active: newActive,
                   homeTeam: {
                       ...data.homeTeam,

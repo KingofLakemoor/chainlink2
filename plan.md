@@ -1,9 +1,16 @@
-1.  **Refactor Title Components:** Create dedicated Title React components in `src/components/ui/titles/` to match the visual style of the `TitleMap` approach used for other cosmetics. Create `src/components/ui/titles/index.tsx` mapping strings to functional components. Create `src/components/ui/titles/v1-originator.tsx` returning a styled pill.
-2.  **Verify New Title Components:** Run `cat` on the newly created `src/components/ui/titles/index.tsx` and `src/components/ui/titles/v1-originator.tsx` files to verify their contents were written successfully.
-3.  **Update `src/pages/dashboard/DashboardPage.tsx`**: Update the DOM structure of the Profile Header bento box. Import `TitleMap`, `AvatarBackgroundMap`, and `ProfileBannerMap`. Modify the container classes so `BannerComponent` fills the absolute inset. Wrap the profile picture in the `RingComponent` if it exists. Replaced the hardcoded inline title span with `<TitleComponent />` retrieved from `TitleMap[profile?.equippedCosmetics?.TITLE]`.
-4.  **Update `src/pages/profile/ProfilePage.tsx`**: Replicate the exact DOM structure and layout changes made in `DashboardPage.tsx` to the Profile Header bento box in `ProfilePage.tsx` to ensure visual alignment between the two pages. This includes the Banner inset, Ring wrapper, and Title rendering via `TitleMap`.
-5.  **Update `src/pages/leaderboards/LeaderboardsPage.tsx`**: Import `TitleMap` and `AvatarBackgroundMap`. Update the `<tbody>` render function in the Global Standings table. In the "Player" column, wrap the avatar image in an absolutely positioned `RingComponent` that is scaled up slightly (using `scale-150` on the ring container to fit the tiny avatar cell). Add the `TitleComponent` below the user's name, using `scale-75 origin-left` to reduce its size and prevent expanding the row height excessively.
-6.  **Verify Layout Updates:** Run `cat` or `grep` on `src/pages/dashboard/DashboardPage.tsx`, `src/pages/profile/ProfilePage.tsx`, and `src/pages/leaderboards/LeaderboardsPage.tsx` to verify the code modifications were applied correctly.
-7.  **Run Build / Tests:** Execute `npm run build` and `npx vitest run` to verify there are no TypeScript or compilation errors introduced by the layout refactoring and that all tests pass.
-8.  **Complete pre-commit steps:** Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
-9.  **Submit the change:** Commit the code changes and submit.
+1.  **Analyze the Issue:** The user wants the PGA matchups to display the current hole they are on (e.g., "Thru 2") instead of "In Progress" when a match is ongoing.
+2.  **Locate Data Source:** The "Thru" data can be found in the `pga_leaderboard.json` payload at `competitor.status.displayThru` or `competitor.status.thru`. I will need to extract this information for both the home and away golfer.
+3.  **Determine Logic for Paired Golfers:** If both golfers are "In Progress", I should grab their respective `thru` values. The instructions state: "The golfers should usually be paired, but the lower Thru number should be used if there is a discrepancy".
+    *   If `newStatus === 'STATUS_IN_PROGRESS'`, calculate the `thru` value.
+    *   `homeThru` = `homeComp.status?.thru`
+    *   `awayThru` = `awayComp.status?.thru`
+    *   Determine the minimum valid "thru" value.
+    *   If a minimum "thru" value > 0 exists, set `statusDesc` to `Thru X` or `Thru 18` (if they are at the end, although that might be 'Final').
+    *   If we can't find a valid thru, fallback to "In Progress".
+4.  **Implement in `scheduleProcessor.ts`:**
+    *   Update the section where `newStatus` is calculated around line 102.
+    *   Add variables to capture `homeThru` and `awayThru`.
+    *   Calculate `minThru = Math.min(homeThru, awayThru)`. (Handle cases where one might be 0, null, or undefined appropriately).
+    *   Set `statusDesc` to `Thru ${minThru}` if `newStatus === 'STATUS_IN_PROGRESS'` and a valid `minThru` is found.
+5.  **Pre-commit checks:**
+    *   Run `pre_commit_instructions` and follow the provided steps to ensure code quality and verify functionality before submitting.
