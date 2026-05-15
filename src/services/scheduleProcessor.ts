@@ -235,6 +235,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               existingData.awayTeam?.id !== scrapedMatchup.awayTeam?.id ||
               existingData.active !== finalActive ||
               existingData.metadata?.overUnder !== scrapedMatchup.metadata?.overUnder ||
+              JSON.stringify(existingData.metadata?.homeLinescores) !== JSON.stringify(scrapedMatchup.metadata?.homeLinescores) ||
+              JSON.stringify(existingData.metadata?.awayLinescores) !== JSON.stringify(scrapedMatchup.metadata?.awayLinescores) ||
               (existingData.type !== 'SPREAD' && existingData.metadata?.spread !== scrapedMatchup.metadata?.spread);
 
           if (needsUpdate || existingDoc.id !== gameId) {
@@ -263,6 +265,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                   ...(existingData.metadata || {}),
                   overUnder: scrapedMatchup.metadata?.overUnder,
                   spread: existingData.type === 'SPREAD' ? existingData.metadata?.spread : scrapedMatchup.metadata?.spread,
+                  homeLinescores: scrapedMatchup.metadata?.homeLinescores,
+                  awayLinescores: scrapedMatchup.metadata?.awayLinescores,
                   network: scrapedMatchup.metadata?.network
               },
               updatedAt: Date.now()
@@ -285,6 +289,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               'awayTeam.score': updateData.awayTeam.score,
               'metadata.overUnder': updateData.metadata.overUnder,
               'metadata.spread': updateData.metadata.spread,
+              'metadata.homeLinescores': updateData.metadata.homeLinescores,
+              'metadata.awayLinescores': updateData.metadata.awayLinescores,
               'metadata.network': updateData.metadata.network,
               updatedAt: updateData.updatedAt
             };
