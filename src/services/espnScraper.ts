@@ -172,7 +172,7 @@ export async function fetchScheduleData(endpoint: string, league: League, isScor
   return scheduleData;
 }
 
-export async function scrapeLeagueSchedules(league: League, scoreboardOnly: boolean = false): Promise<LeagueResponse> {
+export async function scrapeLeagueSchedules(league: League, scoreboardOnly: boolean = false, scraperConfig?: { maxMoneylineOdds?: number }): Promise<LeagueResponse> {
   const response: LeagueResponse = {
     scoreMatchupsCreated: 0,
     existingMatchups: 0,
@@ -363,9 +363,11 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
           const mlHome = competition.odds?.[0]?.moneyline?.home?.close?.odds || competition.odds?.[0]?.moneyline?.home?.open?.odds;
           const mlAway = competition.odds?.[0]?.moneyline?.away?.close?.odds || competition.odds?.[0]?.moneyline?.away?.open?.odds;
 
+          const threshold = Math.abs(scraperConfig?.maxMoneylineOdds ?? 300);
+
           if (mlHome) {
             const mlHomeNum = parseInt(mlHome, 10);
-            if (!isNaN(mlHomeNum) && (mlHomeNum <= -300 || mlHomeNum >= 300)) {
+            if (!isNaN(mlHomeNum) && (mlHomeNum <= -threshold || mlHomeNum >= threshold)) {
               active = false;
             }
           }
@@ -375,7 +377,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
             const match = details.match(/([+-]?\d+)/);
             if (match) {
               const detailsNum = parseInt(match[0], 10);
-              if (!isNaN(detailsNum) && (detailsNum <= -300 || detailsNum >= 300)) {
+              if (!isNaN(detailsNum) && (detailsNum <= -threshold || detailsNum >= threshold)) {
                 active = false;
               }
             }
@@ -383,7 +385,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
 
           if (mlAway) {
             const mlAwayNum = parseInt(mlAway, 10);
-            if (!isNaN(mlAwayNum) && (mlAwayNum <= -300 || mlAwayNum >= 300)) {
+            if (!isNaN(mlAwayNum) && (mlAwayNum <= -threshold || mlAwayNum >= threshold)) {
               active = false;
             }
           }
