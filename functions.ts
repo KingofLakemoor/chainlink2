@@ -157,6 +157,34 @@ export const nightlySync = onSchedule({ schedule: "0 9 * * *", timeoutSeconds: 3
           .get();
 
         if (abandonedSnap.empty) {
+          // If no explicitly abandoned matchups left, search for old final/postponed/canceled ones
+          const twoDaysAgo = Date.now() - 48 * 60 * 60 * 1000;
+          const oldMatchupsSnap = await adminDb.collection('matchups')
+            .where('status', 'in', ['STATUS_FINAL', 'STATUS_POSTPONED', 'STATUS_CANCELED'])
+            .where('startTime', '<', twoDaysAgo)
+            .limit(100)
+            .get();
+
+          if (oldMatchupsSnap.empty) {
+            break;
+          }
+
+          const batch = adminDb.batch();
+          for (const doc of oldMatchupsSnap.docs) {
+            const picksSnap = await adminDb.collection('picks').where('matchupId', '==', doc.id).limit(1).get();
+            if (picksSnap.empty) {
+               batch.delete(doc.ref);
+            } else {
+               // Set abandoned = true so we don't query it again with startTime
+               batch.update(doc.ref, { abandoned: true });
+            }
+          }
+          await batch.commit();
+          purgedCount += oldMatchupsSnap.size;
+          continue;
+        }
+
+        if (abandonedSnap.empty) {
           break;
         }
 

@@ -214,7 +214,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
               }
 
               for (const comp of (grouping.competitions || [])) {
-                  const competitors = comp.competitors?.filter((c: any) => c.athlete) || [];
+                  const competitors = comp.competitors || [];
                   if (competitors.length !== 2) continue;
 
                   const a = competitors[0];
@@ -233,8 +233,8 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                       homeCompetitor = b;
                   }
 
-                  const homeName = homeCompetitor.athlete?.displayName || "";
-                  const awayName = awayCompetitor.athlete?.displayName || "";
+                  const homeName = homeCompetitor?.athlete?.displayName || homeCompetitor?.team?.displayName || homeCompetitor?.team?.name || "";
+                  const awayName = awayCompetitor?.athlete?.displayName || awayCompetitor?.team?.displayName || awayCompetitor?.team?.name || "";
 
                   if (homeName.includes("TBD") || awayName.includes("TBD")) continue;
 
@@ -276,7 +276,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                      startTime: new Date(comp.date).getTime(),
                      active: true,
                      featured: false,
-                     title: `Who will win? ${awayCompetitor.athlete?.displayName || awayCompetitor.team?.displayName || 'Away'} @ ${homeCompetitor.athlete?.displayName || homeCompetitor.team?.displayName || 'Home'}`,
+                     title: `Who will win? ${awayName || 'Away'} @ ${homeName || 'Home'}`,
                      league,
                      type: "MONEYLINE",
                      status: finalStatus,
@@ -284,14 +284,14 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                      gameId: matchupGameId,
                      homeTeam: {
                        id: String(homeCompetitor.id),
-                       name: homeCompetitor.athlete.displayName,
-                       image: homeCompetitor.athlete.flag?.href || "/icons/icon-256x256.png",
+                       name: homeName,
+                       image: homeCompetitor?.athlete?.flag?.href || homeCompetitor?.team?.logo || "/icons/icon-256x256.png",
                        score: homeScore
                      },
                      awayTeam: {
                        id: String(awayCompetitor.id),
-                       name: awayCompetitor.athlete.displayName,
-                       image: awayCompetitor.athlete.flag?.href || "/icons/icon-256x256.png",
+                       name: awayName,
+                       image: awayCompetitor?.athlete?.flag?.href || awayCompetitor?.team?.logo || "/icons/icon-256x256.png",
                        score: awayScore
                      },
                      cost: 0,
