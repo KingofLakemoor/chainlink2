@@ -252,14 +252,14 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                   id: scrapedMatchup.homeTeam?.id || existingData.homeTeam?.id,
                   name: scrapedMatchup.homeTeam?.name || existingData.homeTeam?.name,
                   image: scrapedMatchup.homeTeam?.image || existingData.homeTeam?.image,
-                  score: scrapedMatchup.homeTeam?.score || existingData.homeTeam?.score || 0
+                  score: scrapedMatchup.homeTeam?.score ?? existingData.homeTeam?.score ?? 0
               },
               awayTeam: {
                   ...(existingData.awayTeam || {}),
                   id: scrapedMatchup.awayTeam?.id || existingData.awayTeam?.id,
                   name: scrapedMatchup.awayTeam?.name || existingData.awayTeam?.name,
                   image: scrapedMatchup.awayTeam?.image || existingData.awayTeam?.image,
-                  score: scrapedMatchup.awayTeam?.score || existingData.awayTeam?.score || 0
+                  score: scrapedMatchup.awayTeam?.score ?? existingData.awayTeam?.score ?? 0
               },
               metadata: {
                   ...(existingData.metadata || {}),
@@ -417,8 +417,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               const updateData = {
                 status: matchup.status,
                 statusDesc: matchup.statusDesc,
-                'homeTeam.score': matchup.homeTeam?.score || 0,
-                'awayTeam.score': matchup.awayTeam?.score || 0,
+                'homeTeam.score': matchup.homeTeam?.score ?? 0,
+                'awayTeam.score': matchup.awayTeam?.score ?? 0,
                 updatedAt: Date.now()
               };
               await doc.ref.update(updateData);
@@ -427,8 +427,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                 ...pData,
                 status: matchup.status,
                 statusDesc: matchup.statusDesc,
-                homeTeam: { ...(pData.homeTeam || {}), score: matchup.homeTeam?.score || 0 },
-                awayTeam: { ...(pData.awayTeam || {}), score: matchup.awayTeam?.score || 0 },
+                homeTeam: { ...(pData.homeTeam || {}), score: matchup.homeTeam?.score ?? 0 },
+                awayTeam: { ...(pData.awayTeam || {}), score: matchup.awayTeam?.score ?? 0 },
                 id: doc.id
               });
             }

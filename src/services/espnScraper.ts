@@ -388,8 +388,8 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
             }
           }
 
-          const homeScore = parseFloat(home.score || "0");
-          const awayScore = parseFloat(away.score || "0");
+          const homeScore = parseFloat(home.score !== undefined && home.score !== null && home.score !== "" ? home.score : "0");
+          const awayScore = parseFloat(away.score !== undefined && away.score !== null && away.score !== "" ? away.score : "0");
 
           let rawStatus = competition.status?.type?.name || "STATUS_SCHEDULED";
           let finalStatusDesc = competition.status?.type?.shortDetail || "Upcoming";
@@ -437,13 +437,13 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                id: String(home.id),
                name: home.team.name || "Home Team",
                image: home.team.logo || "/icons/icon-256x256.png",
-               score: parseFloat(home.score || "0")
+               score: parseFloat(home.score !== undefined && home.score !== null && home.score !== "" ? home.score : "0")
              },
              awayTeam: {
                id: String(away.id),
                name: away.team.name || "Away Team",
                image: away.team.logo || "/icons/icon-256x256.png",
-               score: parseFloat(away.score || "0")
+               score: parseFloat(away.score !== undefined && away.score !== null && away.score !== "" ? away.score : "0")
              },
              cost: 0,
              metadata: {
