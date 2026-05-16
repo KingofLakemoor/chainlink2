@@ -425,7 +425,7 @@ function AdminMatchups() {
   const statuses = Array.from(new Set(data.map(m => m.status))).filter(Boolean);
 
   const filteredData = data.filter(row => {
-    if (row.abandoned || row.status === 'STATUS_FINAL') return false;
+    if (row.abandoned || row.status === 'STATUS_FINAL' || row.status === 'STATUS_POSTPONED' || row.status === 'STATUS_CANCELED') return false;
     if (leagueFilter !== 'All' && row.league !== leagueFilter) return false;
     if (statusFilter !== 'All' && row.status !== statusFilter) return false;
     if (activeFilter !== 'All') {
