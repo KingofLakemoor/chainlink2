@@ -6,7 +6,19 @@ import { League, LeagueResponse, scrapeLeagueSchedules } from './espnScraper.js'
 export { scrapeLeagueSchedules } from './espnScraper.js';
 
 export async function syncLeagueSchedules(league: League, scoreboardOnly: boolean = false): Promise<LeagueResponse> {
-  const response = await scrapeLeagueSchedules(league, scoreboardOnly);
+  let scraperConfig: { maxMoneylineOdds?: number } | undefined = undefined;
+  if (adminDb) {
+    try {
+      const scraperSnap = await adminDb.collection('systemSettings').doc('scraper').get();
+      if (scraperSnap.exists) {
+        scraperConfig = scraperSnap.data() as { maxMoneylineOdds?: number };
+      }
+    } catch (e) {
+      console.error("Error fetching scraper config", e);
+    }
+  }
+
+  const response = await scrapeLeagueSchedules(league, scoreboardOnly, scraperConfig);
 
   if (response.data && response.data.length > 0 && adminDb) {
     try {
