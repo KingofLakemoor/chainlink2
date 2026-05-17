@@ -380,6 +380,11 @@ export default function PickEmPage() {
                             {isSpread && (
                                <span className="text-base text-zinc-400 font-medium">{spread > 0 ? `-${spread}` : `+${Math.abs(spread)}`}</span>
                             )}
+                            {m.type === 'SOCCER_SCORE' && m.metadata?.awayScoreType && m.metadata?.awayScoreValue !== undefined && (
+                               <span className="text-base text-zinc-400 font-medium whitespace-nowrap">
+                                  {m.metadata.awayScoreType === 'WIN_BY' ? `Win by ${m.metadata.awayScoreValue}+` : `W/D/Lose by ${m.metadata.awayScoreValue}`}
+                               </span>
+                            )}
                           </div>
                         </div>
                         {pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) && <CheckCircle className="w-5 h-5" style={{ color: primaryColor }} />}
@@ -404,6 +409,11 @@ export default function PickEmPage() {
                             <span className="font-bold text-white">{m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.name}</span>
                             {isSpread && (
                                <span className="text-base text-zinc-400 font-medium">{spread > 0 ? `+${spread}` : `-${Math.abs(spread)}`}</span>
+                            )}
+                            {m.type === 'SOCCER_SCORE' && m.metadata?.homeScoreType && m.metadata?.homeScoreValue !== undefined && (
+                               <span className="text-base text-zinc-400 font-medium whitespace-nowrap">
+                                  {m.metadata.homeScoreType === 'WIN_BY' ? `Win by ${m.metadata.homeScoreValue}+` : `W/D/Lose by ${m.metadata.homeScoreValue}`}
+                               </span>
                             )}
                           </div>
                         </div>
