@@ -87,6 +87,11 @@ export function DashboardPick({ activePick, activeMatchup, sponsors = [] }: Dash
                      {activeMatchup.metadata.spread > 0 ? `-${activeMatchup.metadata.spread}` : `+${Math.abs(activeMatchup.metadata.spread)}`}
                    </div>
                  )}
+                 {activeMatchup.type === 'SOCCER_SCORE' && activeMatchup.metadata?.awayScoreType && activeMatchup.metadata?.awayScoreValue !== undefined && (
+                   <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#1f1f22] text-zinc-300 text-[11px] font-bold px-2 py-0.5 rounded-md border border-[#3f3f46] shadow-sm whitespace-nowrap z-10">
+                     {activeMatchup.metadata.awayScoreType === 'WIN_BY' ? `Win by ${activeMatchup.metadata.awayScoreValue}+` : `W/D/Lose by ${activeMatchup.metadata.awayScoreValue}`}
+                   </div>
+                 )}
               </div>
               <div className="text-zinc-500 font-bold text-xl">VS</div>
               <div className={cn("flex flex-col items-center gap-3 p-4 rounded-xl border relative", activePick?.pick?.id === (activeMatchup.type === 'OVER_UNDER' ? 'UNDER' : activeMatchup.homeTeam.id) ? 'border-green-500 bg-green-500/10' : 'border-zinc-800 opacity-50')}>
@@ -96,6 +101,11 @@ export function DashboardPick({ activePick, activeMatchup, sponsors = [] }: Dash
                 {activeMatchup.type === 'SPREAD' && activeMatchup.metadata?.spread !== undefined && (
                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#1f1f22] text-zinc-300 text-[11px] font-bold px-2 py-0.5 rounded-md border border-[#3f3f46] shadow-sm">
                      {activeMatchup.metadata.spread > 0 ? `+${activeMatchup.metadata.spread}` : `-${Math.abs(activeMatchup.metadata.spread)}`}
+                   </div>
+                 )}
+                 {activeMatchup.type === 'SOCCER_SCORE' && activeMatchup.metadata?.homeScoreType && activeMatchup.metadata?.homeScoreValue !== undefined && (
+                   <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#1f1f22] text-zinc-300 text-[11px] font-bold px-2 py-0.5 rounded-md border border-[#3f3f46] shadow-sm whitespace-nowrap z-10">
+                     {activeMatchup.metadata.homeScoreType === 'WIN_BY' ? `Win by ${activeMatchup.metadata.homeScoreValue}+` : `W/D/Lose by ${activeMatchup.metadata.homeScoreValue}`}
                    </div>
                  )}
               </div>

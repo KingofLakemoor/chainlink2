@@ -651,6 +651,11 @@ function PlayDashboard() {
                      {m.metadata.spread > 0 ? `-${m.metadata.spread}` : `+${Math.abs(m.metadata.spread)}`}
                    </div>
                  )}
+                 {m.type === 'SOCCER_SCORE' && m.metadata?.awayScoreType && m.metadata?.awayScoreValue !== undefined && (
+                   <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#1f1f22] text-zinc-300 text-[11px] font-bold px-2 py-0.5 rounded-md border border-[#3f3f46] shadow-sm whitespace-nowrap z-10">
+                     {m.metadata.awayScoreType === 'WIN_BY' ? `Win by ${m.metadata.awayScoreValue}+` : `W/D/Lose by ${m.metadata.awayScoreValue}`}
+                   </div>
+                 )}
                </div>
              </div>
 
@@ -767,6 +772,11 @@ function PlayDashboard() {
                  {m.type === 'SPREAD' && m.metadata?.spread !== undefined && (
                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#1f1f22] text-zinc-300 text-[11px] font-bold px-2 py-0.5 rounded-md border border-[#3f3f46] shadow-sm">
                      {m.metadata.spread > 0 ? `+${m.metadata.spread}` : `-${Math.abs(m.metadata.spread)}`}
+                   </div>
+                 )}
+                 {m.type === 'SOCCER_SCORE' && m.metadata?.homeScoreType && m.metadata?.homeScoreValue !== undefined && (
+                   <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#1f1f22] text-zinc-300 text-[11px] font-bold px-2 py-0.5 rounded-md border border-[#3f3f46] shadow-sm whitespace-nowrap z-10">
+                     {m.metadata.homeScoreType === 'WIN_BY' ? `Win by ${m.metadata.homeScoreValue}+` : `W/D/Lose by ${m.metadata.homeScoreValue}`}
                    </div>
                  )}
                </div>
