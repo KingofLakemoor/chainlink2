@@ -380,11 +380,16 @@ export default function PickEmPage() {
                             {isSpread && (
                                <span className="text-base text-zinc-400 font-medium">{spread > 0 ? `-${spread}` : `+${Math.abs(spread)}`}</span>
                             )}
-                            {m.type === 'SOCCER_SCORE' && m.metadata?.awayScoreType && m.metadata?.awayScoreValue !== undefined && (
-                               <span className="text-base text-zinc-400 font-medium whitespace-nowrap">
-                                  {m.metadata.awayScoreType === 'WIN_BY' ? `Win by ${m.metadata.awayScoreValue}+` : `W/D/Lose by ${m.metadata.awayScoreValue}`}
-                               </span>
-                            )}
+                            {m.type === 'SOCCER_SCORE' && (() => {
+                               const type = m.metadata?.awayScoreType || 'WIN_BY';
+                               const val = m.metadata?.awayScoreValue;
+                               const hasVal = val !== undefined && val !== null && val !== '';
+                               return (
+                                 <span className="text-base text-zinc-400 font-medium whitespace-nowrap">
+                                   {type === 'WIN_BY' ? (hasVal ? `Win by ${val}+` : 'Win') : (hasVal ? `W/D/Lose by ${val}` : 'W/D/Lose')}
+                                 </span>
+                               );
+                            })()}
                           </div>
                         </div>
                         {pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) && <CheckCircle className="w-5 h-5" style={{ color: primaryColor }} />}
@@ -410,11 +415,16 @@ export default function PickEmPage() {
                             {isSpread && (
                                <span className="text-base text-zinc-400 font-medium">{spread > 0 ? `+${spread}` : `-${Math.abs(spread)}`}</span>
                             )}
-                            {m.type === 'SOCCER_SCORE' && m.metadata?.homeScoreType && m.metadata?.homeScoreValue !== undefined && (
-                               <span className="text-base text-zinc-400 font-medium whitespace-nowrap">
-                                  {m.metadata.homeScoreType === 'WIN_BY' ? `Win by ${m.metadata.homeScoreValue}+` : `W/D/Lose by ${m.metadata.homeScoreValue}`}
-                               </span>
-                            )}
+                            {m.type === 'SOCCER_SCORE' && (() => {
+                               const type = m.metadata?.homeScoreType || 'WIN_DRAW_LOSE';
+                               const val = m.metadata?.homeScoreValue;
+                               const hasVal = val !== undefined && val !== null && val !== '';
+                               return (
+                                 <span className="text-base text-zinc-400 font-medium whitespace-nowrap">
+                                   {type === 'WIN_BY' ? (hasVal ? `Win by ${val}+` : 'Win') : (hasVal ? `W/D/Lose by ${val}` : 'W/D/Lose')}
+                                 </span>
+                               );
+                            })()}
                           </div>
                         </div>
                         {pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) && <CheckCircle className="w-5 h-5" style={{ color: primaryColor }} />}
