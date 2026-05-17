@@ -173,6 +173,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                   updatedAt: updateData.updatedAt
                 };
 
+                Object.keys(flattenedUpdate).forEach(key => flattenedUpdate[key] === undefined && delete flattenedUpdate[key]);
+
                 batch.update(doc.ref, flattenedUpdate);
                 opCount++;
                 updateCount++;
@@ -306,6 +308,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               'metadata.network': updateData.metadata.network,
               updatedAt: updateData.updatedAt
             };
+
+            Object.keys(flattenedUpdate).forEach(key => flattenedUpdate[key] === undefined && delete flattenedUpdate[key]);
 
             if (existingData.status === 'STATUS_SCHEDULED' &&
                 (scrapedMatchup.status === 'STATUS_IN_PROGRESS' ||
