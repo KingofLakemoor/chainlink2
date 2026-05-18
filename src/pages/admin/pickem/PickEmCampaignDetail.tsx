@@ -4,6 +4,8 @@ import { collection, getDocs, doc, getDoc, query, where, updateDoc, writeBatch, 
 import { db } from '../../../lib/firebase';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { app } from '../../../lib/firebase';
 import { scrapeLeagueSchedules } from '../../../services/espnScraper';
 import { RefreshCw, Trash2 } from 'lucide-react';
 
@@ -16,6 +18,13 @@ export default function PickEmCampaignDetail() {
   const [loading, setLoading] = useState(true);
   const [matchupsLoading, setMatchupsLoading] = useState(false);
 
+  const [themePrimaryColor, setThemePrimaryColor] = useState('#22c55e');
+  const [themeTitle, setThemeTitle] = useState('');
+  const [themeSubtitle, setThemeSubtitle] = useState('');
+  const [themeLogoFile, setThemeLogoFile] = useState<File | null>(null);
+  const [themeLogoUrl, setThemeLogoUrl] = useState('');
+
+
   const fetchCampaign = async () => {
     if (!id) return;
     try {
@@ -25,6 +34,12 @@ export default function PickEmCampaignDetail() {
         const data = docSnap.data();
         setCampaign({ id: docSnap.id, ...data });
         setSelectedWeek(data.currentWeek || 1);
+
+        setThemePrimaryColor(data.theme?.primaryColor || '#22c55e');
+        setThemeTitle(data.theme?.title || '');
+        setThemeSubtitle(data.theme?.subtitle || '');
+        setThemeLogoUrl(data.theme?.logoUrl || '');
+
       }
     } catch (err) {
       console.error(err);
@@ -64,11 +79,28 @@ export default function PickEmCampaignDetail() {
   const updateCurrentWeek = async () => {
     if (!campaign || !id) return;
     try {
+
+    let finalLogoUrl = themeLogoUrl;
+    if (themeLogoFile) {
+      const storage = getStorage(app);
+      const storageRef = ref(storage, `pickem_logos/${Date.now()}_${themeLogoFile.name}`);
+      await uploadBytes(storageRef, themeLogoFile);
+      finalLogoUrl = await getDownloadURL(storageRef);
+    }
+
       await updateDoc(doc(db, 'pickemCampaigns', id), {
-        currentWeek: selectedWeek
+        currentWeek: selectedWeek,
+
+      theme: {
+        primaryColor: themePrimaryColor,
+        title: themeTitle,
+        subtitle: themeSubtitle,
+        logoUrl: finalLogoUrl,
+      }
+
       });
-      setCampaign(prev => ({ ...prev, currentWeek: selectedWeek }));
-      alert(`Current week updated to ${selectedWeek}`);
+      setCampaign(prev => ({ ...prev, currentWeek: selectedWeek, theme: { primaryColor: themePrimaryColor, title: themeTitle, subtitle: themeSubtitle, logoUrl: finalLogoUrl } }));
+      alert(`Campaign updated`);
     } catch (err) {
       console.error(err);
       alert('Failed to update week');
@@ -226,8 +258,74 @@ export default function PickEmCampaignDetail() {
               ))}
             </select>
           </div>
-          <Button onClick={updateCurrentWeek} variant="secondary">Set as Active Week</Button>
+          <Button onClick={updateCurrentWeek} variant="secondary">Update Campaign</Button>
         </div>
+
+          {/* Theme Settings */}
+          <div className="pt-6 border-t border-zinc-800 w-full mt-6 col-span-2">
+            <h3 className="text-lg font-medium text-white mb-4">White Label / Theme Settings</h3>
+
+            <div className="space-y-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Theme Title</label>
+                  <input
+                    type="text"
+                    value={themeTitle}
+                    onChange={e => setThemeTitle(e.target.value)}
+                    placeholder="Leave blank to use Campaign Name"
+                    className="w-full bg-[#18181A] border border-zinc-800 rounded-lg px-4 py-2 text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Theme Subtitle</label>
+                  <input
+                    type="text"
+                    value={themeSubtitle}
+                    onChange={e => setThemeSubtitle(e.target.value)}
+                    placeholder="Optional subtitle"
+                    className="w-full bg-[#18181A] border border-zinc-800 rounded-lg px-4 py-2 text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Primary Color</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={themePrimaryColor}
+                      onChange={e => setThemePrimaryColor(e.target.value)}
+                      className="w-10 h-10 rounded cursor-pointer bg-transparent border-0 p-0"
+                    />
+                    <span className="text-zinc-400 text-sm">{themePrimaryColor}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Logo Image</label>
+                  {themeLogoUrl && (
+                    <div className="mb-2">
+                      <img src={themeLogoUrl} alt="Current Logo" className="h-12 object-contain" />
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={e => {
+                      if (e.target.files && e.target.files[0]) {
+                        setThemeLogoFile(e.target.files[0]);
+                      }
+                    }}
+                    className="w-full bg-[#18181A] border border-zinc-800 rounded-lg px-4 py-2 text-white"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
       </div>
 
       <div className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden shadow-xl">
