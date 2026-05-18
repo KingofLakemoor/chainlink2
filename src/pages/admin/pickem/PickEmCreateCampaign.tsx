@@ -2,6 +2,8 @@ import React from 'react';
 import { useState } from 'react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { app } from '../../../lib/firebase';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
 
@@ -12,6 +14,13 @@ export default function PickEmCreateCampaign() {
   const [defaultMatchType, setDefaultMatchType] = useState('STANDARD');
   const [pickLimit, setPickLimit] = useState<number>(0);
   const [loading, setLoading] = useState(false);
+
+  const [themePrimaryColor, setThemePrimaryColor] = useState('#22c55e');
+  const [themeTitle, setThemeTitle] = useState('');
+  const [themeSubtitle, setThemeSubtitle] = useState('');
+  const [themeLogoFile, setThemeLogoFile] = useState<File | null>(null);
+  const [themeLogoUrl, setThemeLogoUrl] = useState('');
+
 
   const availableLeagues = ['CFB', 'CBASE', 'NFL', 'NBA'];
 
@@ -32,6 +41,14 @@ export default function PickEmCreateCampaign() {
 
     setLoading(true);
     try {
+      let finalLogoUrl = themeLogoUrl;
+      if (themeLogoFile) {
+        const storage = getStorage(app);
+        const storageRef = ref(storage, `pickem_logos/${Date.now()}_${themeLogoFile.name}`);
+        await uploadBytes(storageRef, themeLogoFile);
+        finalLogoUrl = await getDownloadURL(storageRef);
+      }
+
       await addDoc(collection(db, 'pickemCampaigns'), {
         name: name.trim(),
         league: leagues[0], // Keep for backward compatibility if needed in old queries
@@ -42,6 +59,12 @@ export default function PickEmCreateCampaign() {
         scoringType: 'WIN_LOSS',
         startDate: Date.now(),
         endDate: Date.now() + 1000 * 60 * 60 * 24 * 30 * 6, // ~6 months
+        theme: {
+          primaryColor: themePrimaryColor,
+          title: themeTitle,
+          subtitle: themeSubtitle,
+          logoUrl: finalLogoUrl,
+        },
         currentWeek: 1,
         entryFee: 0,
         createdAt: Date.now()
@@ -115,6 +138,63 @@ export default function PickEmCreateCampaign() {
               <option value="STANDARD">Standard (Moneyline)</option>
               <option value="SPREAD">Against the Spread (ATS)</option>
             </select>
+          </div>
+
+
+          {/* Theme Settings */}
+          <div className="pt-6 border-t border-zinc-800">
+            <h3 className="text-lg font-medium text-white mb-4">White Label / Theme Settings</h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">Theme Title</label>
+                <input
+                  type="text"
+                  value={themeTitle}
+                  onChange={e => setThemeTitle(e.target.value)}
+                  placeholder="Leave blank to use Campaign Name"
+                  className="w-full bg-[#18181A] border border-zinc-800 rounded-lg px-4 py-2 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">Theme Subtitle</label>
+                <input
+                  type="text"
+                  value={themeSubtitle}
+                  onChange={e => setThemeSubtitle(e.target.value)}
+                  placeholder="Optional subtitle"
+                  className="w-full bg-[#18181A] border border-zinc-800 rounded-lg px-4 py-2 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">Primary Color</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={themePrimaryColor}
+                    onChange={e => setThemePrimaryColor(e.target.value)}
+                    className="w-10 h-10 rounded cursor-pointer bg-transparent border-0 p-0"
+                  />
+                  <span className="text-zinc-400 text-sm">{themePrimaryColor}</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">Logo Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={e => {
+                    if (e.target.files && e.target.files[0]) {
+                      setThemeLogoFile(e.target.files[0]);
+                    }
+                  }}
+                  className="w-full bg-[#18181A] border border-zinc-800 rounded-lg px-4 py-2 text-white"
+                />
+              </div>
+            </div>
           </div>
 
           <Button type="submit" disabled={loading} className="w-full">
