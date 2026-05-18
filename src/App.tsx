@@ -688,7 +688,10 @@ function PlayDashboard() {
                          {(m.metadata?.lowerScoreWins ? m.awayTeam.score < m.homeTeam.score : m.awayTeam.score > m.homeTeam.score) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-300"></div>}
                          {(m.league === 'ATP' || m.league === 'WTA') && m.metadata?.awayLinescores ? (
                            m.metadata.awayLinescores.map((score: number, i: number) => (
-                             <span key={i}>{score}</span>
+                             <React.Fragment key={i}>
+                               {i > 0 && <div className="w-px h-4 bg-zinc-600 mx-0.5"></div>}
+                               <span>{score}</span>
+                             </React.Fragment>
                            ))
                          ) : (
                            m.awayTeam.score ?? 0
@@ -734,7 +737,10 @@ function PlayDashboard() {
                          {(m.metadata?.lowerScoreWins ? m.homeTeam.score < m.awayTeam.score : m.homeTeam.score > m.awayTeam.score) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-300"></div>}
                          {(m.league === 'ATP' || m.league === 'WTA') && m.metadata?.homeLinescores ? (
                            m.metadata.homeLinescores.map((score: number, i: number) => (
-                             <span key={i}>{score}</span>
+                             <React.Fragment key={i}>
+                               {i > 0 && <div className="w-px h-4 bg-zinc-600 mx-0.5"></div>}
+                               <span>{score}</span>
+                             </React.Fragment>
                            ))
                          ) : (
                            m.homeTeam.score ?? 0
