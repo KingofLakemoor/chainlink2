@@ -30,8 +30,7 @@ service cloud.firestore {
                data.createdAt is number;
       }
 
-      allow get: if isSignedIn();
-      allow list: if isAdmin(); // only admins can list all users
+      allow read: if isSignedIn(); // allow all users to read so that leaderboard works
 
       allow create: if isSignedIn() && request.auth.uid == userId && isValidId(userId) &&
                     isValidUser(incoming()) && incoming().role == 'USER';
@@ -85,7 +84,7 @@ service cloud.firestore {
                data.active is bool;
       }
 
-      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || isAdmin());
+      allow read: if isSignedIn();
       allow create: if (
         isSignedIn() && isValidPick(incoming()) &&
         incoming().userId == request.auth.uid &&
@@ -117,7 +116,7 @@ service cloud.firestore {
 
     // chains
     match /chains/{chainId} {
-      allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || isAdmin());
+      allow read: if isSignedIn();
       allow create, update: if isAdmin(); // Usually maintained by cloud logic based on picks
     }
 
