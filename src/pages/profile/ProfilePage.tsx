@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
-import { Trophy, Coins, Calendar, Mail, CheckCircle2, XCircle, MinusCircle, Medal, BarChart3, Pencil, Share2, Copy } from 'lucide-react';
+import { Trophy, Coins, Calendar, Mail, CheckCircle2, XCircle, MinusCircle, Medal, BarChart3, Pencil, Share2, Copy, Settings, Bell, Lock } from 'lucide-react';
 import { format } from 'date-fns';
-import { db } from '../../lib/firebase';
+import { auth, db } from '../../lib/firebase';
+import { sendPasswordResetEmail } from 'firebase/auth';
 import { collection, getDocs, orderBy, query, where, documentId, doc, updateDoc } from 'firebase/firestore';
 import { Modal } from '../../components/ui/modal';
 import { Input } from '../../components/ui/input';
@@ -43,6 +44,83 @@ export default function ProfilePage() {
   const { user, profile, loading } = useAuth();
   const [picks, setPicks] = useState<any[]>([]);
   const [picksLoading, setPicksLoading] = useState(true);
+
+  // Settings State
+  const [newUsername, setNewUsername] = useState('');
+  const [newName, setNewName] = useState('');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [updatingSettings, setUpdatingSettings] = useState(false);
+  const [settingsMessage, setSettingsMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+
+  useEffect(() => {
+    if (profile) {
+      setNewUsername(profile.username || '');
+      setNewName(profile.name || '');
+      setNotificationsEnabled(profile.notificationsEnabled || false);
+    }
+  }, [profile]);
+
+  const handleUpdateInfo = async () => {
+    if (!user) return;
+    setUpdatingSettings(true);
+    setSettingsMessage(null);
+    try {
+      const userRef = doc(db, 'users', user.uid);
+
+      // Basic validation
+      if (!newUsername.trim() || !newName.trim()) {
+        throw new Error("Username and Display Name cannot be empty.");
+      }
+
+      // Check if username is taken (if it changed)
+      if (newUsername !== profile?.username) {
+        const usernameQuery = query(collection(db, 'users'), where('username', '==', newUsername));
+        const usernameDocs = await getDocs(usernameQuery);
+        if (!usernameDocs.empty) {
+          throw new Error("Username is already taken.");
+        }
+      }
+
+      await updateDoc(userRef, {
+        username: newUsername,
+        name: newName
+      });
+      setSettingsMessage({ type: 'success', text: 'Profile information updated successfully.' });
+    } catch (error: any) {
+      setSettingsMessage({ type: 'error', text: error.message || 'Failed to update profile.' });
+    } finally {
+      setUpdatingSettings(false);
+    }
+  };
+
+  const handleToggleNotifications = async () => {
+    if (!user) return;
+    const newValue = !notificationsEnabled;
+    setNotificationsEnabled(newValue);
+    try {
+      await updateDoc(doc(db, 'users', user.uid), {
+        notificationsEnabled: newValue
+      });
+      setSettingsMessage({ type: 'success', text: `Notifications ${newValue ? 'enabled' : 'disabled'}.` });
+    } catch (error) {
+      setNotificationsEnabled(!newValue); // Revert
+      setSettingsMessage({ type: 'error', text: 'Failed to update notification settings.' });
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!user?.email) {
+      setSettingsMessage({ type: 'error', text: 'No email associated with this account.' });
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, user.email);
+      setSettingsMessage({ type: 'success', text: `Password reset email sent to ${user.email}.` });
+    } catch (error: any) {
+      setSettingsMessage({ type: 'error', text: error.message || 'Failed to send reset email.' });
+    }
+  };
+
   const [achievements, setAchievements] = useState<any[]>([]);
   const [achievementsLoading, setAchievementsLoading] = useState(true);
 
@@ -653,6 +731,99 @@ export default function ProfilePage() {
                })}
             </div>
          )}
+      </div>
+
+      {/* Account Settings */}
+      <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6 mt-6">
+         <h2 className="text-lg font-bold text-zinc-200 mb-6 flex items-center gap-2">
+            <Settings className="w-5 h-5 text-zinc-400" /> Account Settings
+         </h2>
+
+         {settingsMessage && (
+            <div className={`p-4 rounded-lg mb-6 text-sm flex items-center gap-2 ${settingsMessage.type === 'success' ? 'bg-[#22c55e]/10 text-[#22c55e] border border-[#22c55e]/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
+               {settingsMessage.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+               {settingsMessage.text}
+            </div>
+         )}
+
+         <div className="space-y-8 max-w-2xl">
+            {/* Profile Info */}
+            <div>
+               <h3 className="text-sm font-medium text-zinc-400 mb-4 uppercase tracking-wider">Profile Information</h3>
+               <div className="space-y-4">
+                  <div>
+                     <label className="block text-sm font-medium text-zinc-300 mb-1.5">Username</label>
+                     <Input
+                        value={newUsername}
+                        onChange={(e) => setNewUsername(e.target.value)}
+                        className="bg-zinc-900 border-zinc-800 text-zinc-100"
+                        placeholder="Choose a username"
+                     />
+                     <p className="text-xs text-zinc-500 mt-1.5">Your unique identifier on ChainLink.</p>
+                  </div>
+                  <div>
+                     <label className="block text-sm font-medium text-zinc-300 mb-1.5">Display Name</label>
+                     <Input
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value)}
+                        className="bg-zinc-900 border-zinc-800 text-zinc-100"
+                        placeholder="Your display name"
+                     />
+                     <p className="text-xs text-zinc-500 mt-1.5">This is how you appear to other users.</p>
+                  </div>
+                  <Button
+                     onClick={handleUpdateInfo}
+                     disabled={updatingSettings || (newUsername === profile?.username && newName === profile?.name)}
+                     className="bg-cyan-500 hover:bg-cyan-600 text-black mt-2"
+                  >
+                     {updatingSettings ? 'Saving...' : 'Save Profile Information'}
+                  </Button>
+               </div>
+            </div>
+
+            <div className="h-px bg-zinc-800/50 w-full" />
+
+            {/* Notifications */}
+            <div>
+               <h3 className="text-sm font-medium text-zinc-400 mb-4 uppercase tracking-wider flex items-center gap-2">
+                  <Bell className="w-4 h-4" /> Notifications
+               </h3>
+               <div className="flex items-center justify-between p-4 bg-zinc-900/50 rounded-xl border border-zinc-800/50">
+                  <div>
+                     <div className="font-medium text-zinc-200">Push Notifications</div>
+                     <div className="text-sm text-zinc-500">Receive alerts when matchups start or complete.</div>
+                  </div>
+                  <button
+                     onClick={handleToggleNotifications}
+                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationsEnabled ? 'bg-[#22c55e]' : 'bg-zinc-700'}`}
+                  >
+                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notificationsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+               </div>
+            </div>
+
+            <div className="h-px bg-zinc-800/50 w-full" />
+
+            {/* Security */}
+            <div>
+               <h3 className="text-sm font-medium text-zinc-400 mb-4 uppercase tracking-wider flex items-center gap-2">
+                  <Lock className="w-4 h-4" /> Security
+               </h3>
+               <div className="flex items-center justify-between p-4 bg-zinc-900/50 rounded-xl border border-zinc-800/50">
+                  <div>
+                     <div className="font-medium text-zinc-200">Password Reset</div>
+                     <div className="text-sm text-zinc-500">Send a password reset link to your email address.</div>
+                  </div>
+                  <Button
+                     onClick={handleResetPassword}
+                     variant="outline"
+                     className="border-zinc-700 hover:bg-zinc-800 text-zinc-300"
+                  >
+                     Send Email
+                  </Button>
+               </div>
+            </div>
+         </div>
       </div>
 
       {/* Edit Avatar Modal */}
