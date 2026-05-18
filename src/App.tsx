@@ -8,7 +8,7 @@ import { cn } from './lib/utils';
 import { useNotifications } from './hooks/useNotifications';
 import {
   Link2, LayoutDashboard, User as UserIcon, PlayCircle, Layers, Trophy,
-  ShoppingCart, CheckCircle2, Settings, Users, LogOut, ShieldAlert, Menu, X, Flame
+  ShoppingCart, CheckCircle2, Users, LogOut, ShieldAlert, Menu, X, Flame
 } from 'lucide-react';
 import {
   MdOutlineSportsSoccer, MdOutlineSportsBasketball, MdOutlineSportsHockey, MdOutlineSportsBaseball, MdOutlineSportsTennis
@@ -62,7 +62,6 @@ function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) =>
         <NavItem icon={Trophy} label="Brackets" path="/brackets" />
         <NavItem icon={Trophy} label="Leaderboards" path="/leaderboards" />
         <NavItem icon={ShoppingCart} label="Link Shop" path="/shop" />
-        <NavItem icon={Settings} label="Settings" path="/settings" />
 
         {profile?.role === "ADMIN" && (
           <>
@@ -1055,7 +1054,6 @@ export default function App() {
           <Route path="/leaderboards" element={<PrivateRoute><MainLayout><LeaderboardsPage /></MainLayout></PrivateRoute>} />
           <Route path="/shop" element={<PrivateRoute><MainLayout><ShopPage /></MainLayout></PrivateRoute>} />
           <Route path="/games" element={<PrivateRoute><MainLayout><PlaceholderPage title="Games" /></MainLayout></PrivateRoute>} />
-          <Route path="/settings" element={<PrivateRoute><MainLayout><PlaceholderPage title="Settings" /></MainLayout></PrivateRoute>} />
           <Route path="/sponsor" element={<SponsorPage />} />
           {/* Catch all route back to play */}
           <Route path="*" element={<Navigate to="/play" replace />} />
