@@ -224,8 +224,6 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               } else {
                 finalActive = false;
               }
-            } else if (!existingData.active && intendedActive) {
-              finalActive = true;
             }
           } else {
             if (existingData.active && !defaultActive) {
