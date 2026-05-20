@@ -15,6 +15,17 @@ import { Ocean } from '../../components/ui/avatar-backgrounds/ocean';
 import { PhantomStar } from '../../components/ui/avatar-backgrounds/phantomstar';
 import { PrimeCircuitRing } from '../../components/ui/avatar-backgrounds/prime-circuit-ring';
 import { TitleMap } from '../../components/ui/titles';
+import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
+import { OceanBanner } from '../../components/ui/profile-banners/ocean';
+import { PhantomStarBanner } from '../../components/ui/profile-banners/phantom-star';
+import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-syndicate';
+
+const ProfileBannerMap: Record<string, React.FC<any>> = {
+  'InfernoBanner': InfernoBanner,
+  'OceanBanner': OceanBanner,
+  'PhantomStarBanner': PhantomStarBanner,
+  'GenesisSyndicate': GenesisSyndicate
+};
 
 const AvatarBackgroundMap: Record<string, React.FC<any>> = {
   'Hexagons': Hexagons,
@@ -207,6 +218,90 @@ export default function LeaderboardsPage() {
     document.body.removeChild(link);
   };
 
+  const renderTopPerformerCard = (
+    title: string,
+    player: any,
+    valueLabel: string,
+    valueColorClass: string,
+    Icon: any,
+    iconColorClass: string
+  ) => {
+    if (!player) {
+      return (
+        <div className="bg-[#121212] border border-zinc-800 rounded-xl p-5 flex items-center gap-4 relative overflow-hidden group min-h-[160px] opacity-50">
+          <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center flex-shrink-0">
+             <Icon className="w-6 h-6 text-zinc-600" />
+          </div>
+          <div>
+            <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-1">{title}</p>
+            <p className="text-zinc-400 font-bold">N/A</p>
+          </div>
+        </div>
+      );
+    }
+
+    const bannerItem = inventoryItems.find(i => i.id === player.equippedCosmetics?.PROFILE_BANNER);
+    const bannerImage = bannerItem?.image;
+    const BannerComponent = ProfileBannerMap[bannerImage || ''];
+
+    const ringItem = inventoryItems.find(i => i.id === player.equippedCosmetics?.AVATAR_RING);
+    const ringImage = ringItem?.image;
+    const RingComponent = AvatarBackgroundMap[ringImage || ''];
+
+    const titleItem = inventoryItems.find(i => i.id === player.equippedCosmetics?.TITLE);
+    const titleImage = titleItem?.image;
+    const TitleComponent = titleImage ? TitleMap[titleImage || ''] : null;
+
+    return (
+      <div className="bg-[#121212] border border-zinc-800 rounded-xl relative overflow-hidden group min-h-[220px] flex flex-col">
+         {BannerComponent ? (
+            <div className="absolute inset-0 z-0">
+               <BannerComponent isStatic={true} />
+            </div>
+         ) : (
+            <div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5 pointer-events-none"></div>
+         )}
+
+         <div className="absolute inset-0 bg-black/20 z-0"></div>
+
+         <div className="relative z-10 flex-1 flex flex-col items-center p-5 pt-6 text-center">
+
+            <div className="relative mb-3">
+              {RingComponent && (
+                 <div className="absolute inset-0 z-0 transform scale-150 pointer-events-none">
+                    <RingComponent isStatic={true} />
+                 </div>
+              )}
+              <img
+                 src={player.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${player.userId}`}
+                 alt={player.displayName || player.username || player.name}
+                 className="w-16 h-16 rounded-full relative z-10 border-2 border-[#121212]"
+              />
+            </div>
+
+            <div className="mt-1">
+              {TitleComponent && (
+                 <div className="mb-1 flex justify-center">
+                    <TitleComponent />
+                 </div>
+              )}
+              <h3 className="text-white font-bold text-sm truncate max-w-[150px]">{player.displayName || player.username || player.name}</h3>
+            </div>
+         </div>
+
+         <div className="relative z-10 bg-[#111111]/90 border-t border-zinc-800 p-3 px-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+               <Icon className={`w-4 h-4 ${iconColorClass.replace('bg-', 'text-').replace('/10', '')}`} />
+               <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-bold">{title}</p>
+            </div>
+            <p className={`text-lg font-black ${valueColorClass}`}>
+               {valueLabel}
+            </p>
+         </div>
+      </div>
+    );
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -238,61 +333,41 @@ export default function LeaderboardsPage() {
 
       {/* Top Performers Header section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {renderTopPerformerCard(
+          "Current Chain",
+          topCurrentChain,
+          (topCurrentChain?.currentChain || 0) < 0 ? `L${Math.abs(topCurrentChain?.currentChain || 0)}` : `W${topCurrentChain?.currentChain || 0}`,
+          (topCurrentChain?.currentChain || 0) < 0 ? "text-red-500" : "text-orange-500",
+          Flame,
+          "bg-orange-500/10 text-orange-500"
+        )}
 
-        {/* Current Chain Leader */}
-        <div className="bg-[#121212] border border-zinc-800 rounded-xl p-5 flex items-center gap-4 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div className="w-12 h-12 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0 relative z-10">
-            <Flame className="w-6 h-6 text-orange-500" />
-          </div>
-          <div className="relative z-10 flex-1 min-w-0">
-            <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-1">Current Chain</p>
-            <p className="text-zinc-100 font-bold truncate">{topCurrentChain?.username || topCurrentChain?.name || 'N/A'}</p>
-            <p className={cn("font-mono font-bold text-lg leading-none mt-1", (topCurrentChain?.currentChain || 0) < 0 ? "text-red-500" : "text-orange-400")}>
-              {(topCurrentChain?.currentChain || 0) < 0 ? `L${Math.abs(topCurrentChain?.currentChain || 0)}` : `W${topCurrentChain?.currentChain || 0}`}
-            </p>
-          </div>
-        </div>
+        {renderTopPerformerCard(
+          "Most Wins",
+          topWins,
+          (topWins?.stats?.wins || 0).toString(),
+          "text-green-500",
+          CheckCircle2,
+          "bg-green-500/10 text-green-500"
+        )}
 
-        {/* Most Wins Leader */}
-        <div className="bg-[#121212] border border-zinc-800 rounded-xl p-5 flex items-center gap-4 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div className="w-12 h-12 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center flex-shrink-0 relative z-10">
-            <CheckCircle2 className="w-6 h-6 text-green-500" />
-          </div>
-          <div className="relative z-10 flex-1 min-w-0">
-            <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-1">Most Wins</p>
-            <p className="text-zinc-100 font-bold truncate">{topWins?.username || topWins?.name || 'N/A'}</p>
-            <p className="text-green-400 font-mono font-bold text-lg leading-none mt-1">{topWins?.stats?.wins || 0}</p>
-          </div>
-        </div>
+        {renderTopPerformerCard(
+          "Longest Chain",
+          topBestChain,
+          `W${topBestChain?.bestChain || 0}`,
+          "text-yellow-500",
+          Medal,
+          "bg-yellow-500/10 text-yellow-500"
+        )}
 
-        {/* Longest Chain Leader */}
-        <div className="bg-[#121212] border border-zinc-800 rounded-xl p-5 flex items-center gap-4 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div className="w-12 h-12 rounded-full bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0 relative z-10">
-            <Medal className="w-6 h-6 text-yellow-500" />
-          </div>
-          <div className="relative z-10 flex-1 min-w-0">
-            <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-1">Longest Chain</p>
-            <p className="text-zinc-100 font-bold truncate">{topBestChain?.username || topBestChain?.name || 'N/A'}</p>
-            <p className="text-yellow-400 font-mono font-bold text-lg leading-none mt-1">W{topBestChain?.bestChain || 0}</p>
-          </div>
-        </div>
-
-        {/* Win Rate Leader */}
-        <div className="bg-[#121212] border border-zinc-800 rounded-xl p-5 flex items-center gap-4 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          <div className="w-12 h-12 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center flex-shrink-0 relative z-10">
-            <Percent className="w-6 h-6 text-cyan-500" />
-          </div>
-          <div className="relative z-10 flex-1 min-w-0">
-            <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-1">Best Win %</p>
-            <p className="text-zinc-100 font-bold truncate">{topWinRate?.username || topWinRate?.name || 'N/A'}</p>
-            <p className="text-cyan-400 font-mono font-bold text-lg leading-none mt-1">{topWinRate?.winRate?.toFixed(1) || 0}%</p>
-          </div>
-        </div>
-
+        {renderTopPerformerCard(
+          "Best Win %",
+          topWinRate,
+          `${topWinRate?.winRate?.toFixed(1) || 0}%`,
+          "text-cyan-500",
+          Percent,
+          "bg-cyan-500/10 text-cyan-500"
+        )}
       </div>
 
       {/* Main Table */}
