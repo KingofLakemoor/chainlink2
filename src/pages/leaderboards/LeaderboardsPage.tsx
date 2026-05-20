@@ -7,13 +7,13 @@ import { cn } from '../../lib/utils';
 import { Trophy, Download, Medal, Flame, CheckCircle2, Percent, Users } from 'lucide-react';
 import { format } from 'date-fns';
 
-import { Hexagons } from '../../components/ui/avatar-backgrounds/hexagons';
-import { Hip } from '../../components/ui/avatar-backgrounds/hip';
-import { Inferno } from '../../components/ui/avatar-backgrounds/inferno';
-import { Mandala } from '../../components/ui/avatar-backgrounds/mandala';
-import { Ocean } from '../../components/ui/avatar-backgrounds/ocean';
-import { PhantomStar } from '../../components/ui/avatar-backgrounds/phantomstar';
-import { PrimeCircuitRing } from '../../components/ui/avatar-backgrounds/prime-circuit-ring';
+import { Hexagons } from '../../components/ui/avatar-rings/hexagons';
+import { Hip } from '../../components/ui/avatar-rings/hip';
+import { Inferno } from '../../components/ui/avatar-rings/inferno';
+import { Mandala } from '../../components/ui/avatar-rings/mandala';
+import { Ocean } from '../../components/ui/avatar-rings/ocean';
+import { PhantomStar } from '../../components/ui/avatar-rings/phantomstar';
+import { PrimeCircuitRing } from '../../components/ui/avatar-rings/prime-circuit-ring';
 import { TitleMap } from '../../components/ui/titles';
 import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
 import { OceanBanner } from '../../components/ui/profile-banners/ocean';
@@ -27,7 +27,7 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'GenesisSyndicate': GenesisSyndicate
 };
 
-const AvatarBackgroundMap: Record<string, React.FC<any>> = {
+const AvatarRingMap: Record<string, React.FC<any>> = {
   'Hexagons': Hexagons,
   'Hip': Hip,
   'Inferno': Inferno,
@@ -246,7 +246,7 @@ export default function LeaderboardsPage() {
 
     const ringItem = inventoryItems.find(i => i.id === player.equippedCosmetics?.AVATAR_RING);
     const ringImage = ringItem?.image;
-    const RingComponent = AvatarBackgroundMap[ringImage || ''];
+    const RingComponent = AvatarRingMap[ringImage || ''];
 
     const titleItem = inventoryItems.find(i => i.id === player.equippedCosmetics?.TITLE);
     const titleImage = titleItem?.image;
@@ -427,7 +427,7 @@ export default function LeaderboardsPage() {
                         <div className="relative">
                           {player.equippedCosmetics?.AVATAR_RING && (() => {
                             const ringImage = inventoryItems.find(i => i.id === player.equippedCosmetics.AVATAR_RING)?.image;
-                            const RingComponent = AvatarBackgroundMap[ringImage || ''];
+                            const RingComponent = AvatarRingMap[ringImage || ''];
                             if (!RingComponent) return null;
                             return (
                               <div className="absolute inset-0 z-0 transform scale-150 pointer-events-none">
