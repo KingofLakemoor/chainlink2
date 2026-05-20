@@ -67,7 +67,7 @@ export default function ShopPage() {
           setItems([
             { id: 'ring_gold', name: 'Gold Ring', description: 'A fancy gold ring for your avatar.', cost: 500, type: 'AVATAR_RING', active: true, image: 'Hexagons' },
             { id: 'banner_neon', name: 'Neon Banner', description: 'Brighten up your profile header.', cost: 1000, type: 'PROFILE_BANNER', active: true, image: 'InfernoBanner' },
-            { id: 'title_highroller', name: 'High Roller', description: 'Show off your wealth.', cost: 2500, type: 'TITLE', active: true, image: '' },
+
             { id: 'merch_shirt', name: 'Cool Shirt', description: 'A shirt', cost: 100, type: 'MERCH', active: true, image: '' },
           ]);
           setLoading(false);
