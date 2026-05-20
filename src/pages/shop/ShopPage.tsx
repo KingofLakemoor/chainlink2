@@ -6,23 +6,23 @@ import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
 import { loadStripe } from '@stripe/stripe-js';
 
-import { Hexagons } from '../../components/ui/avatar-backgrounds/hexagons';
+import { Hexagons } from '../../components/ui/avatar-rings/hexagons';
 import { Modal } from '../../components/ui/modal';
 import { Input } from '../../components/ui/input';
 
 
-import { Hip } from '../../components/ui/avatar-backgrounds/hip';
-import { Inferno } from '../../components/ui/avatar-backgrounds/inferno';
-import { Mandala } from '../../components/ui/avatar-backgrounds/mandala';
-import { Ocean } from '../../components/ui/avatar-backgrounds/ocean';
-import { PhantomStar } from '../../components/ui/avatar-backgrounds/phantomstar';
+import { Hip } from '../../components/ui/avatar-rings/hip';
+import { Inferno } from '../../components/ui/avatar-rings/inferno';
+import { Mandala } from '../../components/ui/avatar-rings/mandala';
+import { Ocean } from '../../components/ui/avatar-rings/ocean';
+import { PhantomStar } from '../../components/ui/avatar-rings/phantomstar';
 import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
 import { OceanBanner } from '../../components/ui/profile-banners/ocean';
 import { PhantomStarBanner } from '../../components/ui/profile-banners/phantom-star';
 import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-syndicate';
-import { PrimeCircuitRing } from '../../components/ui/avatar-backgrounds/prime-circuit-ring';
+import { PrimeCircuitRing } from '../../components/ui/avatar-rings/prime-circuit-ring';
 
-const AvatarBackgroundMap: Record<string, React.FC<any>> = {
+const AvatarRingMap: Record<string, React.FC<any>> = {
   'Hexagons': Hexagons,
   'Hip': Hip,
   'Inferno': Inferno,
@@ -384,10 +384,10 @@ export default function ShopPage() {
                         )}
                         {item.type === 'AVATAR_RING' && (
                           <div className="relative w-16 h-16 flex items-center justify-center z-10">
-                            {AvatarBackgroundMap[item.image] ? (
+                            {AvatarRingMap[item.image] ? (
                                <>
                                  <div className="absolute inset-0 rounded-full overflow-hidden">
-                                   {React.createElement(AvatarBackgroundMap[item.image], { isStatic: false })}
+                                   {React.createElement(AvatarRingMap[item.image], { isStatic: false })}
                                  </div>
                                  <div className="relative w-full h-full p-1.5">
                                    <div className="w-full h-full rounded-full bg-zinc-800 flex items-center justify-center text-[10px] text-zinc-500 shadow-inner">Avatar</div>

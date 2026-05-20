@@ -8,21 +8,21 @@ import { db } from '../../lib/firebase';
 import { collection, getDocs, query, where, documentId, onSnapshot } from 'firebase/firestore';
 import { DashboardPick, DashboardPickSkeleton } from '../../components/dashboard/dashboard-pick';
 
-import { Hexagons } from '../../components/ui/avatar-backgrounds/hexagons';
-import { Hip } from '../../components/ui/avatar-backgrounds/hip';
-import { Inferno } from '../../components/ui/avatar-backgrounds/inferno';
-import { Mandala } from '../../components/ui/avatar-backgrounds/mandala';
-import { Ocean } from '../../components/ui/avatar-backgrounds/ocean';
-import { PhantomStar } from '../../components/ui/avatar-backgrounds/phantomstar';
+import { Hexagons } from '../../components/ui/avatar-rings/hexagons';
+import { Hip } from '../../components/ui/avatar-rings/hip';
+import { Inferno } from '../../components/ui/avatar-rings/inferno';
+import { Mandala } from '../../components/ui/avatar-rings/mandala';
+import { Ocean } from '../../components/ui/avatar-rings/ocean';
+import { PhantomStar } from '../../components/ui/avatar-rings/phantomstar';
 import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
 import { OceanBanner } from '../../components/ui/profile-banners/ocean';
 import { PhantomStarBanner } from '../../components/ui/profile-banners/phantom-star';
 import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-syndicate';
-import { PrimeCircuitRing } from '../../components/ui/avatar-backgrounds/prime-circuit-ring';
+import { PrimeCircuitRing } from '../../components/ui/avatar-rings/prime-circuit-ring';
 import { TitleMap } from '../../components/ui/titles';
 import { cn } from '../../lib/utils';
 
-const AvatarBackgroundMap: Record<string, React.FC<any>> = {
+const AvatarRingMap: Record<string, React.FC<any>> = {
   'Hexagons': Hexagons,
   'Hip': Hip,
   'Inferno': Inferno,
@@ -190,7 +190,7 @@ export default function DashboardPage() {
 
   const equippedRingItem = inventoryItems.find(i => i.id === profile?.equippedCosmetics?.AVATAR_RING);
   const equippedRingImage = equippedRingItem?.image;
-  const RingComponent = AvatarBackgroundMap[equippedRingImage || ''];
+  const RingComponent = AvatarRingMap[equippedRingImage || ''];
   const TitleComponent = profile?.equippedCosmetics?.TITLE ? TitleMap[inventoryItems.find(i => i.id === profile.equippedCosmetics.TITLE)?.image || ''] : null;
 
   const activePick = picks.find(p => p.status === 'PENDING');
