@@ -385,7 +385,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
         for (const [gameId, doc] of existingMap.entries()) {
           const data = doc.data();
           // If it was scheduled, not abandoned, and no longer in the scraped data
-          if (data.status === 'STATUS_SCHEDULED' && !data.abandoned && !scrapedGameIds.has(gameId) && data.league !== 'PGA') {
+          if (data.status === 'STATUS_SCHEDULED' && !data.abandoned && !scrapedGameIds.has(gameId) && data.league !== 'PGA' && data.league !== 'CBASE') {
             const pendingPicksSnap = await adminDb.collection('picks')
               .where('matchupId', '==', gameId)
               .where('status', '==', 'PENDING')
