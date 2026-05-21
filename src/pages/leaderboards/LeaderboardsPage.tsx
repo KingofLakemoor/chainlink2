@@ -273,7 +273,7 @@ export default function LeaderboardsPage() {
                  </div>
               )}
               <img
-                 src={player.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${player.userId}`}
+                 src={player.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${player.id}`}
                  alt={player.displayName || player.username || player.name}
                  className="w-16 h-16 rounded-full relative z-10 border-2 border-[#121212]"
               />
@@ -282,7 +282,7 @@ export default function LeaderboardsPage() {
             <div className="mt-1">
               {TitleComponent && (
                  <div className="mb-1 flex justify-center">
-                    <TitleComponent />
+                    <TitleComponent isStatic={true} />
                  </div>
               )}
               <h3 className="text-white font-bold text-sm truncate max-w-[150px]">{player.displayName || player.username || player.name}</h3>
