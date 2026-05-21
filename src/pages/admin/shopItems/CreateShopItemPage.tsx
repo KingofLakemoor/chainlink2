@@ -45,7 +45,8 @@ const formSchema = z.object({
   premiumOnly: z.boolean().default(false),
   image: z.string().optional(),
   preview: z.string().optional(),
-  order: z.coerce.number().optional()
+  order: z.coerce.number().optional(),
+  collectionId: z.string().optional()
 });
 
 export default function CreateShopItemPage() {
@@ -65,7 +66,8 @@ export default function CreateShopItemPage() {
       premiumOnly: false,
       image: "",
       preview: "",
-      order: 0
+      order: 0,
+      collectionId: ""
     },
   });
 
@@ -266,6 +268,23 @@ export default function CreateShopItemPage() {
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="collectionId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Collection ID (Grouping Tag)</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="e.g. ocean, inferno" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Used to group related items together in sets (e.g. rings, banners, titles).
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

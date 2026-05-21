@@ -8,7 +8,7 @@ import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
 import { Select } from '../../../components/ui/select';
 import { Card, CardContent } from '../../../components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../../components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../../../components/ui/form';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -26,7 +26,8 @@ const formSchema = z.object({
   premiumOnly: z.boolean().default(false),
   image: z.string().optional(),
   preview: z.string().optional(),
-  order: z.coerce.number().optional()
+  order: z.coerce.number().optional(),
+  collectionId: z.string().optional()
 });
 
 export default function EditShopItemPage() {
@@ -48,7 +49,8 @@ export default function EditShopItemPage() {
       premiumOnly: false,
       image: "",
       preview: "",
-      order: 0
+      order: 0,
+      collectionId: ""
     },
   });
 
@@ -71,7 +73,8 @@ export default function EditShopItemPage() {
             premiumOnly: data.premiumOnly ?? false,
             image: data.image || "",
             preview: data.preview || "",
-            order: data.order || 0
+            order: data.order || 0,
+            collectionId: data.collectionId || ""
           });
         }
       } catch (error) {
@@ -282,6 +285,23 @@ export default function EditShopItemPage() {
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="collectionId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Collection ID (Grouping Tag)</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="e.g. ocean, inferno" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Used to group related items together in sets (e.g. rings, banners, titles).
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
