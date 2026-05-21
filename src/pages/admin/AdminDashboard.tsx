@@ -442,10 +442,10 @@ function AdminMatchups() {
   });
 
   return (
-    <div className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden shadow-xl flex flex-col h-full max-h-[85vh]">
-      <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-[#18181A]">
+    <div className="bg-[#121212] border border-zinc-800 rounded-xl shadow-xl flex flex-col h-full max-h-[85vh] overflow-hidden">
+      <div className="p-4 border-b border-zinc-800 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center bg-[#18181A]">
         <h3 className="font-bold text-lg">Matchups Management ({filteredData.length})</h3>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             variant="outline"
             onClick={handleSync}
@@ -560,10 +560,10 @@ function GenericTable({ collectionName }: { collectionName: string }) {
   const headers = data.length > 0 ? Array.from(new Set(data.flatMap(d => Object.keys(d)))) : [];
 
   return (
-    <div className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden shadow-xl">
-      <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-[#18181A]">
+    <div className="bg-[#121212] border border-zinc-800 rounded-xl shadow-xl overflow-hidden">
+      <div className="p-4 border-b border-zinc-800 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center bg-[#18181A]">
         <h3 className="font-bold text-lg capitalize">{collectionName} ({data.length})</h3>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-500" />
             <input type="text" placeholder="Search..." className="bg-zinc-900 border border-zinc-800 rounded-lg pl-9 pr-4 py-1.5 text-sm focus:outline-none focus:border-zinc-700 w-64" />
@@ -784,8 +784,8 @@ function AdminEditMatchup() {
   if (!matchup) return <div className="p-8 text-zinc-500">Matchup not found</div>;
 
   return (
-    <div className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden shadow-xl flex flex-col h-full max-h-[85vh] overflow-y-auto custom-scrollbar">
-      <div className="p-6 border-b border-zinc-800 bg-[#18181A] sticky top-0 z-10 flex justify-between items-center">
+    <div className="bg-[#121212] border border-zinc-800 rounded-xl shadow-xl flex flex-col h-full max-h-[85vh] overflow-y-auto custom-scrollbar overflow-hidden">
+      <div className="p-6 border-b border-zinc-800 bg-[#18181A] sticky top-0 z-10 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
         <div>
             <h2 className="text-2xl font-bold text-white mb-1">Edit Matchup</h2>
             <p className="text-zinc-400 text-sm">{matchup.title} - {matchup.league}</p>
@@ -1128,8 +1128,8 @@ function AdminLeagues() {
   if (loading) return <div className="p-8 text-zinc-500">Loading leagues...</div>;
 
   return (
-    <div className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden shadow-xl">
-      <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-[#18181A]">
+    <div className="bg-[#121212] border border-zinc-800 rounded-xl shadow-xl overflow-hidden">
+      <div className="p-4 border-b border-zinc-800 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center bg-[#18181A]">
         <h3 className="font-bold text-lg">League Settings</h3>
         <Button variant="secondary" size="sm" onClick={fetchLeagues}>Refresh</Button>
       </div>
@@ -1203,7 +1203,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-[#0a0a0a] text-zinc-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#0a0a0a] text-zinc-50 font-sans">
        <AdminSidebar open={sidebarOpen} setOpen={setSidebarOpen} />
 
        <div className="flex-1 flex flex-col h-screen overflow-hidden relative w-full">
@@ -1216,7 +1216,7 @@ export default function AdminDashboard() {
             <h2 className="font-display text-xl font-bold tracking-wide capitalize text-zinc-100">{headerTitle.replace('-', ' ')}</h2>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-8 relative">
+          <main className="flex-1 overflow-y-auto p-4 md:p-8 relative">
              <Routes>
                 <Route path="leagues" element={<AdminLeagues />} />
                 {/* Matchups routes */}
