@@ -10,7 +10,8 @@
     "image": "border-slate-500",
     "featured": false,
     "preview": "border-slate-500",
-    "order": 1
+    "order": 1,
+    "collectionId": ""
   },
   {
     "id": "ring_velustro",
@@ -23,7 +24,8 @@
     "image": "border-fuchsia-600",
     "featured": false,
     "preview": "border-fuchsia-600",
-    "order": 2
+    "order": 2,
+    "collectionId": ""
   },
   {
     "id": "ring_venturo",
@@ -36,7 +38,8 @@
     "image": "border-emerald-500",
     "featured": false,
     "preview": "border-emerald-500",
-    "order": 3
+    "order": 3,
+    "collectionId": ""
   },
   {
     "id": "ring_xenon",
@@ -49,7 +52,8 @@
     "image": "border-cyan-400 border-dashed",
     "featured": true,
     "preview": "border-cyan-400 border-dashed",
-    "order": 4
+    "order": 4,
+    "collectionId": "xenon"
   },
   {
     "id": "ring_tranquiluxe",
@@ -62,7 +66,8 @@
     "image": "border-indigo-400",
     "featured": false,
     "preview": "border-indigo-400",
-    "order": 5
+    "order": 5,
+    "collectionId": ""
   },
   {
     "id": "ring_lumiflex",
@@ -75,7 +80,8 @@
     "image": "border-yellow-400 border-dotted",
     "featured": true,
     "preview": "border-yellow-400 border-dotted",
-    "order": 6
+    "order": 6,
+    "collectionId": ""
   },
   {
     "id": "ring_novatrix",
@@ -88,7 +94,8 @@
     "image": "border-violet-600",
     "featured": false,
     "preview": "border-violet-600",
-    "order": 7
+    "order": 7,
+    "collectionId": "novatrix"
   },
   {
     "id": "ring_opulento",
@@ -101,7 +108,8 @@
     "image": "border-amber-500 border-double",
     "featured": true,
     "preview": "border-amber-500 border-double",
-    "order": 8
+    "order": 8,
+    "collectionId": "opulento"
   },
   {
     "id": "ring_inferno",
@@ -114,7 +122,8 @@
     "image": "Inferno",
     "featured": false,
     "preview": "Inferno",
-    "order": 9
+    "order": 9,
+    "collectionId": "inferno"
   },
   {
     "id": "ring_ocean",
@@ -127,7 +136,8 @@
     "image": "Ocean",
     "featured": false,
     "preview": "Ocean",
-    "order": 10
+    "order": 10,
+    "collectionId": "ocean"
   },
   {
     "id": "ring_phantomstar",
@@ -140,7 +150,8 @@
     "image": "PhantomStar",
     "featured": false,
     "preview": "PhantomStar",
-    "order": 11
+    "order": 11,
+    "collectionId": "phantom"
   },
   {
     "id": "banner_opulento_vault",
@@ -153,7 +164,8 @@
     "image": "bg-gradient-to-r from-amber-600 to-yellow-500",
     "featured": true,
     "preview": "bg-gradient-to-r from-amber-600 to-yellow-500",
-    "order": 12
+    "order": 12,
+    "collectionId": "opulento"
   },
   {
     "id": "banner_inferno_board",
@@ -166,7 +178,8 @@
     "image": "InfernoBanner",
     "featured": false,
     "preview": "InfernoBanner",
-    "order": 13
+    "order": 13,
+    "collectionId": "inferno"
   },
   {
     "id": "banner_xenon_terminal",
@@ -179,7 +192,8 @@
     "image": "bg-gradient-to-br from-[#0f172a] to-cyan-900",
     "featured": true,
     "preview": "bg-gradient-to-br from-[#0f172a] to-cyan-900",
-    "order": 14
+    "order": 14,
+    "collectionId": "xenon"
   },
   {
     "id": "banner_abyssal_swell",
@@ -192,7 +206,8 @@
     "image": "OceanBanner",
     "featured": false,
     "preview": "OceanBanner",
-    "order": 15
+    "order": 15,
+    "collectionId": "ocean"
   },
   {
     "id": "banner_novatrix_code",
@@ -205,7 +220,8 @@
     "image": "bg-gradient-to-b from-black to-violet-900",
     "featured": false,
     "preview": "bg-gradient-to-b from-black to-violet-900",
-    "order": 16
+    "order": 16,
+    "collectionId": "novatrix"
   },
   {
     "id": "banner_phantom_static",
@@ -218,7 +234,8 @@
     "image": "bg-gradient-to-tr from-zinc-800 to-zinc-600",
     "featured": false,
     "preview": "bg-gradient-to-tr from-zinc-800 to-zinc-600",
-    "order": 17
+    "order": 17,
+    "collectionId": "phantom"
   },
   {
     "id": "banner_daisy_chain",
@@ -231,7 +248,8 @@
     "image": "bg-zinc-900",
     "featured": false,
     "preview": "bg-zinc-900",
-    "order": 18
+    "order": 18,
+    "collectionId": ""
   },
   {
     "id": "banner_bad_beat",
@@ -244,7 +262,8 @@
     "image": "bg-zinc-800",
     "featured": false,
     "preview": "bg-zinc-800",
-    "order": 19
+    "order": 19,
+    "collectionId": ""
   },
   {
     "id": "banner_board_room",
@@ -257,7 +276,8 @@
     "image": "bg-[#0a0a0a]",
     "featured": false,
     "preview": "bg-[#0a0a0a]",
-    "order": 20
+    "order": 20,
+    "collectionId": ""
   },
   {
     "id": "banner_zero_zero_zero",
@@ -270,7 +290,8 @@
     "image": "bg-red-950",
     "featured": true,
     "preview": "bg-red-950",
-    "order": 21
+    "order": 21,
+    "collectionId": ""
   },
   {
     "id": "banner_phantom_star",
@@ -283,7 +304,8 @@
     "image": "PhantomStarBanner",
     "featured": false,
     "preview": "PhantomStarBanner",
-    "order": 46
+    "order": 46,
+    "collectionId": "phantom"
   },
   {
     "id": "ring_hexagons",
@@ -296,7 +318,8 @@
     "image": "Hexagons",
     "featured": false,
     "preview": "Hexagons",
-    "order": 47
+    "order": 47,
+    "collectionId": ""
   },
   {
     "id": "ring_hip",
@@ -309,7 +332,8 @@
     "image": "Hip",
     "featured": false,
     "preview": "Hip",
-    "order": 48
+    "order": 48,
+    "collectionId": ""
   },
   {
     "id": "ring_mandala",
@@ -322,7 +346,8 @@
     "image": "Mandala",
     "featured": false,
     "preview": "Mandala",
-    "order": 49
+    "order": 49,
+    "collectionId": ""
   },
   {
     "id": "banner_genesis_syndicate",
@@ -335,7 +360,8 @@
     "image": "GenesisSyndicate",
     "featured": true,
     "preview": "GenesisSyndicate",
-    "order": 50
+    "order": 50,
+    "collectionId": "genesis"
   },
   {
     "id": "ring_prime_circuit",
@@ -348,7 +374,8 @@
     "image": "PrimeCircuitRing",
     "featured": true,
     "preview": "PrimeCircuitRing",
-    "order": 54
+    "order": 54,
+    "collectionId": ""
   },
   {
     "id": "title_v1_originator",
@@ -361,7 +388,8 @@
     "image": "font-bold text-white border-[#00FF9C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]",
     "featured": true,
     "preview": "font-bold text-white border-[#00FF9C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]",
-    "order": 20
+    "order": 20,
+    "collectionId": ""
   },
   {
     "id": "title_originator_602",
@@ -374,7 +402,8 @@
     "image": "font-bold text-white border-[#00FF9C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]",
     "featured": false,
     "preview": "font-bold text-white border-[#00FF9C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]",
-    "order": 21
+    "order": 21,
+    "collectionId": ""
   },
   {
     "id": "title_the_602",
@@ -387,7 +416,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 22
+    "order": 22,
+    "collectionId": ""
   },
   {
     "id": "title_link_four_champion",
@@ -400,7 +430,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 23
+    "order": 23,
+    "collectionId": ""
   },
   {
     "id": "title_master_of_the_link",
@@ -413,7 +444,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 24
+    "order": 24,
+    "collectionId": ""
   },
   {
     "id": "title_over_9000",
@@ -426,7 +458,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 25
+    "order": 25,
+    "collectionId": ""
   },
   {
     "id": "title_absolute_heater",
@@ -439,7 +472,8 @@
     "image": "",
     "featured": true,
     "preview": "",
-    "order": 26
+    "order": 26,
+    "collectionId": ""
   },
   {
     "id": "title_on_fire",
@@ -452,7 +486,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 27
+    "order": 27,
+    "collectionId": ""
   },
   {
     "id": "title_chainbuilder",
@@ -465,7 +500,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 28
+    "order": 28,
+    "collectionId": ""
   },
   {
     "id": "title_chain_reaction",
@@ -478,7 +514,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 29
+    "order": 29,
+    "collectionId": ""
   },
   {
     "id": "title_first_in",
@@ -491,7 +528,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 30
+    "order": 30,
+    "collectionId": ""
   },
   {
     "id": "title_broke_the_chain",
@@ -504,7 +542,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 31
+    "order": 31,
+    "collectionId": ""
   },
   {
     "id": "title_bad_beat_survivor",
@@ -517,7 +556,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 32
+    "order": 32,
+    "collectionId": ""
   },
   {
     "id": "title_missing_link",
@@ -530,7 +570,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 33
+    "order": 33,
+    "collectionId": ""
   },
   {
     "id": "title_buzzer_beater",
@@ -543,7 +584,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 34
+    "order": 34,
+    "collectionId": ""
   },
   {
     "id": "title_plot_armor",
@@ -556,7 +598,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 35
+    "order": 35,
+    "collectionId": ""
   },
   {
     "id": "title_afk",
@@ -569,7 +612,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 36
+    "order": 36,
+    "collectionId": ""
   },
   {
     "id": "title_loot_goblin",
@@ -582,7 +626,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 37
+    "order": 37,
+    "collectionId": ""
   },
   {
     "id": "title_the_whale",
@@ -595,7 +640,8 @@
     "image": "",
     "featured": true,
     "preview": "",
-    "order": 38
+    "order": 38,
+    "collectionId": ""
   },
   {
     "id": "title_golden_link",
@@ -608,7 +654,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 39
+    "order": 39,
+    "collectionId": ""
   },
   {
     "id": "title_chained_to_the_board",
@@ -621,7 +668,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 40
+    "order": 40,
+    "collectionId": ""
   },
   {
     "id": "title_domain_expansion",
@@ -634,7 +682,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 41
+    "order": 41,
+    "collectionId": ""
   },
   {
     "id": "title_circuit_breaker",
@@ -647,7 +696,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 42
+    "order": 42,
+    "collectionId": ""
   },
   {
     "id": "title_the_algorithm",
@@ -660,7 +710,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 43
+    "order": 43,
+    "collectionId": ""
   },
   {
     "id": "title_sharp_money",
@@ -673,7 +724,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 44
+    "order": 44,
+    "collectionId": ""
   },
   {
     "id": "title_gridiron_exotic",
@@ -686,7 +738,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 45
+    "order": 45,
+    "collectionId": ""
   },
   {
     "id": "title_main_character_energy",
@@ -699,7 +752,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 46
+    "order": 46,
+    "collectionId": ""
   },
   {
     "id": "title_lip_sync_assassin",
@@ -712,7 +766,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 47
+    "order": 47,
+    "collectionId": ""
   },
   {
     "id": "title_final_rose",
@@ -725,7 +780,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 48
+    "order": 48,
+    "collectionId": ""
   },
   {
     "id": "title_rng_god",
@@ -738,7 +794,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 49
+    "order": 49,
+    "collectionId": ""
   },
   {
     "id": "title_nerf_this",
@@ -751,7 +808,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 50
+    "order": 50,
+    "collectionId": ""
   },
   {
     "id": "title_op_original_picker",
@@ -764,7 +822,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 51
+    "order": 51,
+    "collectionId": ""
   },
   {
     "id": "title_ghost_in_the_machine",
@@ -777,7 +836,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 52
+    "order": 52,
+    "collectionId": ""
   },
   {
     "id": "title_cash_out_king",
@@ -790,7 +850,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 53
+    "order": 53,
+    "collectionId": ""
   },
   {
     "id": "title_reverse_line_mover",
@@ -803,7 +864,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 54
+    "order": 54,
+    "collectionId": ""
   },
   {
     "id": "title_oche_master",
@@ -816,7 +878,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 55
+    "order": 55,
+    "collectionId": ""
   },
   {
     "id": "title_one_putt_wonder",
@@ -829,7 +892,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 56
+    "order": 56,
+    "collectionId": ""
   },
   {
     "id": "title_walk_off_winner",
@@ -842,7 +906,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 57
+    "order": 57,
+    "collectionId": ""
   },
   {
     "id": "title_system_player",
@@ -855,7 +920,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 58
+    "order": 58,
+    "collectionId": ""
   },
   {
     "id": "title_data_driven",
@@ -868,7 +934,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 59
+    "order": 59,
+    "collectionId": ""
   },
   {
     "id": "title_always_sweating",
@@ -881,7 +948,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 60
+    "order": 60,
+    "collectionId": ""
   },
   {
     "id": "title_thread_killer",
@@ -894,7 +962,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 61
+    "order": 61,
+    "collectionId": ""
   },
   {
     "id": "title_trust_the_process",
@@ -907,7 +976,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 62
+    "order": 62,
+    "collectionId": ""
   },
   {
     "id": "title_equivalent_exchange",
@@ -920,7 +990,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 63
+    "order": 63,
+    "collectionId": ""
   },
   {
     "id": "title_cup_flipper",
@@ -933,7 +1004,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 64
+    "order": 64,
+    "collectionId": ""
   },
   {
     "id": "title_1_hp_and_a_dream",
@@ -946,7 +1018,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 65
+    "order": 65,
+    "collectionId": ""
   },
   {
     "id": "title_gg_ez",
@@ -959,7 +1032,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 66
+    "order": 66,
+    "collectionId": ""
   },
   {
     "id": "title_unbothered",
@@ -972,7 +1046,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 67
+    "order": 67,
+    "collectionId": ""
   },
   {
     "id": "title_fade_me",
@@ -985,7 +1060,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 68
+    "order": 68,
+    "collectionId": ""
   },
   {
     "id": "title_tail_at_your_own_risk",
@@ -998,7 +1074,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 69
+    "order": 69,
+    "collectionId": ""
   },
   {
     "id": "title_needs_a_win",
@@ -1011,7 +1088,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 70
+    "order": 70,
+    "collectionId": ""
   },
   {
     "id": "title_chasing_losses",
@@ -1024,7 +1102,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 71
+    "order": 71,
+    "collectionId": ""
   },
   {
     "id": "title_the_cooler",
@@ -1037,7 +1116,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 72
+    "order": 72,
+    "collectionId": ""
   },
   {
     "id": "title_mush",
@@ -1050,7 +1130,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 73
+    "order": 73,
+    "collectionId": ""
   },
   {
     "id": "title_nani",
@@ -1063,7 +1144,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 74
+    "order": 74,
+    "collectionId": ""
   },
   {
     "id": "title_sweat",
@@ -1076,7 +1158,8 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 75
+    "order": 75,
+    "collectionId": ""
   },
   {
     "id": "title_weakest_link",
@@ -1089,6 +1172,7 @@
     "image": "",
     "featured": false,
     "preview": "",
-    "order": 76
+    "order": 76,
+    "collectionId": ""
   }
 ]
