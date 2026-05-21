@@ -215,20 +215,13 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               scraperActive = true;
             }
 
-            let intendedActive = scraperActive && defaultActive;
-
-            if (existingData.active && !intendedActive) {
+            // Only deactivate if scraper says it shouldn't be active (e.g. wild odds)
+            // If it's already active, don't let defaultActive=false override it
+            if (existingData.active && !scraperActive) {
               const picksSnap = await adminDb.collection('picks').where('matchupId', '==', gameId).limit(1).get();
               if (!picksSnap.empty) {
                 finalActive = true;
               } else {
-                finalActive = false;
-              }
-            }
-          } else {
-            if (existingData.active && !defaultActive) {
-              const picksSnap = await adminDb.collection('picks').where('matchupId', '==', gameId).limit(1).get();
-              if (picksSnap.empty) {
                 finalActive = false;
               }
             }
