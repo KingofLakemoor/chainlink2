@@ -19,6 +19,9 @@ function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) =>
   const { user, profile } = useAuth();
   const location = useLocation();
 
+  if (!user) return null;
+
+
   const NavItem = ({ icon: Icon, label, path }: { icon: any, label: string, path: string }) => {
     const active = location.pathname === path;
     return (
@@ -56,7 +59,7 @@ function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) =>
         <NavItem icon={UserIcon} label="My Profile" path="/profile" />
 
         <div className="mt-6 mb-2 px-3 text-xs font-semibold text-zinc-500 uppercase tracking-wider">ChainLink</div>
-        <NavItem icon={PlayCircle} label="Play ChainLink" path="/play" />
+        <NavItem icon={PlayCircle} label="Play ChainLink" path="/" />
         <NavItem icon={CheckCircle2} label="My Picks" path="/mypicks" />
         {/* <NavItem icon={Layers} label="Pick'em" path="/pickem" /> */}
         <NavItem icon={Trophy} label="Brackets" path="/brackets" />
@@ -103,7 +106,7 @@ function Landing() {
   }, [referrerId]);
 
   if (loading) return null;
-  if (user) return <Navigate to="/play" replace />;
+  if (user) return <Navigate to="/" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -352,15 +355,19 @@ function PlayDashboard() {
     let unsubSponsors = () => {};
 
     const setupPicksListeners = () => {
-      const q = query(collection(db, 'picks'), where('userId', '==', user.uid));
-      unsubPicks = onSnapshot(q, (pickSnap) => {
-        const picksInfo: Record<string, any> = {};
-        pickSnap.docs.forEach(d => {
-          const data = d.data();
-          picksInfo[data.matchupId] = data;
+      if (user) {
+        const q = query(collection(db, 'picks'), where('userId', '==', user.uid));
+        unsubPicks = onSnapshot(q, (pickSnap) => {
+          const picksInfo: Record<string, any> = {};
+          pickSnap.docs.forEach(d => {
+            const data = d.data();
+            picksInfo[data.matchupId] = data;
+          });
+          setUserPicks(picksInfo);
         });
-        setUserPicks(picksInfo);
-      });
+      } else {
+        setUserPicks({});
+      }
 
       // Fetch all pending picks for global hot rating
       const globalQ = query(collection(db, 'picks'), where('status', '==', 'PENDING'));
@@ -480,7 +487,11 @@ function PlayDashboard() {
   };
 
   const handleMakePick = async (matchup: any, team: any) => {
-    if (!user || !profile || !chain) return;
+    if (!user) {
+        window.location.href = '/login';
+        return;
+    }
+    if (!profile || !chain) return;
 
     if (matchup.status !== 'STATUS_SCHEDULED') {
         alert("This game has already started.");
@@ -556,7 +567,7 @@ function PlayDashboard() {
     const hasActivePickAnywhere = Object.values(userPicks).some((p: any) => p.status === 'PENDING');
     const hasPicked = !!userPicks[m.gameId];
     const pickData = userPicks[m.gameId];
-    const isPickDisabled = hasPicked || hasActivePickAnywhere;
+    const isPickDisabled = !user || hasPicked || hasActivePickAnywhere;
 
     const mCounts = matchupPickCounts[m.gameId] || { total: 0, away: 0, home: 0 };
     const awayHotPct = mCounts.total > 0 ? Math.round((mCounts.away / mCounts.total) * 100) : 0;
@@ -834,7 +845,9 @@ function PlayDashboard() {
                   <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
                 )
              ) : (
-                !isPickDisabled ? (
+                !user ? (
+                  <Link to="/login" className="text-xs font-bold text-zinc-500 uppercase tracking-wide hover:text-zinc-300">Sign Up / Sign In</Link>
+                ) : !isPickDisabled ? (
                   <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity">Select Team</span>
                 ) : (
                   <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
@@ -936,7 +949,15 @@ function PlayDashboard() {
 
 
 function TopStats() {
-  const { profile, chain } = useAuth();
+  const { user, profile, chain } = useAuth();
+
+  if (!user) {
+    return (
+      <div className="flex items-center gap-2 md:gap-5">
+        <Link to="/login" className="text-zinc-100 hover:text-zinc-300 font-medium">Sign in</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2 md:gap-5">
@@ -962,6 +983,7 @@ function TopStats() {
 }
 
 function MainLayout({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const location = useLocation();
   useNotifications();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -972,7 +994,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
 
   const pageTitle = {
     '/dashboard': 'Dashboard',
-    '/play': 'Play',
+    '/': 'Play',
     '/profile': 'My Profile',
     '/pickem': "Pick'em",
     '/leaderboards': 'Leaderboards',
@@ -985,12 +1007,15 @@ function MainLayout({ children }: { children: React.ReactNode }) {
          {/* Mobile Header */}
          <div className="md:hidden h-16 border-b border-[#27272a] bg-[#121212]/80 backdrop-blur-xl flex items-center justify-between px-4 shrink-0 sticky top-0 z-30">
            <div className="flex items-center gap-2">
-             <Link2 className="w-6 h-6 text-[#22c55e]" />
+             {user && (
+               <button className="p-2 text-zinc-400 border border-zinc-800 rounded-lg hover:bg-zinc-800/50 mr-1" onClick={() => setSidebarOpen(true)}>
+                 <Menu className="w-5 h-5" />
+               </button>
+             )}
+             {!user && <Link2 className="w-6 h-6 text-[#22c55e]" />}
              <span className="font-bold text-lg font-display text-zinc-100">{pageTitle}</span>
            </div>
-           <div className="flex items-center gap-3"><div className="pointer-events-auto"><TopStats /></div><button className="p-2 -mr-2 text-zinc-400 md:hidden" onClick={() => setSidebarOpen(true)}>
-             <Menu className="w-6 h-6" />
-           </button></div>
+           <div className="flex items-center gap-3"><div className="pointer-events-auto"><TopStats /></div></div>
          </div>
 
          {/* Desktop Header */}
@@ -1020,7 +1045,7 @@ function PlaceholderPage({ title }: { title: string }) {
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return null;
-  return user ? <>{children}</> : <Navigate to="/" />;
+  return user ? <>{children}</> : <Navigate to="/login" />;
 }
 
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -1039,11 +1064,11 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Landing />} />
+          <Route path="/" element={<MainLayout><PlayDashboard /></MainLayout>} />
           <Route path="/admin/*" element={<AdminDashboard />} />
           <Route path="/dashboard" element={<PrivateRoute><MainLayout><DashboardPage /></MainLayout></PrivateRoute>} />
-          <Route path="/play" element={<PrivateRoute><MainLayout><PlayDashboard /></MainLayout></PrivateRoute>} />
-          <Route path="/profile" element={<PrivateRoute><MainLayout><ProfilePage /></MainLayout></PrivateRoute>} />
+                    <Route path="/profile" element={<PrivateRoute><MainLayout><ProfilePage /></MainLayout></PrivateRoute>} />
           <Route path="/pickem" element={<PrivateRoute><MainLayout><PickEmPage /></MainLayout></PrivateRoute>} />
           <Route path="/pickem/:campaignId" element={<PrivateRoute><MainLayout><PickEmPage /></MainLayout></PrivateRoute>} />
           <Route path="/brackets" element={<PrivateRoute><MainLayout><BracketsPage /></MainLayout></PrivateRoute>} />
@@ -1056,7 +1081,7 @@ export default function App() {
           <Route path="/games" element={<PrivateRoute><MainLayout><PlaceholderPage title="Games" /></MainLayout></PrivateRoute>} />
           <Route path="/sponsor" element={<SponsorPage />} />
           {/* Catch all route back to play */}
-          <Route path="*" element={<Navigate to="/play" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
