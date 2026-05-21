@@ -136,7 +136,7 @@ function Landing() {
             <Link2 className="w-8 h-8 text-[#22c55e]" />
           </div>
           <h1 className="text-4xl font-bold text-zinc-100 mb-3 font-display">ChainLink</h1>
-          <p className="text-zinc-400 text-lg">Build your streak. Earn Links. Climb the ranks.</p>
+          <p className="text-zinc-400 text-lg">Build your chain. Earn Links. Climb the ranks.</p>
         </div>
 
         <div className="bg-[#121212] border border-[#27272a] rounded-2xl p-8 shadow-xl">
