@@ -294,6 +294,20 @@
     "collectionId": ""
   },
   {
+    "id": "banner_global_stage",
+    "name": "Global Stage",
+    "description": "Deep moody blue sky transitioning to emerald pitch.",
+    "cost": 5000,
+    "type": "PROFILE_BANNER",
+    "active": true,
+    "forSale": true,
+    "image": "GlobalStageBanner",
+    "featured": true,
+    "preview": "GlobalStageBanner",
+    "order": 45,
+    "collectionId": ""
+  },
+  {
     "id": "banner_phantom_star",
     "name": "Phantom Star",
     "description": "Ethereal and distant.",
