@@ -691,7 +691,7 @@ function PlayDashboard() {
                 ) : (
                   <div className="flex items-start gap-2">
                     <div className="flex flex-col items-center gap-1.5 w-auto min-w-[3rem] sm:min-w-[4rem]">
-                      <div className={cn("w-full h-10 px-2 rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden gap-2",
+                      <div className={cn("w-full h-10 px-1 sm:px-2 rounded flex items-center justify-center font-mono font-bold text-sm sm:text-lg shadow-inner relative overflow-hidden gap-1 sm:gap-2",
                         m.status === 'STATUS_IN_PROGRESS' ? "bg-[#27272a] text-white ring-1 ring-zinc-700" : "bg-[#1a1a1a]",
                         (m.metadata?.lowerScoreWins ? m.awayTeam.score < m.homeTeam.score : m.awayTeam.score > m.homeTeam.score) ? "text-zinc-100" : (m.status === 'STATUS_IN_PROGRESS' ? "text-zinc-200" : "text-zinc-500")
                       )}>
@@ -699,7 +699,7 @@ function PlayDashboard() {
                          {(m.league === 'ATP' || m.league === 'WTA') && m.metadata?.awayLinescores ? (
                            m.metadata.awayLinescores.map((score: number, i: number) => (
                              <React.Fragment key={i}>
-                               {i > 0 && <div className="w-px h-4 bg-zinc-600 mx-0.5"></div>}
+                               {i > 0 && <div className="w-px h-3 sm:h-4 bg-zinc-600 mx-0.5 sm:mx-1"></div>}
                                <span>{score}</span>
                              </React.Fragment>
                            ))
@@ -740,7 +740,7 @@ function PlayDashboard() {
                     </div>
 
                     <div className="flex flex-col items-center gap-1.5 w-auto min-w-[3rem] sm:min-w-[4rem]">
-                      <div className={cn("w-full h-10 px-2 rounded flex items-center justify-center font-mono font-bold text-lg shadow-inner relative overflow-hidden gap-2",
+                      <div className={cn("w-full h-10 px-1 sm:px-2 rounded flex items-center justify-center font-mono font-bold text-sm sm:text-lg shadow-inner relative overflow-hidden gap-1 sm:gap-2",
                         m.status === 'STATUS_IN_PROGRESS' ? "bg-[#27272a] text-white ring-1 ring-zinc-700" : "bg-[#1a1a1a]",
                         (m.metadata?.lowerScoreWins ? m.homeTeam.score < m.awayTeam.score : m.homeTeam.score > m.awayTeam.score) ? "text-zinc-100" : (m.status === 'STATUS_IN_PROGRESS' ? "text-zinc-200" : "text-zinc-500")
                       )}>
@@ -748,7 +748,7 @@ function PlayDashboard() {
                          {(m.league === 'ATP' || m.league === 'WTA') && m.metadata?.homeLinescores ? (
                            m.metadata.homeLinescores.map((score: number, i: number) => (
                              <React.Fragment key={i}>
-                               {i > 0 && <div className="w-px h-4 bg-zinc-600 mx-0.5"></div>}
+                               {i > 0 && <div className="w-px h-3 sm:h-4 bg-zinc-600 mx-0.5 sm:mx-1"></div>}
                                <span>{score}</span>
                              </React.Fragment>
                            ))
