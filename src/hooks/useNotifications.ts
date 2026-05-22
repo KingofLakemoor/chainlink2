@@ -11,6 +11,9 @@ export function useNotifications() {
   useEffect(() => {
     if (!user || !profile || setupDone.current) return;
 
+    // Only setup notifications if the user has not disabled them in their profile
+    if (profile.notificationsEnabled === false) return;
+
     // Only proceed if messaging is supported in the browser
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window) {
 

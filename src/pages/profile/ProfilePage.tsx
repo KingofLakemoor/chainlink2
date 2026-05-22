@@ -58,7 +58,7 @@ export default function ProfilePage() {
     if (profile) {
       setNewUsername(profile.username || '');
       setNewName(profile.name || '');
-      setNotificationsEnabled(profile.notificationsEnabled || false);
+      setNotificationsEnabled(profile.notificationsEnabled !== false);
     }
   }, [profile]);
 
