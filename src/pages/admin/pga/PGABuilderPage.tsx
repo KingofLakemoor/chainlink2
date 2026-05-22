@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Flag, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
@@ -46,12 +46,29 @@ export default function PGABuilderPage() {
   const [formData, setFormData] = useState({
     title: '',
     matchupType: 'TOURNAMENT_FINISH',
-    period: 0,
+    period: 1,
     startTime: '',
     homeTeamId: '',
     awayTeamId: '',
   });
 
+  useEffect(() => {
+    if (formData.awayTeamId && formData.homeTeamId) {
+      const awayGolfer = golfers.find(g => g.id === formData.awayTeamId);
+      const homeGolfer = golfers.find(g => g.id === formData.homeTeamId);
+
+      if (awayGolfer && homeGolfer) {
+        let newTitle = `${awayGolfer.name} vs ${homeGolfer.name}`;
+        if (formData.matchupType === 'TOURNAMENT_FINISH') {
+          newTitle += ` (Tournament Finish)`;
+        } else if (formData.matchupType === 'ROUND_SCORE') {
+          newTitle += ` (R${formData.period} Score)`;
+        }
+
+        setFormData(prev => ({ ...prev, title: newTitle }));
+      }
+    }
+  }, [formData.awayTeamId, formData.homeTeamId, formData.matchupType, formData.period, golfers]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
