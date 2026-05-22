@@ -87,8 +87,17 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
   const champion = selections[finalWinnerId];
 
   return (
-    <div className="w-full overflow-x-auto pb-8 bg-[#0a0a0a] rounded-xl p-4 border border-[#27272a]">
-      <div className="min-w-max flex items-stretch justify-center">
+    <div className="w-full overflow-x-auto pb-8 bg-[#0a0a0a] rounded-xl p-4 border border-[#27272a] relative">
+      {/* Overlay */}
+      <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 rounded-xl backdrop-blur-sm pointer-events-auto">
+        <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-xl max-w-md mx-4 text-center shadow-2xl">
+          <p className="text-white text-lg font-medium leading-relaxed">
+            We will launch our Bracket feature with the 2026 World Cup Knockout Round, beginning on June 28th
+          </p>
+        </div>
+      </div>
+
+      <div className="min-w-max flex items-stretch justify-center pointer-events-none select-none opacity-50">
         {/* Left Side */}
         <div className="flex">
           {renderRound(0, 0, 8, "Round of 32")}
