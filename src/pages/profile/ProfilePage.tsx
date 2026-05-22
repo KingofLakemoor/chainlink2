@@ -19,6 +19,7 @@ import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
 import { OceanBanner } from '../../components/ui/profile-banners/ocean';
 import { PhantomStarBanner } from '../../components/ui/profile-banners/phantom-star';
 import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-syndicate';
+import { GlobalStageBanner } from '../../components/ui/profile-banners/global-stage';
 import { PrimeCircuitRing } from '../../components/ui/avatar-rings/prime-circuit-ring';
 import { TitleMap } from '../../components/ui/titles';
 import { FirebaseImage } from '../../components/ui/FirebaseImage';
@@ -37,7 +38,8 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'InfernoBanner': InfernoBanner,
   'OceanBanner': OceanBanner,
   'PhantomStarBanner': PhantomStarBanner,
-  'GenesisSyndicate': GenesisSyndicate
+  'GenesisSyndicate': GenesisSyndicate,
+  'GlobalStageBanner': GlobalStageBanner
 };
 
 export default function ProfilePage() {

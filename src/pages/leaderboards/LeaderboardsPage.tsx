@@ -19,12 +19,14 @@ import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
 import { OceanBanner } from '../../components/ui/profile-banners/ocean';
 import { PhantomStarBanner } from '../../components/ui/profile-banners/phantom-star';
 import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-syndicate';
+import { GlobalStageBanner } from '../../components/ui/profile-banners/global-stage';
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {
   'InfernoBanner': InfernoBanner,
   'OceanBanner': OceanBanner,
   'PhantomStarBanner': PhantomStarBanner,
-  'GenesisSyndicate': GenesisSyndicate
+  'GenesisSyndicate': GenesisSyndicate,
+  'GlobalStageBanner': GlobalStageBanner
 };
 
 const AvatarRingMap: Record<string, React.FC<any>> = {
