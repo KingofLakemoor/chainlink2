@@ -32,7 +32,7 @@ export default function CreateNotificationPage() {
         title: formData.title,
         body: formData.body,
         audience: formData.audience,
-        targetUserId: formData.audience === 'SPECIFIC_USER' ? formData.targetUserId : null,
+        targetUserId: formData.audience === 'USER' ? formData.targetUserId : null,
         scheduledTime: new Date(formData.scheduledTime).getTime(),
         status: 'PENDING',
         createdAt: Date.now()
@@ -89,11 +89,11 @@ export default function CreateNotificationPage() {
                       className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700"
                   >
                       <option value="GLOBAL">GLOBAL</option>
-                      <option value="SPECIFIC_USER">SPECIFIC_USER</option>
+                      <option value="USER">USER</option>
                   </select>
               </div>
 
-              {formData.audience === 'SPECIFIC_USER' && (
+              {formData.audience === 'USER' && (
                 <div className="space-y-2">
                     <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Target User ID</label>
                     <input

@@ -80,7 +80,7 @@ export const frequentSync = onSchedule({ schedule: "every 2 minutes", timeoutSec
             const usersSnap = await adminDb.collection('users').where('fcmTokens', '!=', []).get();
             usersSnap.docs.forEach((uDoc: any) => {
               const uData = uDoc.data();
-              if (uData.fcmTokens && Array.isArray(uData.fcmTokens)) {
+              if (uData.notificationsEnabled !== false && uData.fcmTokens && Array.isArray(uData.fcmTokens)) {
                 tokens.push(...uData.fcmTokens);
               }
             });
@@ -88,7 +88,7 @@ export const frequentSync = onSchedule({ schedule: "every 2 minutes", timeoutSec
             const userSnap = await adminDb.collection('users').doc(notifData.targetUserId).get();
             if (userSnap.exists) {
               const uData = userSnap.data()!;
-              if (uData.fcmTokens && Array.isArray(uData.fcmTokens)) {
+              if (uData.notificationsEnabled !== false && uData.fcmTokens && Array.isArray(uData.fcmTokens)) {
                 tokens = uData.fcmTokens;
               }
             }
