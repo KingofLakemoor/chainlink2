@@ -12,47 +12,44 @@ export function BracketsPage() {
 
   useEffect(() => {
     async function fetchBracket() {
-      // Mock for local dev
-      if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
-        const teams = [
-          "Mexico", "South Africa", "South Korea", "Czechia",
-          "Canada", "Bosnia-Herzegovina", "Qatar", "Switzerland",
-          "Brazil", "Morocco", "Haiti", "Scotland",
-          "United States", "Paraguay", "Australia", "Türkiye",
-          "Germany", "Curacao", "Ivory Coast", "Ecuador",
-          "Netherlands", "Japan", "Sweden", "Tunisia",
-          "Belgium", "Egypt", "Iran", "New Zealand",
-          "Spain", "Cape Verde", "Saudi Arabia", "Uruguay",
-          "France", "Senegal", "Iraq", "Norway",
-          "Argentina", "Algeria", "Austria", "Jordan",
-          "Portugal", "Congo DR", "Uzbekistan", "Colombia",
-          "England", "Croatia", "Ghana", "Panama"
+        const defaultTeams = [
+          "Winner Group E", "3rd Group A/B/C/D/F",
+          "Winner Group I", "3rd Group C/D/F/G/H",
+          "Runner-up Group A", "Runner-up Group B",
+          "Winner Group F", "Runner-up Group C",
+          "Runner-up Group K", "Runner-up Group L",
+          "Winner Group H", "Runner-up Group J",
+          "Winner Group D", "3rd Group B/E/F/I/J",
+          "Winner Group G", "3rd Group A/E/H/I/J",
+          "Winner Group C", "Runner-up Group F",
+          "Runner-up Group E", "Runner-up Group I",
+          "Winner Group A", "3rd Group C/E/F/H/I",
+          "Winner Group L", "3rd Group E/H/I/J/K",
+          "Winner Group J", "Runner-up Group H",
+          "Runner-up Group D", "Runner-up Group G",
+          "Winner Group B", "3rd Group E/F/G/I/J",
+          "Winner Group K", "3rd Group D/E/I/J/L"
         ];
 
-        const pointValues = {
-          "Round of 32": 10,
-          "Round of 16": 20,
-          "Quarter Finals": 40,
-          "Semi Finals": 80,
-          "Finals": 160
-        };
-
-        setBracket({
-          id: 'mock-bracket-123',
+        const defaultBracket = {
+          id: 'world-cup-2026',
           name: "2026 World Cup Bracket",
           sport: "World Cup 2026",
-          teams,
-          pointValues,
+          teams: defaultTeams,
+          pointValues: {
+            "Round of 32": 10,
+            "Round of 16": 20,
+            "Quarter Finals": 40,
+            "Semi Finals": 80,
+            "Finals": 160
+          },
           theme: bracketId === 'charity' ? {
             title: "Charity Cup 2026",
             subtitle: "Make your picks to support a great cause!",
-            primaryColor: "#3b82f6", // Blue
+            primaryColor: "#3b82f6",
             logoUrl: "https://api.dicebear.com/7.x/shapes/svg?seed=charity"
           } : undefined
-        });
-        setLoading(false);
-        return;
-      }
+        };
 
       try {
         if (bracketId) {
@@ -70,9 +67,12 @@ export function BracketsPage() {
           const snapshot = await getDocs(q);
           if (!snapshot.empty) {
             setBracket({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() });
+          } else {
+            setBracket(defaultBracket);
           }
         }
       } catch (error) {
+        setBracket(defaultBracket);
         console.error("Error fetching bracket:", error);
       } finally {
         setLoading(false);
