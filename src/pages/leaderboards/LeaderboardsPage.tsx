@@ -282,11 +282,17 @@ export default function LeaderboardsPage() {
             </div>
 
             <div className="mt-1">
-              {TitleComponent && (
+              {TitleComponent ? (
                  <div className="mb-1 flex justify-center">
                     <TitleComponent isStatic={true} />
                  </div>
-              )}
+              ) : titleItem ? (
+                 <div className="mb-1 flex justify-center">
+                    <span className={`text-[10px] md:text-xs font-bold text-[#22c55e] px-2 py-0.5 rounded bg-black/40 border border-[#22c55e]/30 shadow-sm backdrop-blur-sm ${titleItem?.image || ''}`}>
+                       {titleItem?.name || 'Title'}
+                    </span>
+                 </div>
+              ) : null}
               <h3 className="text-white font-bold text-sm truncate max-w-[150px]">{player.displayName || player.username || player.name}</h3>
             </div>
          </div>
@@ -451,14 +457,26 @@ export default function LeaderboardsPage() {
                              {user?.uid === player.id && <span className="text-[10px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded font-bold uppercase">You</span>}
                            </div>
                            {player.equippedCosmetics?.TITLE && (() => {
-                             const titleImage = inventoryItems.find(i => i.id === player.equippedCosmetics.TITLE)?.image;
+                             const titleItem = inventoryItems.find(i => i.id === player.equippedCosmetics.TITLE);
+                             const titleImage = titleItem?.image;
                              const TitleComponent = TitleMap[titleImage || ''];
-                             if (!TitleComponent) return null;
-                             return (
-                               <div className="mt-1 transform scale-75 origin-left">
-                                  <TitleComponent isStatic={true} />
-                               </div>
-                             )
+                             if (TitleComponent) {
+                               return (
+                                 <div className="mt-1 transform scale-75 origin-left">
+                                    <TitleComponent isStatic={true} />
+                                 </div>
+                               )
+                             }
+                             if (titleItem) {
+                               return (
+                                 <div className="mt-1">
+                                    <span className={`text-[10px] font-bold text-[#22c55e] px-1.5 py-0.5 rounded bg-black/40 border border-[#22c55e]/30 shadow-sm backdrop-blur-sm ${titleItem?.image || ''}`}>
+                                       {titleItem?.name || 'Title'}
+                                    </span>
+                                 </div>
+                               )
+                             }
+                             return null;
                            })()}
                         </div>
                       </div>
