@@ -157,6 +157,19 @@ export async function gradeSingleMatchup(matchup: any) {
           // Chain typically doesn't break on a push, but doesn't increase
         }
 
+        // Check for W10 Chain Global Notification
+        if (pickStatus === 'WIN' && chainData.chain === 10) {
+          const globalNotifRef = adminDb!.collection('notifications').doc();
+          transaction.set(globalNotifRef, {
+            title: '🔥 W10 Chain Alert!',
+            body: `${userData.username || userData.name || 'A user'} just hit an incredible 10-win chain!`,
+            audience: 'GLOBAL',
+            status: 'PENDING',
+            scheduledTime: Date.now(),
+            createdAt: Date.now()
+          });
+        }
+
         // Write updates
         transaction.update(pickDoc.ref, {
           status: pickStatus,
