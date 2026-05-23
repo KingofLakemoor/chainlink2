@@ -258,7 +258,7 @@ export default function LeaderboardsPage() {
       <div className="bg-[#121212] border border-zinc-800 rounded-xl relative overflow-hidden group min-h-[220px] flex flex-col">
          {BannerComponent ? (
             <div className="absolute inset-0 z-0">
-               <BannerComponent isStatic={true} />
+               <BannerComponent isStatic={false} />
             </div>
          ) : (
             <div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5 pointer-events-none"></div>
@@ -271,7 +271,7 @@ export default function LeaderboardsPage() {
             <div className="relative mb-3">
               {RingComponent && (
                  <div className="absolute inset-0 z-0 transform scale-125 pointer-events-none rounded-full overflow-hidden">
-                    <RingComponent isStatic={true} />
+                    <RingComponent isStatic={false} />
                  </div>
               )}
               <img
@@ -284,7 +284,7 @@ export default function LeaderboardsPage() {
             <div className="mt-1">
               {TitleComponent ? (
                  <div className="mb-1 flex justify-center">
-                    <TitleComponent isStatic={true} />
+                    <TitleComponent isStatic={false} />
                  </div>
               ) : titleItem ? (
                  <div className="mb-1 flex justify-center">
