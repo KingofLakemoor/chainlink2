@@ -221,7 +221,7 @@ export default function DashboardPage() {
 
          <div className="relative">
             {RingComponent && (
-               <div className="absolute inset-0 z-0 transform scale-150 pointer-events-none">
+               <div className="absolute inset-0 z-0 transform scale-125 pointer-events-none rounded-full overflow-hidden">
                   <RingComponent isStatic={false} />
                </div>
             )}

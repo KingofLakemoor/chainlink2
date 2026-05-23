@@ -388,7 +388,7 @@ export default function ShopPage() {
                           <div className="relative w-16 h-16 flex items-center justify-center z-10">
                             {AvatarRingMap[item.image] ? (
                                <>
-                                 <div className="absolute inset-0 rounded-full overflow-hidden">
+                                 <div className="absolute inset-0 rounded-full overflow-hidden transform scale-125">
                                    {React.createElement(AvatarRingMap[item.image], { isStatic: false })}
                                  </div>
                                  <div className="relative w-full h-full p-1.5">

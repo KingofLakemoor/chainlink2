@@ -270,7 +270,7 @@ export default function LeaderboardsPage() {
 
             <div className="relative mb-3">
               {RingComponent && (
-                 <div className="absolute inset-0 z-0 transform scale-150 pointer-events-none">
+                 <div className="absolute inset-0 z-0 transform scale-125 pointer-events-none rounded-full overflow-hidden">
                     <RingComponent isStatic={true} />
                  </div>
               )}
@@ -438,7 +438,7 @@ export default function LeaderboardsPage() {
                             const RingComponent = AvatarRingMap[ringImage || ''];
                             if (!RingComponent) return null;
                             return (
-                              <div className="absolute inset-0 z-0 transform scale-150 pointer-events-none">
+                              <div className="absolute inset-0 z-0 transform scale-125 pointer-events-none rounded-full overflow-hidden">
                                 <RingComponent isStatic={true} />
                               </div>
                             )
