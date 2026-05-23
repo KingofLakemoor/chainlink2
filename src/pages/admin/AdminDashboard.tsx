@@ -25,6 +25,7 @@ import PickEmAdminPage from './pickem/PickEmAdminPage';
 import BracketsAdminPage from './brackets/BracketsAdminPage';
 import AdminPicksPage from './picks/AdminPicksPage';
 import ReferralsAdminPage from './referrals/ReferralsAdminPage';
+import UserCosmeticsAdminPage from './users/UserCosmeticsAdminPage';
 import {
   Users, CheckCircle2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
@@ -80,6 +81,7 @@ const ADMIN_MENU = [
   },
   { id: 'challenges', label: 'Challenges', icon: Target, path: '/admin/challenges' },
   { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
+  { id: 'users-cosmetics', label: 'User Cosmetics', icon: Users, path: '/admin/users/cosmetics' },
   { id: 'referrals', label: 'Referrals', icon: Users, path: '/admin/referrals' },
   { id: 'notifications', label: 'Notifications', icon: Bell, path: '/admin/notifications' },
   { id: 'actions', label: 'Actions', icon: Shield, path: '/admin/actions' },
@@ -1256,6 +1258,7 @@ export default function AdminDashboard() {
                 <Route path="brackets/*" element={<BracketsAdminPage />} />
                 <Route path="challenges" element={<GenericTable collectionName="globalQuiz" />} />
                 <Route path="users" element={<GenericTable collectionName="users" />} />
+                <Route path="users/cosmetics" element={<UserCosmeticsAdminPage />} />
                 <Route path="referrals" element={<ReferralsAdminPage />} />
                 <Route path="actions" element={<AdminPlaceholder title="Admin Actions Log" />} />
 

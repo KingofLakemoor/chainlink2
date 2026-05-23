@@ -353,7 +353,8 @@ apiRouter.post("/shop/buy", async (req, res) => {
       const updateData: any = {
         updatedAt: Date.now(),
         coins: profile.coins - cost,
-        inventory: [...inventory, itemId]
+        inventory: [...inventory, itemId],
+        purchasedItems: [...(profile.purchasedItems || []), itemId]
       };
 
       transaction.update(userRef, updateData);
