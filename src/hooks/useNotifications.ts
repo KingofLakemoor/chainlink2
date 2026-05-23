@@ -28,9 +28,17 @@ export function useNotifications() {
             return;
           }
 
+          // Register the Service Worker explicitly and pass the dynamic config via URL parameters.
+          // This allows the standalone SW file to know which project to listen to for background messages.
+          const configParam = encodeURIComponent(JSON.stringify(app.options));
+          const registration = await navigator.serviceWorker.register(
+            `/firebase-messaging-sw.js?config=${configParam}`
+          );
+
           // Get FCM token
           const currentToken = await getToken(messaging, {
-            vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY
+            vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+            serviceWorkerRegistration: registration
           });
 
           if (currentToken) {
