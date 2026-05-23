@@ -401,7 +401,7 @@ export default function ProfilePage() {
 
          <div className="relative">
             {RingComponent && (
-               <div className="absolute inset-0 z-0 transform scale-150 pointer-events-none">
+               <div className="absolute inset-0 z-0 transform scale-125 pointer-events-none">
                   <RingComponent isStatic={false} />
                </div>
             )}
