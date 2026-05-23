@@ -110,7 +110,11 @@ export default function UserCosmeticsAdminPage() {
                   <div>
                     <div className="font-bold text-sm">{item.name}</div>
                     <div className="text-xs text-zinc-500">{item.type}</div>
-                    {isPurchased && <div className="text-xs text-green-500 mt-1">Purchased</div>}
+                    {isPurchased ? (
+                      <div className="text-xs text-green-500 mt-1">Purchased</div>
+                    ) : hasCosmetic ? (
+                      <div className="text-xs text-blue-500 mt-1">Assigned</div>
+                    ) : null}
                   </div>
                   <Button
                     variant={hasCosmetic ? 'outline' : 'default'}
