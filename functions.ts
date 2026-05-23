@@ -210,8 +210,8 @@ export const dailyPickReminder = onSchedule({ schedule: "0 9 * * *", timeZone: "
     const { adminDb } = await import("./src/lib/firebase-admin.js");
     if (adminDb) {
       await adminDb.collection('notifications').add({
-        title: "Make your picks!",
-        body: "Don't forget to make your daily picks today!",
+        title: "New Day, New Chain",
+        body: "Time to make a pick",
         audience: "GLOBAL",
         status: "PENDING",
         scheduledTime: Date.now(),
