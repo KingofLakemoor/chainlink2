@@ -204,6 +204,26 @@ export const nightlySync = onSchedule({ schedule: "0 9 * * *", timeoutSeconds: 3
   console.log(`[Cron] Nightly scheduled sync cycle complete.`);
 });
 
+export const dailyPickReminder = onSchedule({ schedule: "0 9 * * *", timeZone: "America/Chicago", timeoutSeconds: 60 }, async (event) => {
+  console.log(`[Cron] Starting daily pick reminder...`);
+  try {
+    const { adminDb } = await import("./src/lib/firebase-admin.js");
+    if (adminDb) {
+      await adminDb.collection('notifications').add({
+        title: "Make your picks!",
+        body: "Don't forget to make your daily picks today!",
+        audience: "GLOBAL",
+        status: "PENDING",
+        scheduledTime: Date.now(),
+        createdAt: Date.now(),
+      });
+      console.log(`[Cron] Successfully queued daily pick reminder notification.`);
+    }
+  } catch (e) {
+    console.error(`[Cron] Error queuing daily pick reminder:`, e);
+  }
+});
+
 export const monthlyShopRefresh = onSchedule({ schedule: "0 0 1 * *", timeoutSeconds: 300 }, async (event) => {
   console.log(`[Cron] Starting monthly shop refresh cycle...`);
   try {
