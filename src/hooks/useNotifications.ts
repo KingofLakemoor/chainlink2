@@ -61,9 +61,13 @@ export function useNotifications() {
             console.log('Message received in foreground: ', payload);
             // Optionally, we could show a toast notification here
             if (payload.notification) {
-              new Notification(payload.notification.title || 'Notification', {
+              const notification = new Notification(payload.notification.title || 'Notification', {
                 body: payload.notification.body
               });
+              notification.onclick = function() {
+                window.focus();
+                this.close();
+              };
             }
           });
 
