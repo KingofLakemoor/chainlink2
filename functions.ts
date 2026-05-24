@@ -100,6 +100,11 @@ export const frequentSync = onSchedule({ schedule: "every 2 minutes", timeoutSec
                 title: notifData.title,
                 body: notifData.body,
               },
+              webpush: {
+                fcmOptions: {
+                  link: '/'
+                }
+              },
               tokens: tokens
             };
 
