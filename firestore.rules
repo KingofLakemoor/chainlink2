@@ -231,6 +231,13 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // notifications
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && (isAdmin() || request.auth.uid == resource.data.targetUserId);
+      allow create: if isSignedIn() && (isAdmin() || request.auth.uid == incoming().targetUserId);
+      allow update: if isAdmin();
+    }
+
     // league settings
     match /leagueSettings/{leagueId} {
       allow read: if isSignedIn();
