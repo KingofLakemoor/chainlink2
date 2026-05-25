@@ -1,16 +1,9 @@
-1.  **Analyze the Issue:** The user wants the PGA matchups to display the current hole they are on (e.g., "Thru 2") instead of "In Progress" when a match is ongoing.
-2.  **Locate Data Source:** The "Thru" data can be found in the `pga_leaderboard.json` payload at `competitor.status.displayThru` or `competitor.status.thru`. I will need to extract this information for both the home and away golfer.
-3.  **Determine Logic for Paired Golfers:** If both golfers are "In Progress", I should grab their respective `thru` values. The instructions state: "The golfers should usually be paired, but the lower Thru number should be used if there is a discrepancy".
-    *   If `newStatus === 'STATUS_IN_PROGRESS'`, calculate the `thru` value.
-    *   `homeThru` = `homeComp.status?.thru`
-    *   `awayThru` = `awayComp.status?.thru`
-    *   Determine the minimum valid "thru" value.
-    *   If a minimum "thru" value > 0 exists, set `statusDesc` to `Thru X` or `Thru 18` (if they are at the end, although that might be 'Final').
-    *   If we can't find a valid thru, fallback to "In Progress".
-4.  **Implement in `scheduleProcessor.ts`:**
-    *   Update the section where `newStatus` is calculated around line 102.
-    *   Add variables to capture `homeThru` and `awayThru`.
-    *   Calculate `minThru = Math.min(homeThru, awayThru)`. (Handle cases where one might be 0, null, or undefined appropriately).
-    *   Set `statusDesc` to `Thru ${minThru}` if `newStatus === 'STATUS_IN_PROGRESS'` and a valid `minThru` is found.
-5.  **Pre-commit checks:**
-    *   Run `pre_commit_instructions` and follow the provided steps to ensure code quality and verify functionality before submitting.
+1.  **Create `Link4AdminPage.tsx`**: Create a new file `src/pages/admin/link4/Link4AdminPage.tsx`. This component will be the admin page for creating/managing "Link 4" segments. It will have a form to define a new segment with fields like name, start date, end date, maximum odds, and allowed sports. It will save this to a new `link4Segments` collection in Firestore. It will also have a table/list of existing segments.
+2.  **Verify File Creation**: Read `src/pages/admin/link4/Link4AdminPage.tsx` using `cat` or similar command to verify its contents were written correctly.
+3.  **Update `AdminDashboard.tsx` Menu**: Modify `src/pages/admin/AdminDashboard.tsx` to include "Link 4" in the `ADMIN_MENU` array using the `Layers` icon from `lucide-react`. I have already examined `AdminDashboard.tsx` using `sed` and confirmed `ADMIN_MENU` and `Layers` exist.
+4.  **Update `AdminDashboard.tsx` Routes**: Add a route `<Route path="link4/*" element={<Link4AdminPage />} />` to the `<Routes>` list in `AdminDashboard.tsx`. Also import `Link4AdminPage` at the top of the file.
+5.  **Update Firestore Rules**: Modify `firestore.rules` to add `match /link4Segments/{segmentId} { allow read: if isSignedIn(); allow write: if isAdmin(); }` so that admins can read/write the segments.
+6.  **Run Build**: Run the project's build command (`npm run build`) to ensure there are no compilation errors.
+7.  **Run Tests**: Run all relevant tests (e.g. `npx tsx --test`) to ensure changes are correct and have not introduced regressions.
+8. Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
+9.  **Submit**: Submit the changes.
