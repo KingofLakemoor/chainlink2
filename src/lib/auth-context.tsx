@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           name: mockUser.displayName,
           username: username,
           image: mockUser.photoURL,
-          coins: 100,
+          links: 10,
           role: 'ADMIN', // Make mock user an ADMIN for testing locally
           status: 'ACTIVE',
           stats: { wins: 0, losses: 0, pushes: 0 },

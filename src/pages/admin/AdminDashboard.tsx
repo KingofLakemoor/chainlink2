@@ -26,6 +26,7 @@ import BracketsAdminPage from './brackets/BracketsAdminPage';
 import AdminPicksPage from './picks/AdminPicksPage';
 import ReferralsAdminPage from './referrals/ReferralsAdminPage';
 import UserCosmeticsAdminPage from './users/UserCosmeticsAdminPage';
+import AddLinksAdminPage from './users/AddLinksAdminPage';
 import {
   Users, CheckCircle2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
@@ -82,6 +83,7 @@ const ADMIN_MENU = [
   { id: 'challenges', label: 'Challenges', icon: Target, path: '/admin/challenges' },
   { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
   { id: 'users-cosmetics', label: 'User Cosmetics', icon: Users, path: '/admin/users/cosmetics' },
+  { id: 'users-links', label: 'Manage Links', icon: Users, path: '/admin/users/links' },
   { id: 'referrals', label: 'Referrals', icon: Users, path: '/admin/referrals' },
   { id: 'notifications', label: 'Notifications', icon: Bell, path: '/admin/notifications' },
   { id: 'actions', label: 'Actions', icon: Shield, path: '/admin/actions' },
@@ -1005,7 +1007,7 @@ function AdminEditMatchup() {
                 <th className="pb-3 font-medium">User</th>
                 <th className="pb-3 font-medium">Pick</th>
                 <th className="pb-3 font-medium">Status</th>
-                <th className="pb-3 font-medium">Coins</th>
+                <th className="pb-3 font-medium">Links</th>
                 <th className="pb-3 font-medium text-right">Actions</th>
               </tr>
             </thead>
@@ -1029,7 +1031,7 @@ function AdminEditMatchup() {
                                 {p.status || 'PENDING'}
                             </span>
                         </td>
-                        <td className="py-4 text-zinc-400">{p.coins || 0}</td>
+                        <td className="py-4 text-zinc-400">{p.links || 0}</td>
                         <td className="py-4 text-right">
                             <Link to={`/admin/picks/edit/${p.id}`} className="text-zinc-500 hover:text-white mr-3 inline-block"><Edit className="w-4 h-4" /></Link>
                         </td>
@@ -1259,6 +1261,7 @@ export default function AdminDashboard() {
                 <Route path="challenges" element={<GenericTable collectionName="globalQuiz" />} />
                 <Route path="users" element={<GenericTable collectionName="users" />} />
                 <Route path="users/cosmetics" element={<UserCosmeticsAdminPage />} />
+                <Route path="users/links" element={<AddLinksAdminPage />} />
                 <Route path="referrals" element={<ReferralsAdminPage />} />
                 <Route path="actions" element={<AdminPlaceholder title="Admin Actions Log" />} />
 

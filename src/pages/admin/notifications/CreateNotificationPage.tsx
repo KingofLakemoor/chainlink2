@@ -66,7 +66,7 @@ export default function CreateNotificationPage() {
                     value={formData.title}
                     onChange={(e) => handleChange('title', e.target.value)}
                     className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700"
-                    placeholder="e.g. Free Coins!"
+                    placeholder="e.g. Free Links!"
                 />
             </div>
 
@@ -76,7 +76,7 @@ export default function CreateNotificationPage() {
                     value={formData.body}
                     onChange={(e) => handleChange('body', e.target.value)}
                     className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700 min-h-[100px]"
-                    placeholder="e.g. Log in today to claim your 500 free coins."
+                    placeholder="e.g. Log in today to claim your 500 free links."
                 />
             </div>
 

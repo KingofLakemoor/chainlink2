@@ -63,7 +63,7 @@ export default function AwardAchievementPage() {
           achievementId: selectedAchievement,
           awardedAt: Date.now()
         }],
-        coins: (userData.coins || 0) + (achievement?.coins || 0)
+        links: (userData.links || 0) + (achievement?.links || 0)
       });
 
       setMessage('Achievement awarded successfully!');

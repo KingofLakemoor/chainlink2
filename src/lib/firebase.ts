@@ -48,7 +48,7 @@ const ensureUserProfile = async (user: User, username?: string, referrerId?: str
       name: user.displayName || 'Anonymous',
       username: username || 'User' + Math.floor(Math.random() * 1000000),
       image: user.photoURL || '',
-      coins: 100, // starting coins
+      links: 10, // starting links
       role: 'USER', // Defaulting to USER for security
       status: 'ACTIVE',
       stats: { wins: 0, losses: 0, pushes: 0 },

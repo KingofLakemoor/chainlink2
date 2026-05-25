@@ -270,7 +270,7 @@ export default function DashboardPage() {
          <div className="z-10 flex flex-col gap-3">
              <div className="bg-black/40 backdrop-blur-md border border-zinc-700/50 rounded-xl p-4 flex flex-col items-center justify-center min-w-[140px]">
                  <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-1"><Coins className="w-3.5 h-3.5" /> Links Balance</span>
-                 <span className="text-3xl font-display font-bold text-cyan-400 drop-shadow-md">{profile.coins?.toLocaleString() || 0}</span>
+                 <span className="text-3xl font-display font-bold text-cyan-400 drop-shadow-md">{profile.links?.toLocaleString() || 0}</span>
              </div>
              <Link to="/shop" className="w-full">
                  <Button className="w-full bg-zinc-100 text-zinc-950 hover:bg-white font-bold h-10 flex items-center gap-2">

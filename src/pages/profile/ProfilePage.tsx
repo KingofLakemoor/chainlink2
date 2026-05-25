@@ -478,7 +478,7 @@ export default function ProfilePage() {
               <div className="bg-[#18181A] rounded-xl p-4 border border-zinc-800/50 flex flex-col items-center justify-center">
                  <span className="text-sm text-zinc-400 font-medium mb-1 uppercase tracking-wider">Balance</span>
                  <div className="text-4xl font-mono font-bold text-cyan-400 flex items-center gap-2">
-                   {profile.coins?.toLocaleString() || 0}
+                   {profile.links?.toLocaleString() || 0}
                  </div>
               </div>
               <Button asChild className="w-full bg-cyan-500 hover:bg-cyan-600 text-white" variant="default">

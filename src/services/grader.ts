@@ -105,7 +105,7 @@ export async function gradeSingleMatchup(matchup: any) {
   for (const pickDoc of pendingPicksSnap.docs) {
     const pickData = pickDoc.data();
     const userId = pickData.userId;
-    const wager = pickData.coins ?? 10;
+    const wager = pickData.links ?? 10;
 
     let pickStatus = 'LOSS';
     if (isTie) {
@@ -131,7 +131,7 @@ export async function gradeSingleMatchup(matchup: any) {
         if (!userDoc.exists) return;
 
         const userData = userDoc.data()!;
-        let coins = userData.coins || 0;
+        let links = userData.links || 0;
         let stats = userData.stats || { wins: 0, losses: 0, pushes: 0 };
 
         let chainData = chainDoc.exists ? chainDoc.data()! : { chain: 0, wins: 0, losses: 0, best: 0 };
@@ -139,7 +139,7 @@ export async function gradeSingleMatchup(matchup: any) {
         // Apply logic
         if (pickStatus === 'WIN') {
           // Typically reward is cost * 2, let's assume standard wager * 2 for win
-          coins += wager + (matchup.reward ?? 10);
+          links += wager + (matchup.reward ?? 10);
           stats.wins += 1;
           chainData.chain = chainData.chain < 0 ? 1 : chainData.chain + 1;
           chainData.wins += 1;
@@ -152,7 +152,7 @@ export async function gradeSingleMatchup(matchup: any) {
           chainData.losses += 1;
         } else if (pickStatus === 'PUSH') {
           // Refund wager
-          coins += wager;
+          links += wager;
           stats.pushes += 1;
           // Chain typically doesn't break on a push, but doesn't increase
         }
@@ -177,7 +177,7 @@ export async function gradeSingleMatchup(matchup: any) {
         });
 
         transaction.update(userRef, {
-          coins,
+          links,
           stats,
           updatedAt: Date.now()
         });
@@ -199,13 +199,13 @@ export async function gradeSingleMatchup(matchup: any) {
 
         if (pickStatus === 'WIN') {
           notifTitle = 'Pick Won! 🎉';
-          notifBody = `Your pick on ${pickedName} vs ${opponentName} won! You earned ${wager + (matchup.reward ?? 10)} coins.`;
+          notifBody = `Your pick on ${pickedName} vs ${opponentName} won! You earned ${wager + (matchup.reward ?? 10)} links.`;
         } else if (pickStatus === 'LOSS') {
           notifTitle = 'Pick Lost 😢';
           notifBody = `Your pick on ${pickedName} vs ${opponentName} lost. Better luck next time!`;
         } else if (pickStatus === 'PUSH') {
           notifTitle = 'Pick Pushed 🤝';
-          notifBody = `Your pick on ${pickedName} vs ${opponentName} was a push. Your wager of ${wager} coins was refunded.`;
+          notifBody = `Your pick on ${pickedName} vs ${opponentName} was a push. Your wager of ${wager} links was refunded.`;
         }
 
         transaction.set(notificationsRef, {

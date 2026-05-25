@@ -34,7 +34,7 @@ export const achievementTypes = [
   "SQUADWIN",
   "SQUADLOSS",
   "REFERRAL",
-  "COINS",
+  "LINKS",
   "FRIENDS",
   "OTHER",
 ] as const;
@@ -45,7 +45,7 @@ const formSchema = z.object({
   type: z.enum(achievementTypes),
   weight: z.coerce.number().min(0, "Weight must be a positive number"),
   threshold: z.coerce.number().min(0, "Threshold must be a positive number"),
-  coins: z.coerce.number().min(0, "Reward must be a positive number"),
+  links: z.coerce.number().min(0, "Reward must be a positive number"),
   image: z.string().optional()
 });
 
@@ -62,7 +62,7 @@ export default function CreateAchievementPage() {
       type: "OTHER",
       weight: 0,
       threshold: 0,
-      coins: 0,
+      links: 0,
       image: undefined
     },
   });
@@ -193,7 +193,7 @@ export default function CreateAchievementPage() {
               />
               <FormField
                 control={form.control}
-                name="coins"
+                name="links"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>🔗Reward</FormLabel>
