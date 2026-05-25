@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, deleteDoc, doc, query, where, documentId } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, query, where, documentId, addDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import { Link } from 'react-router-dom';
 import { Search, Trash2, Edit } from 'lucide-react';
@@ -74,9 +74,22 @@ export default function AdminPicksPage() {
     fetchData();
   }, [filterPending]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (row: any) => {
     if (!confirm("Are you sure?")) return;
-    await deleteDoc(doc(db, 'picks', id));
+    try {
+      await addDoc(collection(db, 'notifications'), {
+        title: 'Pick Deleted',
+        body: `Your pick for ${row.matchupTitle} was deleted by an admin.`,
+        audience: 'USER',
+        targetUserId: row.userId,
+        status: 'PENDING',
+        scheduledTime: Date.now(),
+        createdAt: Date.now()
+      });
+    } catch (e) {
+      console.error("Failed to add notification", e);
+    }
+    await deleteDoc(doc(db, 'picks', row.id));
     fetchData();
   };
 
@@ -200,7 +213,7 @@ export default function AdminPicksPage() {
                       <Link to={`/admin/picks/edit/${row.id}`} className="text-zinc-500 hover:text-white mr-3 inline-block">
                         <Edit className="w-4 h-4" />
                       </Link>
-                      <button onClick={() => handleDelete(row.id)} className="text-red-500/70 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                      <button onClick={() => handleDelete(row)} className="text-red-500/70 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                     </td>
                   </tr>
                 );
