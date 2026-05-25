@@ -172,7 +172,7 @@ export async function fetchScheduleData(endpoint: string, league: League, isScor
   return scheduleData;
 }
 
-export async function scrapeLeagueSchedules(league: League, scoreboardOnly: boolean = false, scraperConfig?: { maxMoneylineOdds?: number }): Promise<LeagueResponse> {
+export async function scrapeLeagueSchedules(league: League, scoreboardOnly: boolean = false, scraperConfig?: { maxMoneylineOdds?: number, sportOverrides?: Record<string, number> }): Promise<LeagueResponse> {
   const response: LeagueResponse = {
     scoreMatchupsCreated: 0,
     existingMatchups: 0,
@@ -363,7 +363,10 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
           const mlHome = competition.odds?.[0]?.moneyline?.home?.close?.odds || competition.odds?.[0]?.moneyline?.home?.open?.odds;
           const mlAway = competition.odds?.[0]?.moneyline?.away?.close?.odds || competition.odds?.[0]?.moneyline?.away?.open?.odds;
 
-          const threshold = Math.abs(scraperConfig?.maxMoneylineOdds ?? 300);
+          let threshold = Math.abs(scraperConfig?.maxMoneylineOdds ?? 300);
+          if (scraperConfig?.sportOverrides && scraperConfig.sportOverrides[league] !== undefined) {
+            threshold = Math.abs(scraperConfig.sportOverrides[league]);
+          }
 
           if (mlHome) {
             const mlHomeNum = parseInt(mlHome, 10);
