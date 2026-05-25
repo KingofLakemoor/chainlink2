@@ -103,6 +103,8 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
       case "CFB": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${date}`);
       case "CBASE": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard?dates=${date}&limit=500`);
       case "WNBA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/scoreboard?dates=${date}`);
+      case "ATP": return ['https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard'];
+      case "WTA": return ['https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard'];
       default: throw new Error(`Unsupported league: ${league}`);
     }
   }
