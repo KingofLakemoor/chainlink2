@@ -149,7 +149,7 @@ apiRouter.post('/stripe/webhook', express.raw({type: 'application/json'}), async
             const amountStr = session.metadata?.amount;
             if (amountStr) {
                const amount = parseInt(amountStr, 10);
-               updateData.coins = (profile.coins || 0) + amount;
+               updateData.links = (profile.links || 0) + amount;
             }
           } else if (itemType === 'premium') {
              updateData.premium = true;
@@ -210,13 +210,13 @@ apiRouter.post("/picks/cancel-pick", async (req, res) => {
       }
 
       const profile = userDoc.data()!;
-      const refundAmount = pickData.coins ?? 0;
+      const refundAmount = pickData.links ?? 0;
 
       transaction.delete(pickRef);
 
       const updateData: any = { updatedAt: Date.now() };
       if (refundAmount > 0) {
-        updateData.coins = profile.coins + refundAmount;
+        updateData.links = profile.links + refundAmount;
       }
       transaction.update(userRef, updateData);
     });
@@ -259,7 +259,7 @@ apiRouter.post("/picks/make-pick", async (req, res) => {
 
       const profile = userDoc.data()!;
       const matchCost = matchup.cost ?? 0;
-      if (matchCost > 0 && profile.coins < matchCost) {
+      if (matchCost > 0 && profile.links < matchCost) {
         throw new Error("Not enough links!");
       }
 
@@ -277,7 +277,7 @@ apiRouter.post("/picks/make-pick", async (req, res) => {
         matchupId,
         pick: team,
         status: 'PENDING',
-        coins: matchCost,
+        links: matchCost,
         active: true,
         createdAt: Date.now(),
         updatedAt: Date.now()
@@ -285,7 +285,7 @@ apiRouter.post("/picks/make-pick", async (req, res) => {
 
       const updateData: any = { updatedAt: Date.now() };
       if (matchCost > 0) {
-        updateData.coins = profile.coins - matchCost;
+        updateData.links = profile.links - matchCost;
       }
       transaction.update(userRef, updateData);
     });
@@ -341,7 +341,7 @@ apiRouter.post("/shop/buy", async (req, res) => {
         throw new Error("This item requires ChainLink Pro.");
       }
 
-      if (profile.coins < cost) {
+      if (profile.links < cost) {
         throw new Error("Not enough links!");
       }
 
@@ -352,7 +352,7 @@ apiRouter.post("/shop/buy", async (req, res) => {
 
       const updateData: any = {
         updatedAt: Date.now(),
-        coins: profile.coins - cost,
+        links: profile.links - cost,
         inventory: [...inventory, itemId],
         purchasedItems: [...(profile.purchasedItems || []), itemId]
       };
@@ -401,14 +401,14 @@ apiRouter.post("/shop/buy-merch", async (req, res) => {
         throw new Error("This item requires ChainLink Pro.");
       }
 
-      if (profile.coins < cost) {
+      if (profile.links < cost) {
         throw new Error("Not enough links!");
       }
 
       // We don't add merch to inventory like cosmetics, we create an order
       const updateData: any = {
         updatedAt: Date.now(),
-        coins: profile.coins - cost,
+        links: profile.links - cost,
       };
 
       transaction.update(userRef, updateData);

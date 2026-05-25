@@ -22,7 +22,7 @@ const formSchema = z.object({
   type: z.enum(achievementTypes),
   weight: z.coerce.number().min(0, "Weight must be a positive number"),
   threshold: z.coerce.number().min(0, "Threshold must be a positive number"),
-  coins: z.coerce.number().min(0, "Reward must be a positive number"),
+  links: z.coerce.number().min(0, "Reward must be a positive number"),
   image: z.string().optional()
 });
 
@@ -41,7 +41,7 @@ export default function EditAchievementPage() {
       type: "OTHER",
       weight: 0,
       threshold: 0,
-      coins: 0,
+      links: 0,
       image: undefined
     },
   });
@@ -60,7 +60,7 @@ export default function EditAchievementPage() {
             type: data.type || "OTHER",
             weight: data.weight || 0,
             threshold: data.threshold || 0,
-            coins: data.coins || 0,
+            links: data.links || 0,
             image: data.image || undefined
           });
         }
@@ -201,7 +201,7 @@ export default function EditAchievementPage() {
               />
               <FormField
                 control={form.control}
-                name="coins"
+                name="links"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>🔗Reward</FormLabel>

@@ -520,7 +520,7 @@ function PlayDashboard() {
           image: team.image
         },
         status: 'PENDING',
-        coins: matchup.cost ?? 0,
+        links: matchup.cost ?? 0,
         active: true,
         createdAt: Date.now(),
         updatedAt: Date.now()
@@ -963,7 +963,7 @@ function TopStats() {
     <div className="flex items-center gap-2 md:gap-5">
       <div className="hidden md:flex items-center gap-1.5 text-sm">
          <Link2 className="w-4 h-4 text-cyan-400" />
-         <span className="font-mono text-cyan-400 font-medium tracking-wide">{profile?.coins?.toLocaleString() || 0}</span>
+         <span className="font-mono text-cyan-400 font-medium tracking-wide">{profile?.links?.toLocaleString() || 0}</span>
       </div>
       <div className="hidden md:block w-px h-4 bg-zinc-700"></div>
       <div className="flex items-center gap-2 md:gap-3 text-sm">

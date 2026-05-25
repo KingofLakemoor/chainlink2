@@ -148,7 +148,7 @@ export default function ShopPage() {
       setMessage({ text: "You must be logged in to buy items.", type: 'error' });
       return;
     }
-    if ((profile?.coins || 0) < cost) {
+    if ((profile?.links || 0) < cost) {
       setMessage({ text: "Not enough links!", type: 'error' });
       return;
     }
@@ -185,7 +185,7 @@ export default function ShopPage() {
     e.preventDefault();
     if (!user || !selectedMerchItem) return;
 
-    if ((profile?.coins || 0) < selectedMerchItem.cost) {
+    if ((profile?.links || 0) < selectedMerchItem.cost) {
       setMessage({ text: "Not enough links!", type: 'error' });
       setIsMerchModalOpen(false);
       return;
@@ -239,7 +239,7 @@ export default function ShopPage() {
              <span className="text-zinc-400 font-medium">Your Balance:</span>
              <div className="text-xl font-mono font-bold text-cyan-400 flex items-center gap-1">
                <Coins className="w-5 h-5" />
-               {profile.coins?.toLocaleString() || 0}
+               {profile.links?.toLocaleString() || 0}
              </div>
           </div>
         )}
@@ -430,7 +430,7 @@ export default function ShopPage() {
                            ) : (
                              <Button
                                onClick={() => handleBuy(item.id, item.cost)}
-                               disabled={ownsItem || buyLoading === item.id || !user || (profile?.coins || 0) < item.cost}
+                               disabled={ownsItem || buyLoading === item.id || !user || (profile?.links || 0) < item.cost}
                                variant={ownsItem ? "secondary" : "default"}
                                className={ownsItem ? "" : "bg-[#22c55e] hover:bg-[#16a34a] text-white"}
                              >
@@ -471,7 +471,7 @@ export default function ShopPage() {
                       <Button
                          variant="default"
                          className="bg-[#22c55e] hover:bg-[#16a34a] text-white"
-                         disabled={buyLoading === item.id || !user || (profile?.coins || 0) < item.cost}
+                         disabled={buyLoading === item.id || !user || (profile?.links || 0) < item.cost}
                          onClick={() => {
                            setSelectedMerchItem(item);
                            setIsMerchModalOpen(true);
