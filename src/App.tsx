@@ -623,7 +623,7 @@ function PlayDashboard() {
     return (
       <div id={`matchup-card-${m.gameId}`} key={isMyPick ? `my-pick-${m.gameId}` : m.gameId} className={cn("bg-[#131415] border border-[#27272a] hover:border-zinc-700 rounded-xl overflow-hidden transition-colors relative group")} style={glowStyle}>
         {/* Header info */}
-        <div className="bg-[#161d2b] px-4 py-2 border-b border-[#27272a] flex justify-between items-center bg-gradient-to-r from-[#111f38] to-[#121212]">
+        <div className="bg-[#112316] px-4 py-2 border-b border-[#27272a] flex justify-between items-center bg-gradient-to-r from-[#0f2c16] to-[#121212]">
           <div className="flex items-center gap-2 font-bold text-sm text-zinc-200 tracking-tight">
              <Trophy className="w-3.5 h-3.5" /> {m.league}
              {renderFeaturedTag()}
