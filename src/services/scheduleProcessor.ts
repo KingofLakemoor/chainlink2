@@ -232,6 +232,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               existingData.homeTeam?.score !== scrapedMatchup.homeTeam?.score ||
               existingData.awayTeam?.score !== scrapedMatchup.awayTeam?.score ||
               existingData.title !== newTitle ||
+              existingData.league !== scrapedMatchup.league ||
               existingData.homeTeam?.name !== scrapedMatchup.homeTeam?.name ||
               existingData.homeTeam?.image !== scrapedMatchup.homeTeam?.image ||
               existingData.homeTeam?.id !== scrapedMatchup.homeTeam?.id ||
@@ -250,6 +251,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               ...existingData,
               abandoned: false,
               title: newTitle,
+              league: scrapedMatchup.league,
               active: finalActive,
               status: scrapedMatchup.status,
               statusDesc: scrapedMatchup.statusDesc,
@@ -282,6 +284,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
             // Flatten update properties specifically for batch.update when NOT migrating
             const flattenedUpdate: any = {
               title: updateData.title,
+              league: updateData.league,
               active: updateData.active,
               status: updateData.status,
               statusDesc: updateData.statusDesc,
