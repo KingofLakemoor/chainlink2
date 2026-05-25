@@ -302,7 +302,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
             Object.keys(flattenedUpdate).forEach(key => flattenedUpdate[key] === undefined && delete flattenedUpdate[key]);
 
-            if (existingData.status === 'STATUS_SCHEDULED' &&
+            if (existingData.league !== 'ATP' && existingData.league !== 'WTA' &&
+                existingData.status === 'STATUS_SCHEDULED' &&
                 (scrapedMatchup.status === 'STATUS_IN_PROGRESS' ||
                  scrapedMatchup.status === 'STATUS_FINAL' ||
                  scrapedMatchup.status === 'STATUS_POSTPONED')) {
@@ -344,9 +345,10 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
           let abandoned = false;
           let active = scrapedMatchup.active && defaultActive;
 
-          if (scrapedMatchup.status === 'STATUS_IN_PROGRESS' ||
+          if (scrapedMatchup.league !== 'ATP' && scrapedMatchup.league !== 'WTA' &&
+              (scrapedMatchup.status === 'STATUS_IN_PROGRESS' ||
               scrapedMatchup.status === 'STATUS_FINAL' ||
-              scrapedMatchup.status === 'STATUS_POSTPONED') {
+              scrapedMatchup.status === 'STATUS_POSTPONED')) {
             abandoned = true;
             active = false;
           }
