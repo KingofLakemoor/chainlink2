@@ -6,12 +6,12 @@ import { League, LeagueResponse, scrapeLeagueSchedules } from './espnScraper.js'
 export { scrapeLeagueSchedules } from './espnScraper.js';
 
 export async function syncLeagueSchedules(league: League, scoreboardOnly: boolean = false): Promise<LeagueResponse> {
-  let scraperConfig: { maxMoneylineOdds?: number } | undefined = undefined;
+  let scraperConfig: { maxMoneylineOdds?: number, sportOverrides?: Record<string, number> } | undefined = undefined;
   if (adminDb) {
     try {
       const scraperSnap = await adminDb.collection('systemSettings').doc('scraper').get();
       if (scraperSnap.exists) {
-        scraperConfig = scraperSnap.data() as { maxMoneylineOdds?: number };
+        scraperConfig = scraperSnap.data() as { maxMoneylineOdds?: number, sportOverrides?: Record<string, number> };
       }
     } catch (e) {
       console.error("Error fetching scraper config", e);
@@ -347,8 +347,10 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
           if (scrapedMatchup.status === 'STATUS_IN_PROGRESS' ||
               scrapedMatchup.status === 'STATUS_FINAL' ||
               scrapedMatchup.status === 'STATUS_POSTPONED') {
-            abandoned = true;
             active = false;
+            if (scrapedMatchup.league !== 'ATP' && scrapedMatchup.league !== 'WTA') {
+              abandoned = true;
+            }
           }
 
           const newMatchupData = {

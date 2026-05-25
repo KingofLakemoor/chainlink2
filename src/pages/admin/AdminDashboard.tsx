@@ -230,7 +230,7 @@ function AdminMatchups() {
   const handleSync = async () => {
     setSyncing(true);
     try {
-      let scraperConfig: { maxMoneylineOdds?: number } = {};
+      let scraperConfig: { maxMoneylineOdds?: number, sportOverrides?: Record<string, number> } = {};
       try {
         const scraperSnap = await getDocs(query(collection(db, 'systemSettings')));
         const scraperDoc = scraperSnap.docs.find(d => d.id === 'scraper')?.data();
