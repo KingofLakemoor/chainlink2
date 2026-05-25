@@ -69,7 +69,7 @@ export function DashboardPick({ activePick, activeMatchup, sponsors = [] }: Dash
       </div>
 
       {activeMatchup ? (
-        <div className="bg-[#161d2b] rounded-xl border border-[#27272a] overflow-hidden bg-gradient-to-r from-[#111f38] to-[#121212]">
+        <div className="bg-[#112316] rounded-xl border border-[#27272a] overflow-hidden bg-gradient-to-r from-[#0f2c16] to-[#121212]">
           <div className="p-5 flex flex-col items-center text-center">
             <div className="flex items-center gap-2 mb-2">
                 <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">{activeMatchup.league}</span>
@@ -171,7 +171,7 @@ export function DashboardPickSkeleton() {
       </div>
 
       {/* Main Content Skeleton */}
-      <div className="bg-[#161d2b] rounded-xl border border-[#27272a] overflow-hidden bg-gradient-to-r from-[#111f38] to-[#121212] flex-1 flex flex-col">
+      <div className="bg-[#112316] rounded-xl border border-[#27272a] overflow-hidden bg-gradient-to-r from-[#0f2c16] to-[#121212] flex-1 flex flex-col">
         <div className="p-5 flex flex-col items-center text-center flex-1 justify-center">
           <div className="h-3 w-16 bg-zinc-800 rounded-full mb-4" />
           <div className="h-6 w-3/4 bg-zinc-800 rounded-md mb-8" />

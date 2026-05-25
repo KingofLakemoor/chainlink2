@@ -88,7 +88,7 @@ export default function SponsorPage() {
             </div>
 
             {/* Sponsor */}
-            <div className="bg-[#161d2b] border-2 border-[#22c55e]/50 rounded-2xl p-8 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_30px_rgba(34,197,94,0.1)]">
+            <div className="bg-[#112316] border-2 border-[#22c55e]/50 rounded-2xl p-8 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_30px_rgba(34,197,94,0.1)]">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#22c55e] text-zinc-950 text-xs font-bold uppercase tracking-wider py-1 px-4 rounded-full">
                 Most Popular
               </div>
