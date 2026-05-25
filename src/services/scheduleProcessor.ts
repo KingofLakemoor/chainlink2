@@ -201,7 +201,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
         if (existingDoc) {
           const existingData = existingDoc.data();
 
-          if (existingData.abandoned) {
+          if (existingData.abandoned && scrapedMatchup.league !== 'ATP' && scrapedMatchup.league !== 'WTA') {
             continue;
           }
 
@@ -239,6 +239,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               existingData.awayTeam?.image !== scrapedMatchup.awayTeam?.image ||
               existingData.awayTeam?.id !== scrapedMatchup.awayTeam?.id ||
               existingData.active !== finalActive ||
+              existingData.abandoned !== false ||
               existingData.metadata?.overUnder !== scrapedMatchup.metadata?.overUnder ||
               JSON.stringify(existingData.metadata?.homeLinescores) !== JSON.stringify(scrapedMatchup.metadata?.homeLinescores) ||
               JSON.stringify(existingData.metadata?.awayLinescores) !== JSON.stringify(scrapedMatchup.metadata?.awayLinescores) ||
@@ -247,6 +248,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
           if (needsUpdate || existingDoc.id !== gameId) {
             const updateData: any = {
               ...existingData,
+              abandoned: false,
               title: newTitle,
               active: finalActive,
               status: scrapedMatchup.status,
@@ -380,7 +382,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
         for (const [gameId, doc] of existingMap.entries()) {
           const data = doc.data();
           // If it was scheduled, not abandoned, and no longer in the scraped data
-          if (data.status === 'STATUS_SCHEDULED' && !data.abandoned && !scrapedGameIds.has(gameId) && data.league !== 'PGA' && data.league !== 'CBASE') {
+          if (data.status === 'STATUS_SCHEDULED' && !data.abandoned && !scrapedGameIds.has(gameId) && data.league !== 'PGA' && data.league !== 'CBASE' && data.league !== 'ATP' && data.league !== 'WTA') {
             const pendingPicksSnap = await adminDb.collection('picks')
               .where('matchupId', '==', gameId)
               .where('status', '==', 'PENDING')
