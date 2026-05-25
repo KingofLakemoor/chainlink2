@@ -211,6 +211,12 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
             const tournamentId = game.id;
 
             for (const grouping of (game.groupings || [])) {
+              if (league === "ATP" && grouping.grouping?.slug !== "mens-singles") {
+                  continue;
+              }
+              if (league === "WTA" && grouping.grouping?.slug !== "womens-singles") {
+                  continue;
+              }
               if (grouping.grouping?.slug !== "mens-singles" && grouping.grouping?.slug !== "womens-singles") {
                   continue; // We'll stick to singles for now
               }
