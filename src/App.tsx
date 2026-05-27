@@ -7,7 +7,7 @@ import { Button } from './components/ui/button';
 import { cn } from './lib/utils';
 import { useNotifications } from './hooks/useNotifications';
 import {
-  Link2, LayoutDashboard, User as UserIcon, PlayCircle, Layers, Trophy,
+  Link2, LayoutDashboard, User as UserIcon, PlayCircle, Layers, Trophy, Grid,
   ShoppingCart, CheckCircle2, Users, LogOut, ShieldAlert, Menu, X, Flame
 } from 'lucide-react';
 import {
@@ -64,6 +64,7 @@ function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) =>
         {/* <NavItem icon={Layers} label="Pick'em" path="/pickem" /> */}
         <NavItem icon={Trophy} label="Brackets" path="/brackets" />
         <NavItem icon={Trophy} label="Leaderboards" path="/leaderboards" />
+
         <NavItem icon={ShoppingCart} label="Link Shop" path="/shop" />
 
         {profile?.role === "ADMIN" && (
@@ -1055,6 +1056,7 @@ import LeaderboardsPage from './pages/leaderboards/LeaderboardsPage';
 import ShopPage from './pages/shop/ShopPage';
 import MyPicksPage from './pages/mypicks/MyPicksPage';
 import { BracketsPage } from './pages/brackets/BracketsPage';
+import Link4Page from './pages/link4/Link4Page';
 import PickEmPage from './pages/pickem/PickEmPage';
 import SponsorPage from './pages/SponsorPage';
 import ChallengesPage from './pages/challenges/ChallengesPage';
@@ -1074,6 +1076,7 @@ export default function App() {
           <Route path="/brackets" element={<PrivateRoute><MainLayout><BracketsPage /></MainLayout></PrivateRoute>} />
           <Route path="/brackets/:bracketId" element={<PrivateRoute><MainLayout><BracketsPage /></MainLayout></PrivateRoute>} />
           <Route path="/challenges" element={<PrivateRoute><MainLayout><ChallengesPage /></MainLayout></PrivateRoute>} />
+          <Route path="/link4" element={<PrivateRoute><MainLayout><Link4Page /></MainLayout></PrivateRoute>} />
           <Route path="/squads" element={<PrivateRoute><MainLayout><PlaceholderPage title="Squads" /></MainLayout></PrivateRoute>} />
           <Route path="/mypicks" element={<PrivateRoute><MainLayout><MyPicksPage /></MainLayout></PrivateRoute>} />
           <Route path="/leaderboards" element={<PrivateRoute><MainLayout><LeaderboardsPage /></MainLayout></PrivateRoute>} />
