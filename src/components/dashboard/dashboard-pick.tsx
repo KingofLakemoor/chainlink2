@@ -44,7 +44,7 @@ export function DashboardPick({ activePick, activeMatchup, sponsors = [] }: Dash
       );
 
       const TagType = currentSponsor?.url ? 'a' : 'span';
-      const tagProps = currentSponsor?.url ? { href: currentSponsor.url, target: '_blank', rel: 'noopener noreferrer' } : {};
+      const tagProps = currentSponsor?.url ? { href: currentSponsor.url.startsWith('http') ? currentSponsor.url : `https://${currentSponsor.url}`, target: '_blank', rel: 'noopener noreferrer' } : {};
 
       return (
           <TagType
@@ -127,7 +127,7 @@ export function DashboardPick({ activePick, activeMatchup, sponsors = [] }: Dash
           </div>
           {activeMatchup.featured && activeMatchup.featuredType !== 'ChainBuilder' && currentSponsor && (
              <div className="px-5 py-4 border-t border-[#27272a] bg-[#0f0f11] flex items-center justify-center">
-                <a href={currentSponsor.url || '#'} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between w-full hover:opacity-80 transition-opacity">
+                <a href={currentSponsor.url ? (currentSponsor.url.startsWith('http') ? currentSponsor.url : `https://${currentSponsor.url}`) : '#'} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between w-full hover:opacity-80 transition-opacity">
                    {currentSponsor.image ? (
                      <div className="text-sm font-medium text-zinc-300 flex items-center gap-3">
                          <img src={currentSponsor.image} alt={currentSponsor.name} className="h-6 object-contain" />
