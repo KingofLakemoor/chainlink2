@@ -1,7 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Clock, Trophy } from 'lucide-react';
+import { Grid, Clock, Trophy, Lock } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+
+
+interface Link4LeaderboardPick {
+  id: string;
+  name?: string;
+  sport?: string;
+  status: 'PENDING' | 'WIN' | 'LOSS' | 'PUSH' | 'EMPTY';
+}
+
+interface Link4LeaderboardEntry {
+  userId: string;
+  username: string;
+  avatarUrl: string;
+  picks: Link4LeaderboardPick[];
+  score: number;
+  potentialScore: number;
+}
+
+
+interface Link4LeaderboardPick {
+  id: string;
+  name?: string;
+  sport?: string;
+  status: 'PENDING' | 'WIN' | 'LOSS' | 'PUSH' | 'EMPTY';
+}
+
+interface Link4LeaderboardEntry {
+  userId: string;
+  username: string;
+  avatarUrl: string;
+  picks: Link4LeaderboardPick[];
+  score: number;
+  potentialScore: number;
+}
 
 interface Link4Pick {
   id: string;
@@ -14,6 +48,57 @@ export default function Link4Page() {
   const [allowedSports, setAllowedSports] = useState<string[]>([]);
   const [picks, setPicks] = useState<(Link4Pick | null)[]>([null, null, null, null]);
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+
+  const [leaderboardData, setLeaderboardData] = useState<Link4LeaderboardEntry[]>([]);
+
+  useEffect(() => {
+    // Mock Leaderboard Data
+    const mockLeaderboard: Link4LeaderboardEntry[] = [
+      {
+        userId: 'user1',
+        username: 'ChainLinkKing',
+        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user1',
+        picks: [
+          { id: '1', name: 'Chiefs -3.5', sport: 'NFL', status: 'WIN' },
+          { id: '2', name: 'Lakers ML', sport: 'NBA', status: 'WIN' },
+          { id: '3', status: 'PENDING' },
+          { id: '4', status: 'PENDING' }
+        ],
+        score: 2,
+        potentialScore: 4
+      },
+      {
+        userId: 'user2',
+        username: 'SportsGuru',
+        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user2',
+        picks: [
+          { id: '1', name: 'Yankees ML', sport: 'MLB', status: 'LOSS' },
+          { id: '2', name: 'Oilers -1.5', sport: 'NHL', status: 'WIN' },
+          { id: '3', status: 'PENDING' },
+          { id: '4', status: 'EMPTY' }
+        ],
+        score: 1,
+        potentialScore: 2
+      },
+      {
+        userId: 'user3',
+        username: 'RookiePicker',
+        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user3',
+        picks: [
+          { id: '1', name: 'Duke -8', sport: 'CBB', status: 'LOSS' },
+          { id: '2', name: 'Bulls +5.5', sport: 'NBA', status: 'LOSS' },
+          { id: '3', name: 'Celtics ML', sport: 'NBA', status: 'WIN' },
+          { id: '4', status: 'PENDING' }
+        ],
+        score: 1,
+        potentialScore: 2
+      }
+    ];
+    setLeaderboardData(mockLeaderboard);
+  }, []);
+
+
+
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -222,6 +307,76 @@ export default function Link4Page() {
             </div>
           )}
         </div>
+
+        {/* Leaderboard Section */}
+        <div className="bg-[#1a1a1a] border border-[#27272a] rounded-xl p-6 md:p-8 mt-8">
+          <div className="flex items-center gap-2 mb-6">
+            <Trophy className="w-5 h-5 text-yellow-500" />
+            <h2 className="text-xl font-bold text-white">Leaderboard</h2>
+          </div>
+
+          <div className="space-y-4">
+            {leaderboardData.map((entry, index) => (
+              <div key={entry.userId} className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl bg-[#121212] border border-zinc-800">
+
+                {/* Rank & User Info */}
+                <div className="flex items-center gap-4 min-w-[200px] w-full sm:w-auto">
+                  <div className="text-xl font-black text-zinc-500 w-8 text-center">#{index + 1}</div>
+                  <div className="w-10 h-10 rounded-full bg-zinc-800 border-2 border-zinc-700 overflow-hidden shrink-0">
+                    <img src={entry.avatarUrl} alt={entry.username} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="font-bold text-white truncate">{entry.username}</div>
+                </div>
+
+                {/* Picks Row */}
+                <div className="flex flex-1 justify-center sm:justify-start gap-2 sm:gap-4 w-full overflow-x-auto pb-2 sm:pb-0">
+                  {entry.picks.map((pick, pIdx) => {
+                    if (pick.status === 'EMPTY') {
+                      return (
+                        <div key={pIdx} className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-dashed border-zinc-800 flex items-center justify-center bg-[#1a1a1a] shrink-0">
+                          <Grid className="w-5 h-5 text-zinc-700" />
+                        </div>
+                      );
+                    }
+
+                    if (pick.status === 'PENDING') {
+                      return (
+                        <div key={pIdx} className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-zinc-700 bg-zinc-800/50 flex flex-col items-center justify-center shrink-0">
+                          <Lock className="w-4 h-4 text-zinc-500 mb-1" />
+                          <span className="text-[10px] font-bold text-zinc-500 uppercase">Pick In</span>
+                        </div>
+                      );
+                    }
+
+                    const isWin = pick.status === 'WIN';
+                    const isLoss = pick.status === 'LOSS';
+
+                    return (
+                      <div key={pIdx} className={`w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 flex flex-col items-center justify-center p-1 text-center shrink-0 ${
+                        isWin ? 'border-green-500/50 bg-green-500/10' :
+                        isLoss ? 'border-red-500/50 bg-red-500/10' :
+                        'border-zinc-500/50 bg-zinc-500/10'
+                      }`}>
+                        <div className="text-[9px] sm:text-[10px] text-zinc-400 font-bold mb-0.5 truncate w-full px-1">{pick.sport}</div>
+                        <div className={`text-xs sm:text-sm font-bold truncate w-full px-1 ${
+                          isWin ? 'text-green-400' : isLoss ? 'text-red-400' : 'text-zinc-300'
+                        }`}>{pick.name}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Score Column */}
+                <div className="flex flex-col items-end sm:items-center justify-center min-w-[80px] w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-zinc-800 pt-3 sm:pt-0 sm:pl-4">
+                  <div className="text-2xl font-black text-green-500">{entry.score}</div>
+                  <div className="text-xs text-zinc-500 font-medium">Pot. {entry.potentialScore}</div>
+                </div>
+
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );
