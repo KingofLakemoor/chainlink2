@@ -43,6 +43,32 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
 
+// Simple deterministic random number generator (Linear Congruential Generator)
+function seededRandom(seed: number) {
+  return function() {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+}
+
+function getMonthlySelection(items: any[], type: string, count: number, typeSeed: number) {
+  const now = new Date();
+  const yearMonth = now.getFullYear() * 100 + (now.getMonth() + 1); // e.g., 202405
+  const seed = yearMonth + typeSeed;
+  const random = seededRandom(seed);
+
+  const categoryItems = items.filter(item => item.type === type);
+  categoryItems.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
+
+  // Fisher-Yates shuffle with seeded random
+  for (let i = categoryItems.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [categoryItems[i], categoryItems[j]] = [categoryItems[j], categoryItems[i]];
+  }
+
+  return categoryItems.slice(0, count);
+}
+
 export default function ShopPage() {
   const { user, profile } = useAuth();
   const [items, setItems] = useState<any[]>([]);
@@ -220,7 +246,11 @@ export default function ShopPage() {
   };
 
 
-  const cosmetics = items.filter(item => item.type === 'AVATAR_RING' || item.type === 'PROFILE_BANNER' || item.type === 'TITLE');
+  const banners = getMonthlySelection(items, 'PROFILE_BANNER', 3, 1);
+  const titles = getMonthlySelection(items, 'TITLE', 3, 2);
+  const rings = getMonthlySelection(items, 'AVATAR_RING', 3, 3);
+  const cosmetics = [...banners, ...titles, ...rings];
+
   const merchItems = items.filter(item => item.type === 'MERCH');
 
 
