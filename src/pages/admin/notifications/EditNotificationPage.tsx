@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
@@ -22,6 +22,14 @@ export default function EditNotificationPage() {
         if (docSnap.exists()) {
           const data = docSnap.data();
 
+          let targetUsername = '';
+          if (data.audience === 'USER' && data.targetUserId) {
+            const userDoc = await getDoc(doc(db, 'users', data.targetUserId));
+            if (userDoc.exists()) {
+              targetUsername = userDoc.data().username || '';
+            }
+          }
+
           let formattedDate = "";
           if (data.scheduledTime) {
               const date = new Date(data.scheduledTime);
@@ -31,7 +39,8 @@ export default function EditNotificationPage() {
 
           setFormData({
             ...data,
-            scheduledTimeStr: formattedDate
+            scheduledTimeStr: formattedDate,
+            targetUsername
           });
         }
       } catch (e) {
@@ -56,14 +65,39 @@ export default function EditNotificationPage() {
 
     setSaving(true);
     try {
+      let resolvedUserId = formData.targetUserId;
+      if (formData.audience === 'USER') {
+        if (!formData.targetUsername) {
+          alert('Target Username is required for USER audience');
+          setSaving(false);
+          return;
+        }
+
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('username', '==', formData.targetUsername));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          alert(`User with username '${formData.targetUsername}' not found`);
+          setSaving(false);
+          return;
+        }
+
+        resolvedUserId = querySnapshot.docs[0].id;
+      }
+
       const updateData = { ...formData };
       delete updateData.scheduledTimeStr;
+      delete updateData.targetUsername; // Don't save this to DB
 
-      if (updateData.scheduledTimeStr) {
-          updateData.scheduledTime = new Date(updateData.scheduledTimeStr).getTime();
+      if (updateData.scheduledTimeStr) { // Use formData.scheduledTimeStr since updateData was deleted
+          updateData.scheduledTime = new Date(formData.scheduledTimeStr).getTime();
       }
+
       if (updateData.audience === 'GLOBAL') {
           updateData.targetUserId = null;
+      } else {
+          updateData.targetUserId = resolvedUserId;
       }
 
       await updateDoc(doc(db, 'notifications', id), updateData);
@@ -126,11 +160,11 @@ export default function EditNotificationPage() {
 
               {formData.audience === 'USER' && (
                 <div className="space-y-2">
-                    <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Target User ID</label>
+                    <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Target Username</label>
                     <input
                         type="text"
-                        value={formData.targetUserId || ''}
-                        onChange={(e) => handleChange('targetUserId', e.target.value)}
+                        value={formData.targetUsername || ''}
+                        onChange={(e) => handleChange('targetUsername', e.target.value)}
                         className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700"
                     />
                 </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState } from 'react';
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
@@ -11,7 +11,7 @@ export default function CreateNotificationPage() {
     title: '',
     body: '',
     audience: 'GLOBAL',
-    targetUserId: '',
+    targetUsername: '',
     scheduledTime: new Date().toISOString().slice(0, 16),
   });
   const [loading, setLoading] = useState(false);
@@ -28,11 +28,32 @@ export default function CreateNotificationPage() {
 
     setLoading(true);
     try {
+      let resolvedUserId = null;
+      if (formData.audience === 'USER') {
+        if (!formData.targetUsername) {
+          alert('Target Username is required for USER audience');
+          setLoading(false);
+          return;
+        }
+
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('username', '==', formData.targetUsername));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          alert(`User with username '${formData.targetUsername}' not found`);
+          setLoading(false);
+          return;
+        }
+
+        resolvedUserId = querySnapshot.docs[0].id;
+      }
+
       await addDoc(collection(db, 'notifications'), {
         title: formData.title,
         body: formData.body,
         audience: formData.audience,
-        targetUserId: formData.audience === 'USER' ? formData.targetUserId : null,
+        targetUserId: resolvedUserId,
         scheduledTime: new Date(formData.scheduledTime).getTime(),
         status: 'PENDING',
         createdAt: Date.now()
@@ -95,13 +116,13 @@ export default function CreateNotificationPage() {
 
               {formData.audience === 'USER' && (
                 <div className="space-y-2">
-                    <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Target User ID</label>
+                    <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Target Username</label>
                     <input
                         type="text"
-                        value={formData.targetUserId}
-                        onChange={(e) => handleChange('targetUserId', e.target.value)}
+                        value={formData.targetUsername}
+                        onChange={(e) => handleChange('targetUsername', e.target.value)}
                         className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700"
-                        placeholder="User ID"
+                        placeholder="Username"
                     />
                 </div>
               )}
