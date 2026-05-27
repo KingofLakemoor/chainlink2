@@ -57,7 +57,8 @@ function getMonthlySelection(items: any[], type: string, count: number, typeSeed
   const seed = yearMonth + typeSeed;
   const random = seededRandom(seed);
 
-  const categoryItems = items.filter(item => item.type === type);
+  // Pool from items that are not featured
+  const categoryItems = items.filter(item => item.type === type && !item.featured);
   categoryItems.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
 
   // Fisher-Yates shuffle with seeded random
@@ -249,7 +250,9 @@ export default function ShopPage() {
   const banners = getMonthlySelection(items, 'PROFILE_BANNER', 3, 1);
   const titles = getMonthlySelection(items, 'TITLE', 3, 2);
   const rings = getMonthlySelection(items, 'AVATAR_RING', 3, 3);
-  const cosmetics = [...banners, ...titles, ...rings];
+
+  const featuredCosmetics = items.filter(item => item.featured && (item.type === 'AVATAR_RING' || item.type === 'PROFILE_BANNER' || item.type === 'TITLE'));
+  const cosmetics = [...featuredCosmetics, ...banners, ...titles, ...rings];
 
   const merchItems = items.filter(item => item.type === 'MERCH');
 
