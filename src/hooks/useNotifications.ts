@@ -4,6 +4,49 @@ import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { app, db } from '../lib/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 
+export async function requestNotificationPermission(userUid: string, profile: any) {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+    return false;
+  }
+
+  try {
+    const messaging = getMessaging(app);
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      console.log('Notification permission not granted.');
+      return false;
+    }
+
+    const configParam = encodeURIComponent(JSON.stringify(app.options));
+    const registration = await navigator.serviceWorker.register(
+      `/firebase-messaging-sw.js?config=${configParam}`
+    );
+
+    const currentToken = await getToken(messaging, {
+      vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+      serviceWorkerRegistration: registration
+    });
+
+    if (currentToken) {
+      const hasToken = profile?.fcmTokens?.includes(currentToken);
+      if (!hasToken) {
+        console.log('Saving new FCM token for user');
+        const userRef = doc(db, 'users', userUid);
+        await updateDoc(userRef, {
+          fcmTokens: arrayUnion(currentToken)
+        });
+      }
+      return true;
+    } else {
+      console.log('No registration token available.');
+      return false;
+    }
+  } catch (error) {
+    console.error('Error setting up notifications:', error);
+    return false;
+  }
+}
+
 export function useNotifications() {
   const { user, profile } = useAuth();
   const setupDone = useRef(false);
@@ -11,40 +54,30 @@ export function useNotifications() {
   useEffect(() => {
     if (!user || !profile || setupDone.current) return;
 
-    // Only setup notifications if the user has not disabled them in their profile
     if (profile.notificationsEnabled === false) return;
 
-    // Only proceed if messaging is supported in the browser
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window) {
-
       const setupNotifications = async () => {
         try {
           const messaging = getMessaging(app);
 
-          // Request permission
-          const permission = await Notification.requestPermission();
-          if (permission !== 'granted') {
-            console.log('Notification permission not granted.');
+          // Only proceed automatically if permission is ALREADY granted
+          if (Notification.permission !== 'granted') {
             return;
           }
 
-          // Register the Service Worker explicitly and pass the dynamic config via URL parameters.
-          // This allows the standalone SW file to know which project to listen to for background messages.
           const configParam = encodeURIComponent(JSON.stringify(app.options));
           const registration = await navigator.serviceWorker.register(
             `/firebase-messaging-sw.js?config=${configParam}`
           );
 
-          // Get FCM token
           const currentToken = await getToken(messaging, {
             vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
             serviceWorkerRegistration: registration
           });
 
           if (currentToken) {
-            // Check if token already exists in profile
             const hasToken = profile.fcmTokens?.includes(currentToken);
-
             if (!hasToken) {
               console.log('Saving new FCM token for user');
               const userRef = doc(db, 'users', user.uid);
@@ -56,10 +89,8 @@ export function useNotifications() {
             console.log('No registration token available.');
           }
 
-          // Listen for foreground messages
           const unsubscribe = onMessage(messaging, (payload) => {
             console.log('Message received in foreground: ', payload);
-            // Optionally, we could show a toast notification here
             if (payload.notification) {
               const notification = new Notification(payload.notification.title || 'Notification', {
                 body: payload.notification.body
@@ -80,5 +111,5 @@ export function useNotifications() {
 
       setupNotifications();
     }
-  }, [user, profile]); // keep dependencies, but ref prevents re-run
+  }, [user, profile]);
 }

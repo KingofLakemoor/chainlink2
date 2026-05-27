@@ -6,6 +6,7 @@ import { collection, getDocs, doc, setDoc, deleteDoc, query, where, onSnapshot }
 import { Button } from './components/ui/button';
 import { cn } from './lib/utils';
 import { useNotifications } from './hooks/useNotifications';
+import { NotificationPrompt } from './components/ui/NotificationPrompt';
 import {
   Link2, LayoutDashboard, User as UserIcon, PlayCircle, Layers, Trophy,
   ShoppingCart, CheckCircle2, Users, LogOut, ShieldAlert, Menu, X, Flame
@@ -1004,6 +1005,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen bg-[#0a0a0a] text-zinc-50 font-sans overflow-hidden">
        <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
        <div className="flex-1 flex flex-col h-screen overflow-hidden w-full relative">
+         <NotificationPrompt />
          {/* Mobile Header */}
          <div className="md:hidden h-16 border-b border-[#27272a] bg-[#121212]/80 backdrop-blur-xl flex items-center justify-between px-4 shrink-0 sticky top-0 z-30">
            <div className="flex items-center gap-2">
