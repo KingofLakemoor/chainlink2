@@ -17,15 +17,32 @@ export function NotificationPrompt() {
     // Check if dismissed in this browser
     const dismissed = localStorage.getItem('notificationPromptDismissed');
 
-    // Only show if logged in, haven't explicitly disabled, not already granted/denied, and not dismissed
+    // Only show if logged in, haven't explicitly disabled, not already granted, and not dismissed
     if (
       user &&
       profile &&
       profile.notificationsEnabled !== false &&
-      Notification.permission === 'default' &&
+      (Notification.permission === 'default' || Notification.permission === 'denied') &&
       !dismissed
     ) {
       setShowPrompt(true);
+      if (Notification.permission === 'denied') {
+        setDenied(true);
+      }
+    }
+
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'notifications' }).then(permissionStatus => {
+        permissionStatus.onchange = () => {
+          if (permissionStatus.state === 'granted') {
+            setShowPrompt(false);
+          } else if (permissionStatus.state === 'denied') {
+            setDenied(true);
+          } else if (permissionStatus.state === 'prompt') {
+            setDenied(false);
+          }
+        };
+      });
     }
   }, [user, profile]);
 
@@ -67,7 +84,7 @@ export function NotificationPrompt() {
         </div>
 
         {denied ? (
-          <div className="mt-2 text-sm text-red-400 font-medium sm:mt-0 sm:ml-4 sm:flex-shrink-0">
+          <div className="order-3 mt-2 w-full flex-shrink-0 sm:order-2 sm:mt-0 sm:w-auto sm:ml-4 text-sm text-red-400 font-medium">
             Permission denied. Please enable them in your browser settings.
           </div>
         ) : (
