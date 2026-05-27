@@ -336,7 +336,7 @@ export default function DashboardPage() {
                {sponsors.sort((a, b) => (a.order || 0) - (b.order || 0)).map(sponsor => (
                  <a
                    key={sponsor.id}
-                   href={sponsor.url || '#'}
+                   href={sponsor.url ? (sponsor.url.startsWith('http') ? sponsor.url : `https://${sponsor.url}`) : '#'}
                    target="_blank"
                    rel="noopener noreferrer"
                    className="opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center grayscale hover:grayscale-0"

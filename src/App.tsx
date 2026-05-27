@@ -608,7 +608,7 @@ function PlayDashboard() {
         );
 
         const TagType = featuredSponsorObj?.url ? 'a' : 'span';
-        const tagProps = featuredSponsorObj?.url ? { href: featuredSponsorObj.url, target: '_blank', rel: 'noopener noreferrer' } : {};
+        const tagProps = featuredSponsorObj?.url ? { href: featuredSponsorObj.url.startsWith('http') ? featuredSponsorObj.url : `https://${featuredSponsorObj.url}`, target: '_blank', rel: 'noopener noreferrer' } : {};
 
         return (
             <TagType
@@ -921,7 +921,7 @@ function PlayDashboard() {
                {sponsors.sort((a, b) => (a.order || 0) - (b.order || 0)).map(sponsor => (
                  <a
                    key={sponsor.id}
-                   href={sponsor.url || '#'}
+                   href={sponsor.url ? (sponsor.url.startsWith('http') ? sponsor.url : `https://${sponsor.url}`) : '#'}
                    target="_blank"
                    rel="noopener noreferrer"
                    className="opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center grayscale hover:grayscale-0"
