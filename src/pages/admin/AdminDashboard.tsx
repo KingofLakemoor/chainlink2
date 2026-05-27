@@ -1,3 +1,4 @@
+import Link4AdminPage from './link4/Link4AdminPage';
 import React from "react";
 import { useState, useEffect } from 'react';
 import { collection, getDocs, deleteDoc, doc, setDoc, updateDoc, writeBatch, query, where, documentId } from 'firebase/firestore';
@@ -81,6 +82,8 @@ const ADMIN_MENU = [
     ]
   },
   { id: 'challenges', label: 'Challenges', icon: Target, path: '/admin/challenges' },
+  { id: 'link4', label: 'Link4', icon: Target, path: '/admin/link4' },
+
   { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
   { id: 'users-cosmetics', label: 'User Cosmetics', icon: Users, path: '/admin/users/cosmetics' },
   { id: 'users-coins', label: 'Manage Coins', icon: Users, path: '/admin/users/coins' },
@@ -1186,6 +1189,7 @@ function AdminPlaceholder({ title }: { title: string }) {
 
 const EditPickPage = React.lazy(() => import('./picks/EditPickPage'));
 
+
 export default function AdminDashboard() {
   const { profile, loading } = useAuth();
   const location = useLocation();
@@ -1259,6 +1263,7 @@ export default function AdminDashboard() {
                 <Route path="pickem/*" element={<PickEmAdminPage />} />
                 <Route path="brackets/*" element={<BracketsAdminPage />} />
                 <Route path="challenges" element={<GenericTable collectionName="globalQuiz" />} />
+                <Route path="link4/*" element={<Link4AdminPage />} />
                 <Route path="users" element={<GenericTable collectionName="users" />} />
                 <Route path="users/cosmetics" element={<UserCosmeticsAdminPage />} />
                 <Route path="users/coins" element={<AddCoinsAdminPage />} />
