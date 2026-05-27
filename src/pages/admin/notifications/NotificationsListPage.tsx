@@ -9,11 +9,20 @@ import { Search, Edit, Trash2, Plus } from 'lucide-react';
 export default function NotificationsListPage() {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [userMap, setUserMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     setLoading(true);
     try {
+      // Fetch users for mapping targetUserId to username
+      const usersSnap = await getDocs(collection(db, 'users'));
+      const mapping: Record<string, string> = {};
+      usersSnap.docs.forEach(d => {
+        mapping[d.id] = d.data().username || d.data().email || d.id;
+      });
+      setUserMap(mapping);
+
       const snap = await getDocs(collection(db, 'notifications'));
       setNotifications(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     } catch (e) {
@@ -89,7 +98,9 @@ export default function NotificationsListPage() {
                     </td>
                     <td className="px-4 py-3 font-medium text-zinc-200">{notif.title}</td>
                     <td className="px-4 py-3 text-zinc-400 truncate max-w-xs" title={notif.body}>{notif.body}</td>
-                    <td className="px-4 py-3 text-zinc-400">{notif.audience} {notif.targetUserId ? `(${notif.targetUserId})` : ''}</td>
+                    <td className="px-4 py-3 text-zinc-400">
+                        {notif.audience} {notif.targetUserId ? `(${userMap[notif.targetUserId] || notif.targetUserId})` : ''}
+                    </td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${notif.status === 'SENT' ? 'bg-green-500/10 text-green-400' : notif.status === 'FAILED' ? 'bg-red-500/10 text-red-400' : 'bg-zinc-800 text-zinc-400'}`}>
                         {notif.status}
