@@ -43,6 +43,7 @@ const formSchema = z.object({
   active: z.boolean().default(true),
   forSale: z.boolean().default(true),
   premiumOnly: z.boolean().default(false),
+  featured: z.boolean().default(false),
   image: z.string().optional(),
   preview: z.string().optional(),
   order: z.coerce.number().optional(),
@@ -64,6 +65,7 @@ export default function CreateShopItemPage() {
       active: true,
       forSale: true,
       premiumOnly: false,
+      featured: false,
       image: "",
       preview: "",
       order: 0,
@@ -158,6 +160,19 @@ export default function CreateShopItemPage() {
                           ))}
                         </Select>
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="featured"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-2 space-y-0">
+                      <FormControl>
+                        <input type="checkbox" checked={field.value} onChange={field.onChange} className="w-4 h-4 rounded border-zinc-700 bg-zinc-900 text-green-500 focus:ring-green-500/20" />
+                      </FormControl>
+                      <FormLabel>Featured</FormLabel>
                       <FormMessage />
                     </FormItem>
                   )}
