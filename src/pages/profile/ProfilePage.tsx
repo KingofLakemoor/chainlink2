@@ -9,6 +9,7 @@ import { collection, getDocs, orderBy, query, where, documentId, doc, updateDoc 
 import { Modal } from '../../components/ui/modal';
 import { Input } from '../../components/ui/input';
 import { Link } from 'react-router-dom';
+import { requestNotificationPermission } from '../../hooks/useNotifications';
 import { Hexagons } from '../../components/ui/avatar-rings/hexagons';
 import { Hip } from '../../components/ui/avatar-rings/hip';
 import { Inferno } from '../../components/ui/avatar-rings/inferno';
@@ -98,7 +99,19 @@ export default function ProfilePage() {
   const handleToggleNotifications = async () => {
     if (!user) return;
     const newValue = !notificationsEnabled;
+
+    // Revert state initially, set it explicitly if permission is granted
     setNotificationsEnabled(newValue);
+
+    if (newValue) {
+      const granted = await requestNotificationPermission(user.uid, profile);
+      if (!granted) {
+        setNotificationsEnabled(false);
+        setSettingsMessage({ type: 'error', text: 'Notification permission denied. Please enable them in your browser settings.' });
+        return;
+      }
+    }
+
     try {
       await updateDoc(doc(db, 'users', user.uid), {
         notificationsEnabled: newValue
