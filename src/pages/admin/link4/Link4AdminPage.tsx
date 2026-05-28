@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, doc, getDocs, setDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import { Save, Loader2, Calendar, Plus, Edit2, Trash2, Clock, PlayCircle, Link as LinkIcon, Palette, Image as ImageIcon } from 'lucide-react';
+import { SUPPORTED_LEAGUES } from '../../../services/espnScraper';
 
 interface Link4SegmentTheme {
   primaryColor: string;
@@ -21,16 +22,7 @@ interface Link4Segment {
   updatedAt: number;
 }
 
-const SPORTS = [
-  { id: 'NFL', label: 'NFL' },
-  { id: 'NBA', label: 'NBA' },
-  { id: 'MLB', label: 'MLB' },
-  { id: 'NHL', label: 'NHL' },
-  { id: 'CBB', label: 'College Basketball' },
-  { id: 'CFB', label: 'College Football' },
-  { id: 'SOCCER', label: 'Soccer' },
-  { id: 'UFC', label: 'UFC' },
-];
+const SPORTS = SUPPORTED_LEAGUES.map(league => ({ id: league, label: league }));
 
 export default function Link4AdminPage() {
   const [segments, setSegments] = useState<Link4Segment[]>([]);
