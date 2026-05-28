@@ -50,6 +50,7 @@ interface Link4Pick {
   id: string;
   name: string;
   sport: string;
+  startTime?: string;
 }
 
 export default function Link4Page() {
@@ -225,16 +226,28 @@ export default function Link4Page() {
       id: `pick-${matchup.gameId}`,
       name: team.name,
       sport: matchup.league,
+      startTime: matchup.startTime,
     };
     setPicks(newPicks);
     setIsSelectingPick(false);
   };
 
-  const availableMatchups = allMatchups.filter(m =>
-    m.active &&
-    (allowedSports.length === 0 || allowedSports.includes(m.league)) &&
-    (m.status === 'STATUS_SCHEDULED' || m.status === 'STATUS_IN_PROGRESS')
-  );
+  const availableMatchups = allMatchups.filter(m => {
+    if (!m.active) return false;
+    if (allowedSports.length > 0 && !allowedSports.includes(m.league)) return false;
+    if (m.status !== 'STATUS_SCHEDULED' && m.status !== 'STATUS_IN_PROGRESS') return false;
+
+    if (nextPickIndex > 0) {
+      const prevPick = picks[nextPickIndex - 1];
+      if (prevPick?.startTime && m.startTime) {
+        if (new Date(m.startTime).getTime() <= new Date(prevPick.startTime).getTime()) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  });
 
   return (
     <div className="flex-1 p-6 md:p-8 w-full pt-20 md:pt-8 overflow-hidden">
