@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
-import { Trophy, Coins, Calendar, Mail, CheckCircle2, XCircle, MinusCircle, Medal, BarChart3, Pencil, Share2, Copy, Settings, Bell, Lock } from 'lucide-react';
+import { Trophy, Coins, Calendar, Mail, CheckCircle2, XCircle, MinusCircle, Medal, BarChart3, Pencil, Share2, Copy, Settings, Bell, Lock, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { auth, db } from '../../lib/firebase';
 import { sendPasswordResetEmail } from 'firebase/auth';
@@ -10,6 +10,7 @@ import { Modal } from '../../components/ui/modal';
 import { Input } from '../../components/ui/input';
 import { Link } from 'react-router-dom';
 import { requestNotificationPermission } from '../../hooks/useNotifications';
+import { useInstallPrompt } from '../../hooks/useInstallPrompt';
 import { Hexagons } from '../../components/ui/avatar-rings/hexagons';
 import { Hip } from '../../components/ui/avatar-rings/hip';
 import { Inferno } from '../../components/ui/avatar-rings/inferno';
@@ -144,6 +145,7 @@ export default function ProfilePage() {
   const [equipLoading, setEquipLoading] = useState<string | null>(null);
 
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const { isInstallable, promptInstall } = useInstallPrompt();
   const [avatarUrlInput, setAvatarUrlInput] = useState('');
   const [avatarUpdateLoading, setAvatarUpdateLoading] = useState(false);
 
@@ -837,6 +839,25 @@ export default function ProfilePage() {
                      Send Email
                   </Button>
                </div>
+
+               {isInstallable && (
+                  <div className="flex items-center justify-between mt-6 pt-6 border-t border-zinc-800">
+                     <div>
+                        <div className="font-medium text-zinc-200 flex items-center gap-2">
+                           <Download className="w-4 h-4 text-cyan-400" />
+                           Install App
+                        </div>
+                        <div className="text-sm text-zinc-500">Install ChainLink on your device for quick access.</div>
+                     </div>
+                     <Button
+                        onClick={promptInstall}
+                        variant="outline"
+                        className="bg-cyan-950/30 text-cyan-400 border-cyan-900/50 hover:bg-cyan-900/50 hover:text-cyan-300"
+                     >
+                        Install
+                     </Button>
+                  </div>
+               )}
             </div>
          </div>
       </div>

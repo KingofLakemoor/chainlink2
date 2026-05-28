@@ -6,6 +6,7 @@ import { collection, getDocs, doc, setDoc, deleteDoc, query, where, onSnapshot }
 import { Button } from './components/ui/button';
 import { cn } from './lib/utils';
 import { useNotifications } from './hooks/useNotifications';
+import { useInstallPrompt } from './hooks/useInstallPrompt';
 import { NotificationPrompt } from './components/ui/NotificationPrompt';
 import {
   Link2, LayoutDashboard, User as UserIcon, PlayCircle, Layers, Trophy, Grid,
@@ -14,11 +15,13 @@ import {
 import {
   MdOutlineSportsSoccer, MdOutlineSportsBasketball, MdOutlineSportsHockey, MdOutlineSportsBaseball, MdOutlineSportsTennis
 } from 'react-icons/md';
+import { Download } from 'lucide-react';
 
 
 function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
   const { user, profile } = useAuth();
   const location = useLocation();
+  const { isInstallable, promptInstall } = useInstallPrompt();
 
   if (!user) return null;
 
@@ -76,7 +79,12 @@ function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) =>
         )}
       </div>
 
-      <div className="p-4 mt-auto border-t border-[#27272a]">
+      <div className="p-4 mt-auto border-t border-[#27272a] space-y-2">
+        {isInstallable && (
+          <Button variant="outline" onClick={promptInstall} className="w-full justify-start bg-cyan-950/30 text-cyan-400 border-cyan-900/50 hover:bg-cyan-900/50 hover:text-cyan-300">
+            <Download className="w-4 h-4 mr-2" /> Install App
+          </Button>
+        )}
         <Button variant="ghost" onClick={logout} className="w-full justify-start text-zinc-400 hover:text-zinc-200">
           <LogOut className="w-4 h-4 mr-2" /> Log Out
         </Button>
