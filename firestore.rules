@@ -248,5 +248,10 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
+
+    match /link4Segments/{segmentId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
   }
 }
