@@ -41,7 +41,7 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'GlobalStageBanner': GlobalStageBanner
 };
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || '');
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
 // Simple deterministic random number generator (Linear Congruential Generator)
 function seededRandom(seed: number) {
