@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Clock, Trophy, Lock } from 'lucide-react';
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 
+interface Link4SegmentTheme {
+  primaryColor?: string;
+  logoUrl?: string;
+  sponsorName?: string;
+  sponsorUrl?: string;
+}
 
 interface Link4LeaderboardPick {
   id: string;
@@ -46,6 +52,7 @@ interface Link4Pick {
 export default function Link4Page() {
   const [endTime, setEndTime] = useState<string>('');
   const [allowedSports, setAllowedSports] = useState<string[]>([]);
+  const [theme, setTheme] = useState<Link4SegmentTheme>({});
   const [picks, setPicks] = useState<(Link4Pick | null)[]>([null, null, null, null]);
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
 
@@ -101,20 +108,42 @@ export default function Link4Page() {
 
 
   useEffect(() => {
-    const fetchSettings = async () => {
+    const fetchActiveSegment = async () => {
       try {
-        const docRef = doc(db, 'systemSettings', 'link4');
-        const snap = await getDoc(docRef);
-        if (snap.exists()) {
-          const data = snap.data();
-          if (data.endTime) setEndTime(data.endTime);
-          if (data.allowedSports) setAllowedSports(data.allowedSports);
+        const now = new Date().toISOString();
+        const segmentsRef = collection(db, 'link4Segments');
+
+        const q = query(
+          segmentsRef,
+          where('endTime', '>', now),
+          orderBy('endTime', 'asc'),
+          limit(1)
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          // We found an upcoming or active segment based on end time
+          const activeSegment = querySnapshot.docs[0].data();
+
+          // Only show it if it has actually started
+          // If we want it to be visible before it starts, we could handle 'PENDING' vs 'ACTIVE' state
+          // For now, we will just use it if the start time has passed.
+          // Otherwise, we could show a "Starts In" countdown, but we'll stick to the current logic for simplicity.
+          if (activeSegment.startTime && activeSegment.startTime > now) {
+            // It hasn't started yet, we might want to hide picks or show a different countdown
+            // We'll leave it as is to keep the countdown to end time, but it's noted.
+          }
+
+          if (activeSegment.endTime) setEndTime(activeSegment.endTime);
+          if (activeSegment.allowedSports) setAllowedSports(activeSegment.allowedSports);
+          if (activeSegment.theme) setTheme(activeSegment.theme);
         }
       } catch (error) {
-        console.error('Error fetching Link4 settings:', error);
+        console.error('Error fetching active Link4 segment:', error);
       }
     };
-    fetchSettings();
+    fetchActiveSegment();
   }, []);
 
   useEffect(() => {
@@ -163,11 +192,27 @@ export default function Link4Page() {
       <div className="mb-8 max-w-5xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-display font-black text-white mb-2 uppercase tracking-tight flex items-center gap-3">
-            <Grid className="w-8 h-8 text-[#22c55e]" />
+            {theme.logoUrl ? (
+              <img src={theme.logoUrl} alt="Link4 Logo" className="w-10 h-10 object-contain" />
+            ) : (
+              <Grid className="w-8 h-8" style={{ color: theme.primaryColor || '#22c55e' }} />
+            )}
             Link4
           </h1>
           <p className="text-zinc-400 text-lg">
             Connect four to win! Play Link4 and earn links.
+            {theme.sponsorName && (
+              <span className="block mt-1 text-sm">
+                Presented by{' '}
+                {theme.sponsorUrl ? (
+                  <a href={theme.sponsorUrl} target="_blank" rel="noopener noreferrer" className="font-bold underline hover:opacity-80" style={{ color: theme.primaryColor || '#22c55e' }}>
+                    {theme.sponsorName}
+                  </a>
+                ) : (
+                  <span className="font-bold" style={{ color: theme.primaryColor || '#22c55e' }}>{theme.sponsorName}</span>
+                )}
+              </span>
+            )}
           </p>
         </div>
 
