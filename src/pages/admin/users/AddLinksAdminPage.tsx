@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { collection, getDocs, doc, updateDoc, query, orderBy } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import { Button } from '../../../components/ui/button';
-import { Search, Coins } from 'lucide-react';
+import { Search, Link2 } from 'lucide-react';
 
-export default function AddCoinsAdminPage() {
+export default function AddLinksAdminPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,22 +29,22 @@ export default function AddCoinsAdminPage() {
     fetchUsers();
   }, []);
 
-  const handleUpdateCoins = async () => {
+  const handleUpdateLinks = async () => {
     if (!selectedUser) return;
     setSaving(true);
     try {
       const userRef = doc(db, 'users', selectedUser.id);
-      const newCoins = (selectedUser.coins || 0) + amount;
-      await updateDoc(userRef, { coins: newCoins });
+      const newLinks = (selectedUser.links || 0) + amount;
+      await updateDoc(userRef, { links: newLinks });
 
       // Update local state
-      setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, coins: newCoins } : u));
-      setSelectedUser({ ...selectedUser, coins: newCoins });
+      setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, links: newLinks } : u));
+      setSelectedUser({ ...selectedUser, links: newLinks });
       setAmount(0);
-      alert(`Successfully updated coins for ${selectedUser.username || selectedUser.name}.`);
+      alert(`Successfully updated links for ${selectedUser.username || selectedUser.name}.`);
     } catch (e) {
-      console.error("Error updating coins:", e);
-      alert("Failed to update coins.");
+      console.error("Error updating links:", e);
+      alert("Failed to update links.");
     } finally {
       setSaving(false);
     }
@@ -60,8 +60,8 @@ export default function AddCoinsAdminPage() {
     <div className="p-4 md:p-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold font-display text-white">Manage User Coins</h2>
-          <p className="text-zinc-400">Add or subtract coins for specific users.</p>
+          <h2 className="text-2xl font-bold font-display text-white">Manage User Links</h2>
+          <p className="text-zinc-400">Add or subtract links for specific users.</p>
         </div>
       </div>
 
@@ -120,16 +120,16 @@ export default function AddCoinsAdminPage() {
               <div className="mb-8">
                 <h4 className="text-sm font-medium text-zinc-400 mb-4">Current Balance</h4>
                 <div className="flex items-center gap-2">
-                  <Coins className="w-6 h-6 text-cyan-400" />
+                  <Link2 className="w-6 h-6 text-cyan-400" />
                   <span className="text-3xl font-display font-bold text-white">
-                    {selectedUser.coins?.toLocaleString() || 0}
+                    {selectedUser.links?.toLocaleString() || 0}
                   </span>
-                  <span className="text-sm text-zinc-500 ml-2">Coins</span>
+                  <span className="text-sm text-zinc-500 ml-2">Links</span>
                 </div>
               </div>
 
               <div className="mb-8 p-4 bg-zinc-900/50 rounded-lg border border-zinc-800">
-                <h4 className="text-sm font-medium text-zinc-300 mb-4">Adjust Coins</h4>
+                <h4 className="text-sm font-medium text-zinc-300 mb-4">Adjust Links</h4>
                 <div className="flex flex-col gap-4">
                   <div>
                     <label className="block text-xs text-zinc-400 mb-1">Amount to Add/Subtract</label>
@@ -140,16 +140,16 @@ export default function AddCoinsAdminPage() {
                       className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500"
                       placeholder="e.g. 100 or -50"
                     />
-                    <p className="text-xs text-zinc-500 mt-2">Use positive numbers to add coins, negative numbers to subtract.</p>
+                    <p className="text-xs text-zinc-500 mt-2">Use positive numbers to add links, negative numbers to subtract.</p>
                   </div>
 
                   <div className="pt-2">
                     <Button
-                      onClick={handleUpdateCoins}
+                      onClick={handleUpdateLinks}
                       disabled={saving || amount === 0}
                       className="w-full sm:w-auto"
                     >
-                      {saving ? 'Updating...' : `Update Coins for ${selectedUser.username || selectedUser.name}`}
+                      {saving ? 'Updating...' : `Update Links for ${selectedUser.username || selectedUser.name}`}
                     </Button>
                   </div>
                 </div>
@@ -157,10 +157,10 @@ export default function AddCoinsAdminPage() {
             </div>
           ) : (
             <div className="bg-[#18181A] border border-zinc-800 rounded-xl p-12 flex flex-col items-center justify-center text-center h-full">
-              <Coins className="w-12 h-12 text-zinc-600 mb-4" />
+              <Link2 className="w-12 h-12 text-zinc-600 mb-4" />
               <h3 className="text-lg font-medium text-zinc-300 mb-2">Select a User</h3>
               <p className="text-sm text-zinc-500 max-w-sm">
-                Search and select a user from the list on the left to view and modify their Coins balance.
+                Search and select a user from the list on the left to view and modify their Links balance.
               </p>
             </div>
           )}

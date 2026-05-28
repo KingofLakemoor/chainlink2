@@ -75,11 +75,12 @@ service cloud.firestore {
     // picks
     match /picks/{pickId} {
       function isValidPick(data) {
-        return data.keys().hasAll(['userId', 'matchupId', 'pick', 'status', 'coins', 'active', 'createdAt', 'updatedAt']) &&
+        return data.keys().hasAll(['userId', 'matchupId', 'pick', 'status', 'active', 'createdAt', 'updatedAt']) &&
+               (data.keys().hasAny(['links', 'coins'])) &&
                data.userId is string && data.matchupId is string &&
                data.pick is map && data.pick.keys().hasAll(['id', 'name']) &&
                data.pick.id is string && data.pick.name is string &&
-               data.coins is number &&
+               (data.get('links', 0) is number || data.get('coins', 0) is number) &&
                data.status in ['PENDING', 'WIN', 'LOSS', 'PUSH'] &&
                data.active is bool;
       }

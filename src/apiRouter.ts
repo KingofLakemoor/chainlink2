@@ -54,15 +54,23 @@ apiRouter.post('/stripe/create-checkout-session', async (req, res) => {
     let priceData: any | undefined;
     let metadata: Record<string, string> = { uid, itemType };
 
+    let mode: 'payment' | 'subscription' = 'payment';
+
     if (itemType === 'links') {
       let priceInCents = 0;
       let title = '';
-      if (amount === 1000) {
-        priceInCents = 499;
-        title = '1000 Links';
-      } else if (amount === 5000) {
-        priceInCents = 1999;
-        title = '5000 Links';
+      if (amount === 150) {
+        priceInCents = 525;
+        title = '150 Links';
+      } else if (amount === 350) {
+        priceInCents = 1049;
+        title = '350 Links';
+      } else if (amount === 1050) {
+        priceInCents = 2999;
+        title = '1,050 Links';
+      } else if (amount === 1800) {
+        priceInCents = 4999;
+        title = '1,800 Links';
       } else {
         return res.status(400).json({ success: false, error: 'Invalid links amount' });
       }
@@ -71,7 +79,7 @@ apiRouter.post('/stripe/create-checkout-session', async (req, res) => {
         currency: 'usd',
         product_data: {
           name: title,
-          description: `Purchase ${amount} Links for use in the app`,
+          description: `Purchase ${title} for use in the app`,
         },
         unit_amount: priceInCents,
       };
@@ -80,11 +88,15 @@ apiRouter.post('/stripe/create-checkout-session', async (req, res) => {
       priceData = {
         currency: 'usd',
         product_data: {
-          name: 'Premium Subscription',
+          name: 'ChainLink Pro',
           description: 'Unlock Premium features',
         },
-        unit_amount: 999, // Example price for premium
+        unit_amount: 1049,
+        recurring: {
+          interval: 'month',
+        },
       };
+      mode = 'subscription';
     } else {
       return res.status(400).json({ success: false, error: 'Invalid item type' });
     }
@@ -97,8 +109,8 @@ apiRouter.post('/stripe/create-checkout-session', async (req, res) => {
           quantity: 1,
         },
       ],
-      mode: 'payment',
-      metadata,
+      mode,
+      metadata, // In subscription mode, this gets copied to the subscription object too by default usually, or you handle it via webhook using the session metadata
       success_url: `${req.headers.origin}/shop?success=true`,
       cancel_url: `${req.headers.origin}/shop?canceled=true`,
     });
@@ -210,7 +222,7 @@ apiRouter.post("/picks/cancel-pick", async (req, res) => {
       }
 
       const profile = userDoc.data()!;
-      const refundAmount = pickData.coins ?? pickData.links ?? 0;
+      const refundAmount = pickData.links ?? pickData.coins ?? 0;
 
       transaction.delete(pickRef);
 
@@ -277,7 +289,7 @@ apiRouter.post("/picks/make-pick", async (req, res) => {
         matchupId,
         pick: team,
         status: 'PENDING',
-        coins: matchCost,
+        links: matchCost,
         active: true,
         createdAt: Date.now(),
         updatedAt: Date.now()
