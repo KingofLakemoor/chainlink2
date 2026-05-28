@@ -1,5 +1,6 @@
-export type League = "NFL" | "NBA" | "NHL" | "MLB" | "MLS" | "EPL" | "MBB" | "WBB" | "NWSL" | "CFB" | "CBASE" | "ATP" | "WTA" | "WNBA" | "PGA" | "FIFA" | "FRA" | "TUR" | "RPL" | "CHN" | string;
+export const SUPPORTED_LEAGUES = ["NFL", "NBA", "NHL", "MLB", "MLS", "EPL", "MBB", "WBB", "NWSL", "CFB", "CBASE", "ATP", "WTA", "WNBA", "PGA", "FIFA", "FRA", "TUR", "RPL", "CHN"] as const;
 
+export type League = typeof SUPPORTED_LEAGUES[number] | string;
 
 export const MATCHUP_FINAL_STATUSES = [
   "STATUS_FINAL",

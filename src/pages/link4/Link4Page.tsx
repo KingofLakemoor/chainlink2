@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Grid, Clock, Trophy, Lock } from 'lucide-react';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
+import { MatchupCard } from '../../components/ui/MatchupCard';
+import { onSnapshot } from 'firebase/firestore';
+import { useAuth } from '../../lib/auth-context';
 
 interface Link4SegmentTheme {
   primaryColor?: string;
@@ -50,6 +53,7 @@ interface Link4Pick {
 }
 
 export default function Link4Page() {
+  const { user } = useAuth();
   const [endTime, setEndTime] = useState<string>('');
   const [allowedSports, setAllowedSports] = useState<string[]>([]);
   const [theme, setTheme] = useState<Link4SegmentTheme>({});
@@ -57,6 +61,10 @@ export default function Link4Page() {
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
 
   const [leaderboardData, setLeaderboardData] = useState<Link4LeaderboardEntry[]>([]);
+
+  const [isSelectingPick, setIsSelectingPick] = useState(false);
+  const [allMatchups, setAllMatchups] = useState<any[]>([]);
+  const [sponsors, setSponsors] = useState<any[]>([]);
 
   useEffect(() => {
     // Mock Leaderboard Data
@@ -106,6 +114,22 @@ export default function Link4Page() {
 
 
 
+
+  useEffect(() => {
+    const unsubMatchups = onSnapshot(collection(db, 'matchups'), (snap) => {
+      const matchups = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAllMatchups(matchups);
+    });
+
+    const unsubSponsors = onSnapshot(collection(db, 'sponsors'), (snap) => {
+        setSponsors(snap.docs.map(doc => ({id: doc.id, ...doc.data()})));
+    });
+
+    return () => {
+      unsubMatchups();
+      unsubSponsors();
+    };
+  }, []);
 
   useEffect(() => {
     const fetchActiveSegment = async () => {
@@ -186,6 +210,31 @@ export default function Link4Page() {
   };
 
   const nextPickIndex = picks.findIndex(p => p === null);
+
+  const handleSlotClick = (index: number) => {
+    if (index === nextPickIndex) {
+      setIsSelectingPick(true);
+    }
+  };
+
+  const handleMakePick = (matchup: any, team: any) => {
+    if (nextPickIndex === -1) return;
+
+    const newPicks = [...picks];
+    newPicks[nextPickIndex] = {
+      id: `pick-${matchup.gameId}`,
+      name: team.name,
+      sport: matchup.league,
+    };
+    setPicks(newPicks);
+    setIsSelectingPick(false);
+  };
+
+  const availableMatchups = allMatchups.filter(m =>
+    m.active &&
+    (allowedSports.length === 0 || allowedSports.includes(m.league)) &&
+    (m.status === 'STATUS_SCHEDULED' || m.status === 'STATUS_IN_PROGRESS')
+  );
 
   return (
     <div className="flex-1 p-6 md:p-8 w-full pt-20 md:pt-8 overflow-hidden">
@@ -300,9 +349,10 @@ export default function Link4Page() {
               return (
                 <div
                   key={index}
+                  onClick={() => handleSlotClick(index)}
                   className={`
                     relative aspect-square md:aspect-auto md:h-48 rounded-xl border-2 flex flex-col items-center justify-center p-4 transition-all
-                    ${isActive ? 'border-green-500 bg-green-500/5 shadow-[0_0_15px_rgba(34,197,94,0.1)] scale-[1.02]' : ''}
+                    ${isActive ? 'border-green-500 bg-green-500/5 shadow-[0_0_15px_rgba(34,197,94,0.1)] scale-[1.02] cursor-pointer' : ''}
                     ${isLocked ? 'border-zinc-800 bg-[#121212] opacity-50' : ''}
                     ${isFilled ? 'border-[#27272a] bg-[#121212]' : ''}
                     ${!isActive && !isLocked && !isFilled ? 'border-dashed border-zinc-700 bg-[#1a1a1a]' : ''}
@@ -351,6 +401,50 @@ export default function Link4Page() {
               <p className="text-zinc-400">Good luck! You've completed your Link4 selection.</p>
             </div>
           )}
+        </div>
+
+        {/* Game Selection Slide Down */}
+        <div
+          className="overflow-hidden transition-all duration-500 ease-in-out"
+          style={{ maxHeight: isSelectingPick ? '5000px' : '0', opacity: isSelectingPick ? 1 : 0 }}
+        >
+          <div className="bg-[#1a1a1a] border border-[#27272a] rounded-xl p-6 md:p-8 mt-4">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <Grid className="w-5 h-5 text-green-500" />
+                Select Pick {nextPickIndex + 1}
+              </h2>
+              <button
+                onClick={() => setIsSelectingPick(false)}
+                className="text-zinc-400 hover:text-white"
+              >
+                Cancel
+              </button>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-5">
+              {availableMatchups.map((m) => (
+                <MatchupCard
+                  key={m.gameId}
+                  m={m}
+                  user={user}
+                  userPicks={{}} // Pass empty for now, or track link4 picks properly later
+                  matchupPickCounts={{}}
+                  sponsors={sponsors}
+                  onMakePick={handleMakePick}
+                  onCancelPick={() => {}}
+                  onShareMatchup={() => {}}
+                  sharingMatchupId={null}
+                  isMyPick={false}
+                />
+              ))}
+              {availableMatchups.length === 0 && (
+                <div className="col-span-2 text-center py-12 text-zinc-500">
+                  <p>No eligible matchups available right now.</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Leaderboard Section */}
