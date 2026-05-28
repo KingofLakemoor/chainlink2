@@ -522,7 +522,7 @@ function PlayDashboard() {
           image: team.image
         },
         status: 'PENDING',
-        coins: matchup.cost ?? 0,
+        links: matchup.cost ?? 0,
         active: true,
         createdAt: Date.now(),
         updatedAt: Date.now()

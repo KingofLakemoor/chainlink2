@@ -21,8 +21,8 @@ export default function MyPicksPage() {
         if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
            // Mock data if in dev mode with mock db
            setPicks([
-             { id: '1', status: 'WIN', updatedAt: Date.now() - 22 * 60 * 60 * 1000, matchupId: 'mock-1', pick: { id: 'teamA', name: 'Phillies', image: 'https://via.placeholder.com/150' }, coins: 10 },
-             { id: '2', status: 'LOSS', updatedAt: Date.now() - 17 * 60 * 60 * 1000, matchupId: 'mock-3', pick: { id: 'teamF', name: 'Cubs', image: 'https://via.placeholder.com/150' }, coins: 0 },
+             { id: '1', status: 'WIN', updatedAt: Date.now() - 22 * 60 * 60 * 1000, matchupId: 'mock-1', pick: { id: 'teamA', name: 'Phillies', image: 'https://via.placeholder.com/150' }, links: 10 },
+             { id: '2', status: 'LOSS', updatedAt: Date.now() - 17 * 60 * 60 * 1000, matchupId: 'mock-3', pick: { id: 'teamF', name: 'Cubs', image: 'https://via.placeholder.com/150' }, links: 0 },
              { id: '3', status: 'PENDING', updatedAt: Date.now() - 2 * 60 * 60 * 1000, matchupId: 'mock-2', pick: { id: 'teamC', name: 'Spartak Moscow', image: 'https://via.placeholder.com/150' } },
            ]);
         } else {
@@ -160,11 +160,11 @@ export default function MyPicksPage() {
                     : (pick.updatedAt ? new Date(pick.updatedAt).toLocaleDateString() : 'Unknown date')}
                 </div>
 
-                {(pick.status === 'WIN' || pick.status === 'LOSS') && pick.coins > 0 && (
+                {(pick.status === 'WIN' || pick.status === 'LOSS') && pick.links > 0 && (
                   <div className="flex items-center gap-1 bg-black/40 px-3 py-1 rounded-full mt-2">
                     <Link2 className={cn("w-3.5 h-3.5", pick.status === 'WIN' ? "text-green-500" : "text-zinc-600")} />
                     <span className={cn("text-xs font-bold", pick.status === 'WIN' ? "text-green-500" : "text-zinc-500")}>
-                      {pick.status === 'WIN' ? `+${pick.coins}` : '0'}
+                      {pick.status === 'WIN' ? `+${pick.links}` : '0'}
                     </span>
                   </div>
                 )}

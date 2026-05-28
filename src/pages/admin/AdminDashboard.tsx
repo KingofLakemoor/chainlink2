@@ -27,11 +27,11 @@ import BracketsAdminPage from './brackets/BracketsAdminPage';
 import AdminPicksPage from './picks/AdminPicksPage';
 import ReferralsAdminPage from './referrals/ReferralsAdminPage';
 import UserCosmeticsAdminPage from './users/UserCosmeticsAdminPage';
-import AddCoinsAdminPage from './users/AddCoinsAdminPage';
+import AddLinksAdminPage from './users/AddLinksAdminPage';
 import {
   Users, CheckCircle2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
-  FileText, Diamond, Target, Bell, Shield, Coins, Menu, X, Settings, GitMerge, Flag
+  FileText, Diamond, Target, Bell, Shield, Link2, Menu, X, Settings, GitMerge, Flag
 } from 'lucide-react';
 
 import ScraperSettingsPage from './settings/ScraperSettingsPage';
@@ -86,14 +86,14 @@ const ADMIN_MENU = [
 
   { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
   { id: 'users-cosmetics', label: 'User Cosmetics', icon: Users, path: '/admin/users/cosmetics' },
-  { id: 'users-coins', label: 'Manage Coins', icon: Users, path: '/admin/users/coins' },
+  { id: 'users-links', label: 'Manage Links', icon: Link2, path: '/admin/users/links' },
   { id: 'referrals', label: 'Referrals', icon: Users, path: '/admin/referrals' },
   { id: 'notifications', label: 'Notifications', icon: Bell, path: '/admin/notifications' },
   { id: 'actions', label: 'Actions', icon: Shield, path: '/admin/actions' },
   {
     id: 'shopItems',
     label: 'Shop',
-    icon: Coins,
+    icon: Link2,
     subItems: [
       { id: 'shopItems-all', label: 'All Shop Items', path: '/admin/shopItems' },
       { id: 'shopItems-create', label: 'Create Shop Item', path: '/admin/shopItems/create' }
@@ -1266,7 +1266,7 @@ export default function AdminDashboard() {
                 <Route path="link4/*" element={<Link4AdminPage />} />
                 <Route path="users" element={<GenericTable collectionName="users" />} />
                 <Route path="users/cosmetics" element={<UserCosmeticsAdminPage />} />
-                <Route path="users/coins" element={<AddCoinsAdminPage />} />
+                <Route path="users/links" element={<AddLinksAdminPage />} />
                 <Route path="referrals" element={<ReferralsAdminPage />} />
                 <Route path="actions" element={<AdminPlaceholder title="Admin Actions Log" />} />
 

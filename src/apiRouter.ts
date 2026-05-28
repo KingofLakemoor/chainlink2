@@ -222,7 +222,7 @@ apiRouter.post("/picks/cancel-pick", async (req, res) => {
       }
 
       const profile = userDoc.data()!;
-      const refundAmount = pickData.coins ?? pickData.links ?? 0;
+      const refundAmount = pickData.links ?? pickData.coins ?? 0;
 
       transaction.delete(pickRef);
 
@@ -289,7 +289,7 @@ apiRouter.post("/picks/make-pick", async (req, res) => {
         matchupId,
         pick: team,
         status: 'PENDING',
-        coins: matchCost,
+        links: matchCost,
         active: true,
         createdAt: Date.now(),
         updatedAt: Date.now()
