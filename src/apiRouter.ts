@@ -101,7 +101,7 @@ apiRouter.post('/stripe/create-checkout-session', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Invalid item type' });
     }
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionData: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card'],
       line_items: [
         {
@@ -110,10 +110,18 @@ apiRouter.post('/stripe/create-checkout-session', async (req, res) => {
         },
       ],
       mode,
-      metadata, // In subscription mode, this gets copied to the subscription object too by default usually, or you handle it via webhook using the session metadata
       success_url: `${req.headers.origin}/shop?success=true`,
       cancel_url: `${req.headers.origin}/shop?canceled=true`,
-    });
+    };
+
+    if (mode === 'subscription') {
+      sessionData.subscription_data = { metadata };
+      sessionData.metadata = metadata;
+    } else {
+      sessionData.metadata = metadata;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionData);
 
     res.json({ success: true, id: session.id });
   } catch (e: any) {
