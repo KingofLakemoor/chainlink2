@@ -49,6 +49,13 @@ export function useNotifications() {
   const setupDone = useRef(false);
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      const configParam = encodeURIComponent(JSON.stringify(app.options));
+      navigator.serviceWorker.register(`/sw.js?config=${configParam}`).catch((error) => {
+        console.error('Service Worker registration failed:', error);
+      });
+    }
+
     if (!user || !profile || setupDone.current) return;
 
     if (profile.notificationsEnabled === false) return;
@@ -63,10 +70,7 @@ export function useNotifications() {
             return;
           }
 
-          const configParam = encodeURIComponent(JSON.stringify(app.options));
-          const registration = await navigator.serviceWorker.register(
-            `/sw.js?config=${configParam}`
-          );
+          const registration = await navigator.serviceWorker.ready;
 
           const currentToken = await getToken(messaging, {
             vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
