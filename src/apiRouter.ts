@@ -117,7 +117,7 @@ apiRouter.post('/stripe/create-checkout-session', async (req, res) => {
 
     const session = await stripe.checkout.sessions.create(sessionData);
 
-    res.json({ success: true, id: session.id });
+    res.json({ success: true, id: session.id, url: session.url });
   } catch (e: any) {
     console.error("Create checkout session error:", e.message, e);
     res.status(500).json({ success: false, error: e.message });
