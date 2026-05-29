@@ -211,7 +211,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
           if (!scoreboardOnly) {
             let scraperActive = scrapedMatchup.active;
-            if (!scraperActive && existingData.type !== 'SCORE') {
+            if (!scraperActive && existingData.type !== 'SCORE' && existingData.type !== undefined) {
               scraperActive = true;
             }
 
