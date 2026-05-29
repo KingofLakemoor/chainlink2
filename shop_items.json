@@ -287,9 +287,9 @@
     "type": "PROFILE_BANNER",
     "active": true,
     "forSale": true,
-    "image": "bg-red-950",
+    "image": "ZeroZeroShaderBanner",
     "featured": true,
-    "preview": "bg-red-950",
+    "preview": "ZeroZeroShaderBanner",
     "order": 21,
     "collectionId": ""
   },
