@@ -21,8 +21,6 @@ export default function EditPickPage() {
 
         if (docSnap.exists()) {
           setPick({ ...docSnap.data(), id: docSnap.id });
-        } else {
-          console.log("No such document!");
         }
       } catch (error) {
         console.error("Error fetching pick:", error);
