@@ -161,9 +161,9 @@
     "type": "PROFILE_BANNER",
     "active": true,
     "forSale": true,
-    "image": "bg-gradient-to-r from-amber-600 to-yellow-500",
+    "image": "OpulentoVaultBanner",
     "featured": true,
-    "preview": "bg-gradient-to-r from-amber-600 to-yellow-500",
+    "preview": "OpulentoVaultBanner",
     "order": 12,
     "collectionId": "opulento"
   },
