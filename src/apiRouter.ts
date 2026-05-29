@@ -151,8 +151,8 @@ apiRouter.post('/stripe/webhook', express.raw({type: 'application/json'}), async
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
 
-    const uid = session.metadata?.uid;
-    const itemType = session.metadata?.itemType;
+    const uid = session.metadata?.uid || session.subscription_data?.metadata?.uid;
+    const itemType = session.metadata?.itemType || session.subscription_data?.metadata?.itemType;
 
     if (uid && adminDb) {
       try {
@@ -166,10 +166,10 @@ apiRouter.post('/stripe/webhook', express.raw({type: 'application/json'}), async
           const updateData: any = { updatedAt: Date.now() };
 
           if (itemType === 'links') {
-            const amountStr = session.metadata?.amount;
+            const amountStr = session.metadata?.amount || session.subscription_data?.metadata?.amount;
             if (amountStr) {
                const amount = parseInt(amountStr, 10);
-               updateData.links = (profile.links || 0) + amount;
+               updateData.coins = (profile.coins ?? profile.links ?? 0) + amount;
             }
           } else if (itemType === 'premium') {
              updateData.premium = true;
