@@ -4,7 +4,6 @@ import { db } from '../../lib/firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
-import { loadStripe } from '@stripe/stripe-js';
 
 import { Hexagons } from '../../components/ui/avatar-rings/hexagons';
 import { Modal } from '../../components/ui/modal';
@@ -40,8 +39,6 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'GenesisSyndicate': GenesisSyndicate,
   'GlobalStageBanner': GlobalStageBanner
 };
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
 // Simple deterministic random number generator (Linear Congruential Generator)
 function seededRandom(seed: number) {
@@ -150,15 +147,8 @@ export default function ShopPage() {
       });
 
       const data = await res.json();
-      if (res.ok && data.success && data.id) {
-        const stripe = await stripePromise;
-        if (!stripe) throw new Error("Stripe failed to initialize");
-
-        const { error } = await (stripe as any).redirectToCheckout({
-          sessionId: data.id
-        });
-
-        if (error) throw error;
+      if (res.ok && data.success && data.url) {
+        window.location.href = data.url;
       } else {
         setMessage({ text: data.error || "Failed to initiate checkout.", type: 'error' });
       }
