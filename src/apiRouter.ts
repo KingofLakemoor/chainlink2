@@ -225,14 +225,26 @@ apiRouter.post("/picks/cancel-pick", async (req, res) => {
       }
 
       const pickData = pickDoc.data()!;
-      if (pickData.status !== 'PENDING') {
-        throw new Error("Pick is no longer pending");
+      if (pickData.status !== 'PENDING' && pickData.status !== 'QUEUED') {
+        throw new Error("Pick is no longer pending or queued");
       }
 
       const profile = userDoc.data()!;
       const refundAmount = pickData.links ?? pickData.coins ?? 0;
 
       transaction.delete(pickRef);
+
+      if (pickData.status === 'PENDING') {
+        const queuedQuery = adminDb.collection('picks').where('userId', '==', uid).where('status', '==', 'QUEUED');
+        const queuedDocs = await transaction.get(queuedQuery);
+        if (!queuedDocs.empty) {
+          const queuedPickDoc = queuedDocs.docs[0];
+          transaction.update(queuedPickDoc.ref, {
+            status: 'PENDING',
+            updatedAt: Date.now()
+          });
+        }
+      }
 
       const updateData: any = { updatedAt: Date.now() };
       if (refundAmount > 0) {
@@ -283,10 +295,18 @@ apiRouter.post("/picks/make-pick", async (req, res) => {
         throw new Error("Not enough links!");
       }
 
-      const picksQuery = adminDb.collection('picks').where('userId', '==', uid).where('status', '==', 'PENDING');
+      const picksQuery = adminDb.collection('picks').where('userId', '==', uid).where('status', 'in', ['PENDING', 'QUEUED']);
       const activePicks = await transaction.get(picksQuery);
+
+      let pickStatus = 'PENDING';
       if (!activePicks.empty) {
-        throw new Error("You already have an active pick!");
+        if (!profile.premium) {
+          throw new Error("You already have an active pick! Upgrade to ChainLink Pro to queue picks.");
+        }
+        if (activePicks.size >= 2) {
+          throw new Error("You can only have one active pick and one queued pick at a time.");
+        }
+        pickStatus = 'QUEUED';
       }
 
       const pickId = uid + "_" + matchupId;
@@ -296,7 +316,7 @@ apiRouter.post("/picks/make-pick", async (req, res) => {
         userId: uid,
         matchupId,
         pick: team,
-        status: 'PENDING',
+        status: pickStatus,
         links: matchCost,
         active: true,
         createdAt: Date.now(),

@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 interface MatchupCardProps {
   m: any;
   user: any;
+  profile?: any;
   userPicks: Record<string, any>;
   matchupPickCounts: Record<string, { total: number; away: number; home: number }>;
   sponsors: any[];
@@ -19,6 +20,7 @@ interface MatchupCardProps {
 export function MatchupCard({
   m,
   user,
+  profile,
   userPicks,
   matchupPickCounts,
   sponsors,
@@ -28,10 +30,10 @@ export function MatchupCard({
   sharingMatchupId,
   isMyPick = false
 }: MatchupCardProps) {
-  const hasActivePickAnywhere = Object.values(userPicks).some((p: any) => p.status === 'PENDING');
+  const activePicks = Object.values(userPicks).filter((p: any) => p.status === 'PENDING' || p.status === 'QUEUED');
   const hasPicked = !!userPicks[m.gameId];
   const pickData = userPicks[m.gameId];
-  const isPickDisabled = !user || hasPicked || hasActivePickAnywhere;
+  const isPickDisabled = !user || hasPicked || activePicks.length >= (profile?.premium ? 2 : 1);
 
   const mCounts = matchupPickCounts[m.gameId] || { total: 0, away: 0, home: 0 };
   const awayHotPct = mCounts.total > 0 ? Math.round((mCounts.away / mCounts.total) * 100) : 0;
@@ -299,9 +301,14 @@ export function MatchupCard({
            {hasPicked ? (
               pickData?.pick?.id === m.awayTeam.id || pickData?.pick?.id === m.homeTeam.id || (m.type === 'OVER_UNDER' && (pickData?.pick?.id === 'OVER' || pickData?.pick?.id === 'UNDER')) ? (
                 isScheduled ? (
-                  <button onClick={() => onCancelPick(m)} className="text-xs font-bold text-red-500 uppercase tracking-wide flex items-center gap-1 hover:text-red-400">
-                     <X className="w-3 h-3" /> Cancel
-                  </button>
+                  <div className="flex items-center gap-3">
+                      {pickData?.status === 'QUEUED' && (
+                        <span className="text-xs font-bold text-purple-400 uppercase tracking-wide border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 rounded">Queued</span>
+                      )}
+                      <button onClick={() => onCancelPick(m)} className="text-xs font-bold text-red-500 uppercase tracking-wide flex items-center gap-1 hover:text-red-400">
+                         <X className="w-3 h-3" /> Cancel
+                      </button>
+                  </div>
                 ) : (
                   <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
                 )

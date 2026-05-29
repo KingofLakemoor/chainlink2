@@ -452,7 +452,14 @@ function PlayDashboard() {
       if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
         setUserPicks(prev => {
           const newPicks = { ...prev };
+          const cancelledPick = newPicks[matchup.gameId];
           delete newPicks[matchup.gameId];
+          if (cancelledPick?.status === 'PENDING') {
+              const queuedPickKey = Object.keys(newPicks).find(key => newPicks[key].status === 'QUEUED');
+              if (queuedPickKey) {
+                  newPicks[queuedPickKey] = { ...newPicks[queuedPickKey], status: 'PENDING' };
+              }
+          }
           return newPicks;
         });
         return;
@@ -478,16 +485,23 @@ function PlayDashboard() {
         return;
     }
 
-    const hasActivePickAnywhere = Object.values(userPicks).some((p: any) => p.status === 'PENDING');
+    const activePicks = Object.values(userPicks).filter((p: any) => p.status === 'PENDING' || p.status === 'QUEUED');
+    const hasActivePickAnywhere = activePicks.length > 0;
 
-    if (hasActivePickAnywhere && (!userPicks[matchup.gameId] || userPicks[matchup.gameId].status !== 'PENDING')) {
-       alert("You already have an active pending pick.");
+    if (activePicks.length >= (profile?.premium ? 2 : 1) && (!userPicks[matchup.gameId] || (userPicks[matchup.gameId].status !== 'PENDING' && userPicks[matchup.gameId].status !== 'QUEUED'))) {
+       if (!profile?.premium) {
+           alert("You already have an active pick! Upgrade to ChainLink Pro to queue picks.");
+       } else {
+           alert("You can only have one active pick and one queued pick at a time.");
+       }
        return;
     }
 
     if (userPicks[matchup.gameId]) {
       return; // Already picked
     }
+
+    const newPickStatus = activePicks.length > 0 ? 'QUEUED' : 'PENDING';
 
     try {
       const pickId = user.uid + "_" + matchup.gameId;
@@ -499,7 +513,7 @@ function PlayDashboard() {
           name: team.name,
           image: team.image
         },
-        status: 'PENDING',
+        status: newPickStatus,
         links: matchup.cost ?? 0,
         active: true,
         createdAt: Date.now(),
@@ -544,30 +558,55 @@ function PlayDashboard() {
   };
 
   const activePick = Object.values(userPicks).find((p: any) => p.status === 'PENDING');
+  const queuedPick = Object.values(userPicks).find((p: any) => p.status === 'QUEUED');
+
   const activeMatchup = activePick ? allFetchedMatchups.find(m => m.gameId === activePick.matchupId) : null;
-  const filteredMatchups = matchups.filter(m => !activePick || m.gameId !== activePick.matchupId);
+  const queuedMatchup = queuedPick ? allFetchedMatchups.find(m => m.gameId === queuedPick.matchupId) : null;
+  const filteredMatchups = matchups.filter(m => (!activePick || m.gameId !== activePick.matchupId) && (!queuedPick || m.gameId !== queuedPick.matchupId));
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
 
-      {activeMatchup && (
+      {(activeMatchup || queuedMatchup) && (
         <div className="mb-10 w-full relative group">
           <div className="text-center mb-6">
-            <h2 className="text-xl font-bold text-zinc-100">My Pick</h2>
+            <h2 className="text-xl font-bold text-zinc-100">My Picks</h2>
           </div>
-          <div className="relative">
-            <MatchupCard
-              m={activeMatchup}
-              user={user}
-              userPicks={userPicks}
-              matchupPickCounts={matchupPickCounts}
-              sponsors={sponsors}
-              onMakePick={handleMakePick}
-              onCancelPick={handleCancelPick}
-              onShareMatchup={handleShareMatchup}
-              sharingMatchupId={sharingMatchupId}
-              isMyPick={true}
-            />
+          <div className="flex flex-col gap-6">
+            {activeMatchup && (
+              <div className="relative">
+                <MatchupCard
+                  m={activeMatchup}
+                  user={user}
+                  profile={profile}
+                  userPicks={userPicks}
+                  matchupPickCounts={matchupPickCounts}
+                  sponsors={sponsors}
+                  onMakePick={handleMakePick}
+                  onCancelPick={handleCancelPick}
+                  onShareMatchup={handleShareMatchup}
+                  sharingMatchupId={sharingMatchupId}
+                  isMyPick={true}
+                />
+              </div>
+            )}
+            {queuedMatchup && (
+              <div className="relative">
+                <MatchupCard
+                  m={queuedMatchup}
+                  user={user}
+                  profile={profile}
+                  userPicks={userPicks}
+                  matchupPickCounts={matchupPickCounts}
+                  sponsors={sponsors}
+                  onMakePick={handleMakePick}
+                  onCancelPick={handleCancelPick}
+                  onShareMatchup={handleShareMatchup}
+                  sharingMatchupId={sharingMatchupId}
+                  isMyPick={true}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -604,6 +643,7 @@ function PlayDashboard() {
               <MatchupCard
                 m={m}
                 user={user}
+                profile={profile}
                 userPicks={userPicks}
                 matchupPickCounts={matchupPickCounts}
                 sponsors={sponsors}

@@ -176,6 +176,17 @@ export async function gradeSingleMatchup(matchup: any) {
           updatedAt: Date.now()
         });
 
+        // Promote QUEUED pick if exists
+        const queuedQuery = adminDb!.collection('picks').where('userId', '==', userId).where('status', '==', 'QUEUED');
+        const queuedDocs = await transaction.get(queuedQuery);
+        if (!queuedDocs.empty) {
+          const queuedPickDoc = queuedDocs.docs[0];
+          transaction.update(queuedPickDoc.ref, {
+            status: 'PENDING',
+            updatedAt: Date.now()
+          });
+        }
+
         transaction.update(userRef, {
           links,
           stats,
