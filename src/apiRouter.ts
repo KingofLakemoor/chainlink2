@@ -58,39 +58,33 @@ apiRouter.post('/stripe/create-checkout-session', async (req, res) => {
 
     if (itemType === 'links') {
       let priceInCents = 0;
-      let title = '';
+      let productId = '';
       if (amount === 150) {
         priceInCents = 525;
-        title = '150 Links';
+        productId = 'prod_UbeZGEJ7qNYzqh';
       } else if (amount === 350) {
         priceInCents = 1049;
-        title = '350 Links';
+        productId = 'prod_UbeanXV0kHAOmx';
       } else if (amount === 1050) {
         priceInCents = 2999;
-        title = '1,050 Links';
+        productId = 'prod_UbeaOKAeLRoMYA';
       } else if (amount === 1800) {
         priceInCents = 4999;
-        title = '1,800 Links';
+        productId = 'prod_UbeaHkQfsij3Je';
       } else {
         return res.status(400).json({ success: false, error: 'Invalid links amount' });
       }
 
       priceData = {
         currency: 'usd',
-        product_data: {
-          name: title,
-          description: `Purchase ${title} for use in the app`,
-        },
+        product: productId,
         unit_amount: priceInCents,
       };
       metadata.amount = amount.toString();
     } else if (itemType === 'premium') {
       priceData = {
         currency: 'usd',
-        product_data: {
-          name: 'ChainLink Pro',
-          description: 'Unlock Premium features',
-        },
+        product: 'prod_Ubebt3HfTCfFfc',
         unit_amount: 1049,
         recurring: {
           interval: 'month',
@@ -151,8 +145,20 @@ apiRouter.post('/stripe/webhook', express.raw({type: 'application/json'}), async
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
 
-    const uid = session.metadata?.uid;
-    const itemType = session.metadata?.itemType;
+    let uid = session.metadata?.uid;
+    let itemType = session.metadata?.itemType;
+    let amountStr = session.metadata?.amount;
+
+    if (!uid && session.subscription) {
+       try {
+         const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+         uid = subscription.metadata?.uid;
+         itemType = subscription.metadata?.itemType;
+         amountStr = subscription.metadata?.amount;
+       } catch (e) {
+         console.error("Failed to retrieve subscription metadata:", e);
+       }
+    }
 
     if (uid && adminDb) {
       try {
@@ -166,7 +172,6 @@ apiRouter.post('/stripe/webhook', express.raw({type: 'application/json'}), async
           const updateData: any = { updatedAt: Date.now() };
 
           if (itemType === 'links') {
-            const amountStr = session.metadata?.amount;
             if (amountStr) {
                const amount = parseInt(amountStr, 10);
                updateData.links = (profile.links || 0) + amount;
@@ -230,7 +235,7 @@ apiRouter.post("/picks/cancel-pick", async (req, res) => {
       }
 
       const profile = userDoc.data()!;
-      const refundAmount = pickData.links ?? pickData.coins ?? 0;
+      const refundAmount = pickData.links ?? 0;
 
       transaction.delete(pickRef);
 
