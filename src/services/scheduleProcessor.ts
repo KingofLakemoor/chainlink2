@@ -313,7 +313,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                  scrapedMatchup.status === 'STATUS_POSTPONED')) {
               const pendingPicksSnap = await adminDb.collection('picks')
                 .where('matchupId', '==', gameId)
-                .where('status', '==', 'PENDING')
+                .where('status', 'in', ['PENDING', 'QUEUED'])
                 .limit(1)
                 .get();
 
@@ -388,7 +388,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
           if (data.status === 'STATUS_SCHEDULED' && !data.abandoned && !scrapedGameIds.has(gameId) && data.league !== 'PGA' && data.league !== 'CBASE' && data.league !== 'ATP' && data.league !== 'WTA') {
             const pendingPicksSnap = await adminDb.collection('picks')
               .where('matchupId', '==', gameId)
-              .where('status', '==', 'PENDING')
+              .where('status', 'in', ['PENDING', 'QUEUED'])
               .limit(1)
               .get();
 
