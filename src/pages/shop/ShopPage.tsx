@@ -292,7 +292,7 @@ export default function ShopPage() {
                 <Coins className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-bold text-zinc-100 mb-2">150 Links</h3>
-              <p className="text-zinc-400 text-sm mb-6 flex-1">A quick refill to keep your streak alive.</p>
+              <p className="text-zinc-400 text-sm mb-6 flex-1">A quick refill to keep you in the game</p>
               <div className="w-full">
                 <Button
                   onClick={() => handleStripeCheckout('links', 150)}
@@ -310,7 +310,7 @@ export default function ShopPage() {
                 <Coins className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-bold text-zinc-100 mb-2">350 Links</h3>
-              <p className="text-zinc-400 text-sm mb-6 flex-1">Standard boost for your bankroll.</p>
+              <p className="text-zinc-400 text-sm mb-6 flex-1">Standard boost for your Links</p>
               <div className="w-full">
                 <Button
                   onClick={() => handleStripeCheckout('links', 350)}
@@ -331,7 +331,7 @@ export default function ShopPage() {
                 <Coins className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-bold text-zinc-100 mb-2">1,050 Links</h3>
-              <p className="text-zinc-400 text-sm mb-6 flex-1">Enough for a merch redemption.</p>
+              <p className="text-zinc-400 text-sm mb-6 flex-1">Enough for a merch redemption</p>
               <div className="w-full">
                 <Button
                   onClick={() => handleStripeCheckout('links', 1050)}
@@ -352,7 +352,7 @@ export default function ShopPage() {
                 <Coins className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-bold text-zinc-100 mb-2">1,800 Links</h3>
-              <p className="text-zinc-400 text-sm mb-6 flex-1">Massive boost for serious players.</p>
+              <p className="text-zinc-400 text-sm mb-6 flex-1">Massive boost for serious players</p>
               <div className="w-full">
                 <Button
                   onClick={() => handleStripeCheckout('links', 1800)}
