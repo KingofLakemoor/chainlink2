@@ -76,11 +76,11 @@ export const frequentSync = onSchedule({ schedule: "every 2 minutes", timeoutSec
           let tokens: string[] = [];
 
           if (notifData.audience === 'GLOBAL') {
-            // Fetch all users with fcmTokens
-            const usersSnap = await adminDb.collection('users').where('fcmTokens', '!=', []).get();
+            // Fetch all users and filter in memory since array inequality filters are not fully supported
+            const usersSnap = await adminDb.collection('users').get();
             usersSnap.docs.forEach((uDoc: any) => {
               const uData = uDoc.data();
-              if (uData.notificationsEnabled !== false && uData.fcmTokens && Array.isArray(uData.fcmTokens)) {
+              if (uData.notificationsEnabled !== false && uData.fcmTokens && Array.isArray(uData.fcmTokens) && uData.fcmTokens.length > 0) {
                 tokens.push(...uData.fcmTokens);
               }
             });
@@ -95,34 +95,39 @@ export const frequentSync = onSchedule({ schedule: "every 2 minutes", timeoutSec
           }
 
           if (tokens.length > 0) {
-            const message = {
-              notification: {
-                title: notifData.title,
-                body: notifData.body,
-              },
-              webpush: {
-                fcmOptions: {
-                  link: '/'
-                }
-              },
-              tokens: tokens
-            };
-
-            try {
-              const response = await getMessaging().sendEachForMulticast(message);
-              console.log(`[Cron] Successfully sent message to ${response.successCount} devices. Failed: ${response.failureCount}`);
-
-              if (response.failureCount > 0) {
-                const failedTokens: string[] = [];
-                response.responses.forEach((resp: any, idx: number) => {
-                  if (!resp.success) {
-                    failedTokens.push(tokens[idx]);
+            // Chunk tokens into batches of 500 to avoid Firebase limit
+            const chunkSize = 500;
+            for (let i = 0; i < tokens.length; i += chunkSize) {
+              const tokenChunk = tokens.slice(i, i + chunkSize);
+              const message = {
+                notification: {
+                  title: notifData.title,
+                  body: notifData.body,
+                },
+                webpush: {
+                  fcmOptions: {
+                    link: '/'
                   }
-                });
-                // In a robust implementation, you might want to remove these failed tokens from the users.
+                },
+                tokens: tokenChunk
+              };
+
+              try {
+                const response = await getMessaging().sendEachForMulticast(message);
+                console.log(`[Cron] Successfully sent message chunk to ${response.successCount} devices. Failed: ${response.failureCount}`);
+
+                if (response.failureCount > 0) {
+                  const failedTokens: string[] = [];
+                  response.responses.forEach((resp: any, idx: number) => {
+                    if (!resp.success) {
+                      failedTokens.push(tokenChunk[idx]);
+                    }
+                  });
+                  // In a robust implementation, you might want to remove these failed tokens from the users.
+                }
+              } catch (err) {
+                console.error(`[Cron] Error sending multicast message chunk for notification ${doc.id}:`, err);
               }
-            } catch (err) {
-              console.error(`[Cron] Error sending multicast message for notification ${doc.id}:`, err);
             }
           }
 
