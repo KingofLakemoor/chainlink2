@@ -18,7 +18,7 @@ export async function requestNotificationPermission(userUid: string, profile: an
 
     const configParam = encodeURIComponent(JSON.stringify(app.options));
     const registration = await navigator.serviceWorker.register(
-      `/firebase-messaging-sw.js?config=${configParam}`
+      `/sw.js?config=${configParam}`
     );
 
     const currentToken = await getToken(messaging, {
@@ -65,7 +65,7 @@ export function useNotifications() {
 
           const configParam = encodeURIComponent(JSON.stringify(app.options));
           const registration = await navigator.serviceWorker.register(
-            `/firebase-messaging-sw.js?config=${configParam}`
+            `/sw.js?config=${configParam}`
           );
 
           const currentToken = await getToken(messaging, {
