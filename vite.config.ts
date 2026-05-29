@@ -11,10 +11,13 @@ export default defineConfig(({mode}) => {
       react(),
       tailwindcss(),
       VitePWA({
+        strategies: 'injectManifest',
+        srcDir: 'src',
+        filename: 'sw.ts',
         registerType: 'autoUpdate',
-        injectRegister: null, // We already have a service worker mechanism, just need the manifest
+        injectRegister: null,
         manifest: false, // We use a hardcoded manifest.json in public
-        workbox: {
+        injectManifest: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
           maximumFileSizeToCacheInBytes: 10 * 1024 * 1024 // 10MB
         }
@@ -32,8 +35,6 @@ export default defineConfig(({mode}) => {
       headers: {
         'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
       },
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
     },
     build: {
