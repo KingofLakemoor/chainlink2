@@ -19,6 +19,7 @@ import { OceanBanner } from '../../components/ui/profile-banners/ocean';
 import { PhantomStarBanner } from '../../components/ui/profile-banners/phantom-star';
 import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-syndicate';
 import { GlobalStageBanner } from '../../components/ui/profile-banners/global-stage';
+import { OpulentoVaultBanner } from '../../components/ui/profile-banners/opulento';
 import { PrimeCircuitRing } from '../../components/ui/avatar-rings/prime-circuit-ring';
 import { TitleMap } from '../../components/ui/titles';
 import { cn } from '../../lib/utils';
@@ -38,7 +39,8 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'OceanBanner': OceanBanner,
   'PhantomStarBanner': PhantomStarBanner,
   'GenesisSyndicate': GenesisSyndicate,
-  'GlobalStageBanner': GlobalStageBanner
+  'GlobalStageBanner': GlobalStageBanner,
+  'OpulentoVaultBanner': OpulentoVaultBanner
 };
 
 export default function DashboardPage() {
