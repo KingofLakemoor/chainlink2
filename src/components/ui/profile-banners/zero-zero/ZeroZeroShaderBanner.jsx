@@ -12,18 +12,6 @@ export function ZeroZeroShaderBanner({ isStatic = false, ...props }) {
     const renderer = new Renderer({ alpha: true, depth: false });
     const gl = renderer.gl;
 
-    function resize() {
-      renderer.setSize(container.current.offsetWidth, container.current.offsetHeight);
-      program.uniforms.uResolution.value = new Color(
-        gl.canvas.width,
-        gl.canvas.height,
-        gl.canvas.width / gl.canvas.height
-      );
-    }
-
-    window.addEventListener("resize", resize);
-    resize();
-
     const geometry = new Triangle(gl);
     const program = new Program(gl, {
       vertex: vert,
@@ -36,6 +24,18 @@ export function ZeroZeroShaderBanner({ isStatic = false, ...props }) {
       },
       transparent: true,
     });
+
+    function resize() {
+      renderer.setSize(container.current.offsetWidth, container.current.offsetHeight);
+      program.uniforms.uResolution.value = new Color(
+        gl.canvas.width,
+        gl.canvas.height,
+        gl.canvas.width / gl.canvas.height
+      );
+    }
+
+    window.addEventListener("resize", resize);
+    resize();
 
     const mesh = new Mesh(gl, { geometry, program });
     let raf;
