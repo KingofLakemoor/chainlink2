@@ -21,6 +21,8 @@ import { PhantomStarBanner } from '../../components/ui/profile-banners/phantom-s
 import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-syndicate';
 import { GlobalStageBanner } from '../../components/ui/profile-banners/global-stage';
 import { OpulentoVaultBanner } from '../../components/ui/profile-banners/opulento';
+import { XenonTerminalBanner } from '../../components/ui/profile-banners/xenon-terminal';
+import { XenonTerminalAvatarRing } from '../../components/ui/avatar-rings/xenon-terminal';
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {
   'InfernoBanner': InfernoBanner,
@@ -28,7 +30,8 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'PhantomStarBanner': PhantomStarBanner,
   'GenesisSyndicate': GenesisSyndicate,
   'GlobalStageBanner': GlobalStageBanner,
-  'OpulentoVaultBanner': OpulentoVaultBanner
+  'OpulentoVaultBanner': OpulentoVaultBanner,
+  'XenonTerminalBanner': XenonTerminalBanner
 };
 
 const AvatarRingMap: Record<string, React.FC<any>> = {
@@ -38,7 +41,8 @@ const AvatarRingMap: Record<string, React.FC<any>> = {
   'Mandala': Mandala,
   'Ocean': Ocean,
   'PhantomStar': PhantomStar,
-  'PrimeCircuitRing': PrimeCircuitRing
+  'PrimeCircuitRing': PrimeCircuitRing,
+  'XenonTerminalAvatarRing': XenonTerminalAvatarRing
 };
 
 export default function LeaderboardsPage() {

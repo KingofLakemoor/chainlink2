@@ -49,9 +49,9 @@
     "type": "AVATAR_RING",
     "active": true,
     "forSale": true,
-    "image": "border-cyan-400 border-dashed",
+    "image": "XenonTerminalAvatarRing",
     "featured": true,
-    "preview": "border-cyan-400 border-dashed",
+    "preview": "XenonTerminalAvatarRing",
     "order": 4,
     "collectionId": "xenon"
   },
@@ -189,9 +189,9 @@
     "type": "PROFILE_BANNER",
     "active": true,
     "forSale": true,
-    "image": "bg-gradient-to-br from-[#0f172a] to-cyan-900",
+    "image": "XenonTerminalBanner",
     "featured": true,
-    "preview": "bg-gradient-to-br from-[#0f172a] to-cyan-900",
+    "preview": "XenonTerminalBanner",
     "order": 14,
     "collectionId": "xenon"
   },
@@ -407,7 +407,7 @@
   },
   {
     "id": "title_originator_602",
-    "name": "Originator — 602",
+    "name": "Originator \u2014 602",
     "description": "Granted to core development/admin team.",
     "cost": 0,
     "type": "TITLE",
@@ -1187,6 +1187,20 @@
     "featured": false,
     "preview": "",
     "order": 76,
+    "collectionId": ""
+  },
+  {
+    "id": "title_xenon_terminal",
+    "name": "Xenon Terminal",
+    "description": "System access granted.",
+    "cost": 1500,
+    "type": "TITLE",
+    "active": true,
+    "forSale": true,
+    "image": "XenonTerminalTitle",
+    "featured": true,
+    "preview": "XenonTerminalTitle",
+    "order": 57,
     "collectionId": ""
   }
 ]

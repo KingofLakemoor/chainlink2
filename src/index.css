@@ -41,3 +41,70 @@
     animation: gold-dust 8s linear infinite;
   }
 }
+
+@layer utilities {
+  @keyframes terminal-core-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes terminal-core-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.12); opacity: 1; }
+  }
+
+  @keyframes terminal-ring-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
+  }
+
+  @keyframes terminal-scan {
+    0% { transform: translateY(0); opacity: 0.2; }
+    50% { opacity: 0.5; }
+    100% { transform: translateY(4px); opacity: 0.2; }
+  }
+
+  @keyframes terminal-cursor {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  @keyframes xenon-glyph-column {
+    0% { transform: translateY(-100%); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translateY(100%); opacity: 0; }
+  }
+
+  @keyframes xenon-title-glow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(56,189,248,0.6)); }
+    50% { filter: drop-shadow(0 0 18px rgba(168,85,247,1)); }
+  }
+
+  .animate-terminal-core-rotate {
+    animation: terminal-core-rotate 30s linear infinite;
+  }
+
+  .animate-terminal-core-pulse {
+    animation: terminal-core-pulse 5s ease-in-out infinite;
+  }
+
+  .animate-terminal-ring-rotate {
+    animation: terminal-ring-rotate 26s linear infinite;
+  }
+
+  .animate-terminal-scan {
+    animation: terminal-scan 2.4s ease-in-out infinite;
+  }
+
+  .animate-terminal-cursor {
+    animation: terminal-cursor 1s steps(2, end) infinite;
+  }
+
+  .animate-xenon-glyph-column {
+    animation: xenon-glyph-column 6s linear infinite;
+  }
+
+  .animate-xenon-title-glow {
+    animation: xenon-title-glow 4.5s ease-in-out infinite;
+  }
+}
