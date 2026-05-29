@@ -13,7 +13,6 @@ export async function requestNotificationPermission(userUid: string, profile: an
     const messaging = getMessaging(app);
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') {
-      console.log('Notification permission not granted.');
       return false;
     }
 
@@ -30,7 +29,6 @@ export async function requestNotificationPermission(userUid: string, profile: an
     if (currentToken) {
       const hasToken = profile?.fcmTokens?.includes(currentToken);
       if (!hasToken) {
-        console.log('Saving new FCM token for user');
         const userRef = doc(db, 'users', userUid);
         await updateDoc(userRef, {
           fcmTokens: arrayUnion(currentToken)
@@ -38,7 +36,6 @@ export async function requestNotificationPermission(userUid: string, profile: an
       }
       return true;
     } else {
-      console.log('No registration token available.');
       return false;
     }
   } catch (error) {
@@ -79,18 +76,14 @@ export function useNotifications() {
           if (currentToken) {
             const hasToken = profile.fcmTokens?.includes(currentToken);
             if (!hasToken) {
-              console.log('Saving new FCM token for user');
               const userRef = doc(db, 'users', user.uid);
               await updateDoc(userRef, {
                 fcmTokens: arrayUnion(currentToken)
               });
             }
-          } else {
-            console.log('No registration token available.');
           }
 
           const unsubscribe = onMessage(messaging, (payload) => {
-            console.log('Message received in foreground: ', payload);
             if (payload.notification) {
               const notification = new Notification(payload.notification.title || 'Notification', {
                 body: payload.notification.body
