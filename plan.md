@@ -1,6 +1,4 @@
-1. Remove references to `session.subscription_data` and properly fetch the `subscription` from the API via `stripe.subscriptions.retrieve` inside `apiRouter.ts`.
-2. Do not fallback to `coins`, but rather continue utilizing `links` internally as per the codebase modifications.
-3. Use `git diff` or `read_file` to verify that the changes were applied correctly.
-4. Run `npm run lint` and `npm run build` to confirm the typescript build errors are resolved.
-5. Complete pre commit steps to ensure proper testing, verification, review, and reflection are done.
-6. Once completed, submit the changes.
+1. **Update `src/components/ui/profile-banners/opulento/index.tsx`**: Replace the current simplified implementation with the robust one requested by the user. The new code includes SVG graphics (VaultRings, VaultLock), animated GoldDust, and uses Tailwind CSS utilities. Add `isStatic` logic to stop animations if true, as seen in other banners (pass `className` correctly, or use `style` if preferred, but follow the requested structure).
+2. **Update `src/index.css` (or `globals.css` if present)**: Add the required `@keyframes` and animation utility classes for `vault-rotate`, `vault-pulse`, and `gold-dust` to support the updated component, as provided in the user's instructions.
+3. **Delete `src/components/ui/profile-banners/opulento/styles.css`**: We don't need this anymore since we are using Tailwind utilities in the updated component.
+4. **Pre-commit checks**: Run testing, linting and verification to ensure everything builds and works properly.

@@ -11,3 +11,33 @@
     @apply bg-[#0a0a0a] text-zinc-50 antialiased;
   }
 }
+
+@layer utilities {
+  @keyframes vault-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes vault-pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.12); }
+  }
+
+  @keyframes gold-dust {
+    0% { transform: translateY(0px); opacity: 0.2; }
+    50% { opacity: 0.8; }
+    100% { transform: translateY(-40px); opacity: 0.1; }
+  }
+
+  .animate-vault-rotate {
+    animation: vault-rotate 40s linear infinite;
+  }
+
+  .animate-vault-pulse {
+    animation: vault-pulse 6s ease-in-out infinite;
+  }
+
+  .animate-gold-dust {
+    animation: gold-dust 8s linear infinite;
+  }
+}
