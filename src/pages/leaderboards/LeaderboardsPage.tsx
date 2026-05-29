@@ -21,6 +21,7 @@ import { PhantomStarBanner } from '../../components/ui/profile-banners/phantom-s
 import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-syndicate';
 import { GlobalStageBanner } from '../../components/ui/profile-banners/global-stage';
 import { OpulentoVaultBanner } from '../../components/ui/profile-banners/opulento';
+import { ZeroZeroShaderBanner } from "../../components/ui/profile-banners/zero-zero/ZeroZeroShaderBanner";
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {
   'InfernoBanner': InfernoBanner,
@@ -28,7 +29,8 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'PhantomStarBanner': PhantomStarBanner,
   'GenesisSyndicate': GenesisSyndicate,
   'GlobalStageBanner': GlobalStageBanner,
-  'OpulentoVaultBanner': OpulentoVaultBanner
+  'OpulentoVaultBanner': OpulentoVaultBanner,
+  'ZeroZeroShaderBanner': ZeroZeroShaderBanner
 };
 
 const AvatarRingMap: Record<string, React.FC<any>> = {

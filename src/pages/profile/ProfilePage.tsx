@@ -23,6 +23,7 @@ import { PhantomStarBanner } from '../../components/ui/profile-banners/phantom-s
 import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-syndicate';
 import { GlobalStageBanner } from '../../components/ui/profile-banners/global-stage';
 import { OpulentoVaultBanner } from '../../components/ui/profile-banners/opulento';
+import { ZeroZeroShaderBanner } from "../../components/ui/profile-banners/zero-zero/ZeroZeroShaderBanner";
 import { PrimeCircuitRing } from '../../components/ui/avatar-rings/prime-circuit-ring';
 import { TitleMap } from '../../components/ui/titles';
 import { FirebaseImage } from '../../components/ui/FirebaseImage';
@@ -43,7 +44,8 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'PhantomStarBanner': PhantomStarBanner,
   'GenesisSyndicate': GenesisSyndicate,
   'GlobalStageBanner': GlobalStageBanner,
-  'OpulentoVaultBanner': OpulentoVaultBanner
+  'OpulentoVaultBanner': OpulentoVaultBanner,
+  'ZeroZeroShaderBanner': ZeroZeroShaderBanner
 };
 
 export default function ProfilePage() {
