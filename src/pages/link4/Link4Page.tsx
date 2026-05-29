@@ -235,7 +235,7 @@ export default function Link4Page() {
   const availableMatchups = allMatchups.filter(m => {
     if (!m.active) return false;
     if (allowedSports.length > 0 && !allowedSports.includes(m.league)) return false;
-    if (m.status !== 'STATUS_SCHEDULED' && m.status !== 'STATUS_IN_PROGRESS') return false;
+    if (m.status !== 'STATUS_SCHEDULED') return false;
 
     if (nextPickIndex > 0) {
       const prevPick = picks[nextPickIndex - 1];
