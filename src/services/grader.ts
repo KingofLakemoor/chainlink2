@@ -181,10 +181,32 @@ export async function gradeSingleMatchup(matchup: any) {
         const queuedDocs = await transaction.get(queuedQuery);
         if (!queuedDocs.empty) {
           const queuedPickDoc = queuedDocs.docs[0];
-          transaction.update(queuedPickDoc.ref, {
-            status: 'PENDING',
-            updatedAt: Date.now()
-          });
+          const queuedPickData = queuedPickDoc.data();
+
+          // Verify the matchup hasn't started yet
+          const queuedMatchupRef = adminDb!.collection('matchups').doc(queuedPickData.matchupId);
+          const queuedMatchupDoc = await transaction.get(queuedMatchupRef);
+
+          if (queuedMatchupDoc.exists) {
+            const queuedMatchupData = queuedMatchupDoc.data()!;
+            // Only promote if it's still scheduled
+            if (queuedMatchupData.status === 'STATUS_SCHEDULED') {
+              transaction.update(queuedPickDoc.ref, {
+                status: 'PENDING',
+                updatedAt: Date.now()
+              });
+            } else {
+              // Matchup already started/ended before this queued pick could be promoted. Cancel and refund it.
+              transaction.update(queuedPickDoc.ref, {
+                status: 'CANCELED',
+                updatedAt: Date.now()
+              });
+              const refund = queuedPickData.links ?? queuedPickData.coins ?? 0;
+              if (refund > 0) {
+                 links += refund;
+              }
+            }
+          }
         }
 
         transaction.update(userRef, {

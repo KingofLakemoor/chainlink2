@@ -234,21 +234,40 @@ apiRouter.post("/picks/cancel-pick", async (req, res) => {
 
       transaction.delete(pickRef);
 
+      const updateData: any = { updatedAt: Date.now() };
+      let linksToRefund = refundAmount;
+
       if (pickData.status === 'PENDING') {
         const queuedQuery = adminDb.collection('picks').where('userId', '==', uid).where('status', '==', 'QUEUED');
         const queuedDocs = await transaction.get(queuedQuery);
         if (!queuedDocs.empty) {
           const queuedPickDoc = queuedDocs.docs[0];
-          transaction.update(queuedPickDoc.ref, {
-            status: 'PENDING',
-            updatedAt: Date.now()
-          });
+          const queuedPickData = queuedPickDoc.data()!;
+
+          const queuedMatchupRef = adminDb.collection('matchups').doc(queuedPickData.matchupId);
+          const queuedMatchupDoc = await transaction.get(queuedMatchupRef);
+
+          if (queuedMatchupDoc.exists && queuedMatchupDoc.data()!.status === 'STATUS_SCHEDULED') {
+             transaction.update(queuedPickDoc.ref, {
+               status: 'PENDING',
+               updatedAt: Date.now()
+             });
+          } else {
+             // Matchup already started/ended before this queued pick could be promoted. Cancel and refund it.
+             transaction.update(queuedPickDoc.ref, {
+               status: 'CANCELED',
+               updatedAt: Date.now()
+             });
+             const qRefund = queuedPickData.links ?? queuedPickData.coins ?? 0;
+             if (qRefund > 0) {
+                 linksToRefund += qRefund;
+             }
+          }
         }
       }
 
-      const updateData: any = { updatedAt: Date.now() };
-      if (refundAmount > 0) {
-        updateData.links = profile.links + refundAmount;
+      if (linksToRefund > 0) {
+        updateData.links = profile.links + linksToRefund;
       }
       transaction.update(userRef, updateData);
     });
