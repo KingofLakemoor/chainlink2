@@ -105,9 +105,9 @@
     "type": "AVATAR_RING",
     "active": true,
     "forSale": true,
-    "image": "border-amber-500 border-double",
+    "image": "OpulentoAvatarRing",
     "featured": true,
-    "preview": "border-amber-500 border-double",
+    "preview": "OpulentoAvatarRing",
     "order": 8,
     "collectionId": "opulento"
   },
@@ -399,9 +399,9 @@
     "type": "TITLE",
     "active": true,
     "forSale": false,
-    "image": "font-bold text-white border-[#00FF9C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]",
+    "image": "V1OriginatorTitle",
     "featured": true,
-    "preview": "font-bold text-white border-[#00FF9C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]",
+    "preview": "V1OriginatorTitle",
     "order": 20,
     "collectionId": ""
   },
@@ -413,9 +413,9 @@
     "type": "TITLE",
     "active": true,
     "forSale": false,
-    "image": "font-bold text-white border-[#00FF9C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]",
+    "image": "V1OriginatorTitle",
     "featured": false,
-    "preview": "font-bold text-white border-[#00FF9C] shadow-[inset_0_2px_4px_rgba(0,0,0,0.4)]",
+    "preview": "V1OriginatorTitle",
     "order": 21,
     "collectionId": ""
   },
@@ -1188,5 +1188,19 @@
     "preview": "",
     "order": 76,
     "collectionId": ""
+  },
+  {
+    "id": "title_opulento",
+    "name": "Opulento",
+    "description": "The Engraved Gold Standard",
+    "cost": 5000,
+    "type": "TITLE",
+    "active": true,
+    "forSale": true,
+    "image": "OpulentoTitle",
+    "featured": true,
+    "preview": "OpulentoTitle",
+    "order": 19,
+    "collectionId": "opulento"
   }
 ]
