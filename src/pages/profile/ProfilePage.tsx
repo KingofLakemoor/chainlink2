@@ -24,6 +24,7 @@ import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-sy
 import { GlobalStageBanner } from '../../components/ui/profile-banners/global-stage';
 import { OpulentoVaultBanner } from '../../components/ui/profile-banners/opulento';
 import { PrimeCircuitRing } from '../../components/ui/avatar-rings/prime-circuit-ring';
+import { OpulentoAvatarRing } from '../../components/ui/avatar-rings/opulento';
 import { TitleMap } from '../../components/ui/titles';
 import { FirebaseImage } from '../../components/ui/FirebaseImage';
 
@@ -34,7 +35,8 @@ const AvatarRingMap: Record<string, React.FC<any>> = {
   'Mandala': Mandala,
   'Ocean': Ocean,
   'PhantomStar': PhantomStar,
-  'PrimeCircuitRing': PrimeCircuitRing
+  'PrimeCircuitRing': PrimeCircuitRing,
+  'OpulentoAvatarRing': OpulentoAvatarRing
 };
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {

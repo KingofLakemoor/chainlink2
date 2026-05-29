@@ -41,3 +41,32 @@
     animation: gold-dust 8s linear infinite;
   }
 }
+
+@layer utilities {
+  @keyframes opulento-sparkle {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(250,204,21,0.4)); }
+    50% { filter: drop-shadow(0 0 16px rgba(250,204,21,0.9)); }
+  }
+
+  .animate-opulento-sparkle {
+    animation: opulento-sparkle 5s ease-in-out infinite;
+  }
+
+  @keyframes vault-ring-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes vault-lock-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.25); opacity: 1; }
+  }
+
+  .animate-vault-ring-rotate {
+    animation: vault-ring-rotate 22s linear infinite;
+  }
+
+  .animate-vault-lock-pulse {
+    animation: vault-lock-pulse 4s ease-in-out infinite;
+  }
+}
