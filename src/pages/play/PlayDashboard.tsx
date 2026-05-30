@@ -22,51 +22,6 @@ export default function PlayDashboard() {
   useEffect(() => {
     if (!user) return;
 
-    if (import.meta.env.DEV) {
-
-       const mockMatchups = [
-            {
-                id: 'mock-1',
-                gameId: 'mock-1',
-                title: 'Who will win? Mock Team A @ Mock Team B',
-                league: 'EPL',
-                status: 'STATUS_SCHEDULED',
-                startTime: Date.now() + 1000000,
-                statusDesc: 'Upcoming',
-                cost: 0,
-                awayTeam: { id: 'teamA', name: 'Mock Team A', image: 'https://via.placeholder.com/150', score: 0 },
-                homeTeam: { id: 'teamB', name: 'Mock Team B', image: 'https://via.placeholder.com/150', score: 0 },
-                metadata: {}
-            },
-            {
-                id: 'mock-live-1',
-                title: 'Who will win? Mock Live Away @ Mock Live Home',
-                league: 'EPL',
-                status: 'STATUS_IN_PROGRESS',
-                startTime: Date.now() - 3600000,
-                statusDesc: 'In Progress',
-                cost: 0,
-                awayTeam: { id: 'liveA', name: 'Mock Live Away', image: 'https://via.placeholder.com/150', score: 1 },
-                homeTeam: { id: 'liveH', name: 'Mock Live Home', image: 'https://via.placeholder.com/150', score: 2 },
-                metadata: {}
-            }
-       ];
-
-       const handleMockMatchups = (e: any) => {
-          setAllFetchedMatchups(e.detail);
-       };
-
-       window.addEventListener('mock-matchups', handleMockMatchups);
-       setAllFetchedMatchups(mockMatchups);
-       setGlobalUpcomingPicks([
-          { matchupId: 'mock-1', pick: { id: 'teamA' } },
-          { matchupId: 'mock-1', pick: { id: 'teamA' } },
-          { matchupId: 'mock-1', pick: { id: 'teamB' } },
-       ]);
-
-       return () => window.removeEventListener('mock-matchups', handleMockMatchups);
-    }
-
     let unsubMatchups = () => {};
 
     const setupMatchups = () => {

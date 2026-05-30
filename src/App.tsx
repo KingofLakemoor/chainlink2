@@ -344,14 +344,6 @@ function MainLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-function PlaceholderPage({ title }: { title: string }) {
-  return (
-    <div className="flex items-center justify-center h-full text-zinc-500 font-medium">
-      {title} - Coming Soon
-    </div>
-  );
-}
-
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return null;
@@ -368,7 +360,6 @@ const BracketsPage = React.lazy(() => import('./pages/brackets/BracketsPage').th
 const Link4Page = React.lazy(() => import('./pages/link4/Link4Page'));
 const PickEmPage = React.lazy(() => import('./pages/pickem/PickEmPage'));
 const SponsorPage = React.lazy(() => import('./pages/SponsorPage'));
-const ChallengesPage = React.lazy(() => import('./pages/challenges/ChallengesPage'));
 
 export default function App() {
   return (
@@ -385,13 +376,10 @@ export default function App() {
           <Route path="/pickem/:campaignId" element={<PrivateRoute><MainLayout><PickEmPage /></MainLayout></PrivateRoute>} />
           <Route path="/brackets" element={<PrivateRoute><MainLayout><BracketsPage /></MainLayout></PrivateRoute>} />
           <Route path="/brackets/:bracketId" element={<PrivateRoute><MainLayout><BracketsPage /></MainLayout></PrivateRoute>} />
-          <Route path="/challenges" element={<PrivateRoute><MainLayout><ChallengesPage /></MainLayout></PrivateRoute>} />
           <Route path="/link4" element={<PrivateRoute><MainLayout><Link4Page /></MainLayout></PrivateRoute>} />
-          <Route path="/squads" element={<PrivateRoute><MainLayout><PlaceholderPage title="Squads" /></MainLayout></PrivateRoute>} />
           <Route path="/mypicks" element={<PrivateRoute><MainLayout><MyPicksPage /></MainLayout></PrivateRoute>} />
           <Route path="/leaderboards" element={<PrivateRoute><MainLayout><LeaderboardsPage /></MainLayout></PrivateRoute>} />
           <Route path="/shop" element={<PrivateRoute><MainLayout><ShopPage /></MainLayout></PrivateRoute>} />
-          <Route path="/games" element={<PrivateRoute><MainLayout><PlaceholderPage title="Games" /></MainLayout></PrivateRoute>} />
           <Route path="/sponsor" element={<SponsorPage />} />
           {/* Catch all route back to play */}
           <Route path="*" element={<Navigate to="/" replace />} />
