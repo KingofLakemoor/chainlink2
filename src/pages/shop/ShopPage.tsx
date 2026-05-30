@@ -90,8 +90,11 @@ export default function ShopPage() {
     city: '',
     state: '',
     zip: '',
-    country: ''
+    country: '',
+    size: 'M',
+    color: 'Black'
   });
+  const [activePreviewImage, setActivePreviewImage] = useState<string>('');
 
 
   useEffect(() => {
@@ -102,7 +105,7 @@ export default function ShopPage() {
             { id: 'ring_gold', name: 'Gold Ring', description: 'A fancy gold ring for your avatar.', cost: 500, type: 'AVATAR_RING', active: true, image: 'Hexagons' },
             { id: 'banner_neon', name: 'Neon Banner', description: 'Brighten up your profile header.', cost: 1000, type: 'PROFILE_BANNER', active: true, image: 'InfernoBanner' },
 
-            { id: 'merch_shirt', name: 'Cool Shirt', description: 'A shirt', cost: 100, type: 'MERCH', active: true, image: '' },
+            { id: 'merch_level_one_tee', name: 'ChainLink Level One Tee', description: 'The official ChainLink Level One Tee.', cost: 1000, type: 'MERCH', active: true, image: '/images/merch/tee-banner.png' },
           ]);
           setLoading(false);
           return;
@@ -519,13 +522,110 @@ export default function ShopPage() {
         </section>
 
       <Modal isOpen={isMerchModalOpen} onClose={() => setIsMerchModalOpen(false)}>
-        <div className="p-6">
+        <div className="p-6 max-h-[90vh] overflow-y-auto">
           <h2 className="text-xl font-bold text-zinc-100 mb-2">Order {selectedMerchItem?.name}</h2>
-          <p className="text-zinc-400 text-sm mb-6">
+          {selectedMerchItem?.description && (
+            <p className="text-zinc-400 text-sm mb-4">
+              {selectedMerchItem.description}
+            </p>
+          )}
+
+          {/* Product Preview Images */}
+          {selectedMerchItem?.id === 'merch_level_one_tee' && (
+             <div className="mb-6">
+                <div className="aspect-square bg-zinc-900 rounded-lg overflow-hidden mb-3 border border-zinc-800 flex items-center justify-center">
+                  <img
+                    src={activePreviewImage || selectedMerchItem.image}
+                    alt="Product Preview"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                {/* Thumbnails */}
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-900">
+                  {[
+                    { color: 'Black', src: '/images/merch/unisex-sports-tee-black-front-6a1a327fdd456.jpg' },
+                    { color: 'Navy', src: '/images/merch/unisex-sports-tee-navy-front-6a1a327fdd64c.jpg' },
+                    { color: 'Dark Heather', src: '/images/merch/unisex-sports-tee-dark-heather-front-6a1a327fdd4e7.jpg' },
+                    { color: 'Kelly Green', src: '/images/merch/unisex-sports-tee-kelly-green-front-6a1a327fdd561.jpg' },
+                    { color: 'Lime', src: '/images/merch/unisex-sports-tee-lime-front-6a1a327fdd5d8.jpg' },
+                    { color: 'Ash', src: '/images/merch/unisex-sports-tee-ash-front-6a1a327fdd2b4.jpg' },
+                    { color: 'White', src: '/images/merch/unisex-sports-tee-white-front-6a1a327fdd6c0.jpg' }
+                  ].map((img, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        setActivePreviewImage(img.src);
+                        setShippingInfo({...shippingInfo, color: img.color});
+                      }}
+                      className={`w-16 h-16 rounded-md bg-zinc-800 border-2 shrink-0 overflow-hidden ${(activePreviewImage === img.src || (activePreviewImage === '' && shippingInfo.color === img.color)) ? 'border-emerald-500' : 'border-zinc-700 hover:border-zinc-500'}`}
+                    >
+                      {/* Using the image directly is fine, but since we don't have them all we'll just show the color block as a fallback, or rely on broken image icons for now */}
+                      <img src={img.src} alt={img.color} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerText = img.color; e.currentTarget.parentElement!.className += ' text-xs flex items-center justify-center' }} />
+                    </button>
+                  ))}
+                </div>
+             </div>
+          )}
+
+          <p className="text-zinc-400 text-sm mb-4">
             Please enter your shipping information below. This is required for physical merchandise.
           </p>
           <form onSubmit={handleBuyMerch}>
             <div className="space-y-4">
+
+              {selectedMerchItem?.id === 'merch_level_one_tee' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="color" className="block text-sm font-medium text-zinc-400 mb-1">Color</label>
+                    <select
+                      id="color"
+                      value={shippingInfo.color}
+                      onChange={(e) => {
+                         const val = e.target.value;
+                         setShippingInfo({...shippingInfo, color: val});
+                         // Try to update preview image based on color selection
+                         const imgMap: Record<string, string> = {
+                           'Black': '/images/merch/unisex-sports-tee-black-front-6a1a327fdd456.jpg',
+                           'Navy': '/images/merch/unisex-sports-tee-navy-front-6a1a327fdd64c.jpg',
+                           'Dark Heather': '/images/merch/unisex-sports-tee-dark-heather-front-6a1a327fdd4e7.jpg',
+                           'Kelly Green': '/images/merch/unisex-sports-tee-kelly-green-front-6a1a327fdd561.jpg',
+                           'Lime': '/images/merch/unisex-sports-tee-lime-front-6a1a327fdd5d8.jpg',
+                           'Ash': '/images/merch/unisex-sports-tee-ash-front-6a1a327fdd2b4.jpg',
+                           'White': '/images/merch/unisex-sports-tee-white-front-6a1a327fdd6c0.jpg'
+                         };
+                         if (imgMap[val]) setActivePreviewImage(imgMap[val]);
+                      }}
+                      className="w-full rounded-md bg-zinc-900 border border-zinc-800 text-zinc-100 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    >
+                      <option value="Black">Black</option>
+                      <option value="Navy">Navy</option>
+                      <option value="Dark Heather">Dark Heather</option>
+                      <option value="Kelly Green">Kelly Green</option>
+                      <option value="Lime">Lime</option>
+                      <option value="Ash">Ash</option>
+                      <option value="White">White</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="size" className="block text-sm font-medium text-zinc-400 mb-1">Size</label>
+                    <select
+                      id="size"
+                      value={shippingInfo.size}
+                      onChange={(e) => setShippingInfo({...shippingInfo, size: e.target.value})}
+                      className="w-full rounded-md bg-zinc-900 border border-zinc-800 text-zinc-100 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    >
+                      <option value="S">S</option>
+                      <option value="M">M</option>
+                      <option value="L">L</option>
+                      <option value="XL">XL</option>
+                      <option value="2XL">2XL</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label htmlFor="fullName" className="block text-sm font-medium text-zinc-400 mb-1">Full Name</label>
                 <Input
@@ -558,7 +658,7 @@ export default function ShopPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="state" className="block text-sm font-medium text-zinc-400 mb-1">State</label>
+                  <label htmlFor="state" className="block text-sm font-medium text-zinc-400 mb-1">State/Province</label>
                   <Input
                     id="state"
                     required
@@ -570,7 +670,7 @@ export default function ShopPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="zip" className="block text-sm font-medium text-zinc-400 mb-1">ZIP Code</label>
+                  <label htmlFor="zip" className="block text-sm font-medium text-zinc-400 mb-1">ZIP/Postal Code</label>
                   <Input
                     id="zip"
                     required
@@ -590,15 +690,25 @@ export default function ShopPage() {
                   />
                 </div>
               </div>
-            </div>
-            <div className="mt-6 flex justify-end">
-              <Button type="submit" disabled={buyLoading === selectedMerchItem?.id} className="bg-[#22c55e] hover:bg-[#16a34a] text-white">
-                 {buyLoading === selectedMerchItem?.id ? 'Processing...' : 'Place Order'}
-              </Button>
+
+              {message && (
+                <div className={`p-3 rounded-md text-sm ${message.type === 'error' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+                  {message.text}
+                </div>
+              )}
+
+              <div className="pt-4 flex gap-3">
+                <Button type="button" onClick={() => setIsMerchModalOpen(false)} className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white">
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={buyLoading === selectedMerchItem?.id} className="flex-1 bg-[#22c55e] hover:bg-[#16a34a] text-white">
+                   {buyLoading === selectedMerchItem?.id ? 'Processing...' : 'Place Order'}
+                </Button>
+              </div>
             </div>
           </form>
         </div>
-      </Modal>
+</Modal>
 
       </div>
     </div>

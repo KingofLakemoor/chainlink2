@@ -1230,5 +1230,19 @@
     "preview": "ZeroZeroTitle",
     "order": 77,
     "collectionId": "zero_zero"
+  },
+  {
+    "id": "merch_level_one_tee",
+    "name": "ChainLink Level One Tee",
+    "description": "The official ChainLink Level One Tee.",
+    "cost": 1000,
+    "type": "MERCH",
+    "active": true,
+    "forSale": true,
+    "image": "/images/merch/tee-banner.png",
+    "featured": true,
+    "preview": "/images/merch/tee-banner.png",
+    "order": 99,
+    "collectionId": ""
   }
 ]
