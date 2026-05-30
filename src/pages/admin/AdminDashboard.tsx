@@ -1,5 +1,5 @@
-import Link4AdminPage from './link4/Link4AdminPage';
 import React from "react";
+const Link4AdminPage = React.lazy(() => import('./link4/Link4AdminPage'));
 import { useState, useEffect } from 'react';
 import { collection, getDocs, deleteDoc, doc, setDoc, updateDoc, writeBatch, query, where, documentId } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
@@ -7,34 +7,34 @@ import { scrapeLeagueSchedules } from '../../services/espnScraper';
 import { useAuth } from '../../lib/auth-context';
 import { Navigate, Routes, Route, Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
-import CreateMatchupPage from './matchups/CreateMatchupPage';
-import PGABuilderPage from './pga/PGABuilderPage';
-import CreateAchievementPage from './achievements/CreateAchievementPage';
-import AwardAchievementPage from './achievements/AwardAchievementPage';
-import AchievementsListPage from './achievements/AchievementsListPage';
-import EditAchievementPage from './achievements/EditAchievementPage';
-import ShopItemsListPage from './shopItems/ShopItemsListPage';
-import CreateShopItemPage from './shopItems/CreateShopItemPage';
-import EditShopItemPage from './shopItems/EditShopItemPage';
-import NotificationsListPage from './notifications/NotificationsListPage';
-import CreateNotificationPage from './notifications/CreateNotificationPage';
-import EditNotificationPage from './notifications/EditNotificationPage';
-import SponsorsListPage from './sponsors/SponsorsListPage';
-import CreateSponsorPage from './sponsors/CreateSponsorPage';
-import EditSponsorPage from './sponsors/EditSponsorPage';
-import PickEmAdminPage from './pickem/PickEmAdminPage';
-import BracketsAdminPage from './brackets/BracketsAdminPage';
-import AdminPicksPage from './picks/AdminPicksPage';
-import ReferralsAdminPage from './referrals/ReferralsAdminPage';
-import UserCosmeticsAdminPage from './users/UserCosmeticsAdminPage';
-import AddLinksAdminPage from './users/AddLinksAdminPage';
+const CreateMatchupPage = React.lazy(() => import('./matchups/CreateMatchupPage'));
+const PGABuilderPage = React.lazy(() => import('./pga/PGABuilderPage'));
+const CreateAchievementPage = React.lazy(() => import('./achievements/CreateAchievementPage'));
+const AwardAchievementPage = React.lazy(() => import('./achievements/AwardAchievementPage'));
+const AchievementsListPage = React.lazy(() => import('./achievements/AchievementsListPage'));
+const EditAchievementPage = React.lazy(() => import('./achievements/EditAchievementPage'));
+const ShopItemsListPage = React.lazy(() => import('./shopItems/ShopItemsListPage'));
+const CreateShopItemPage = React.lazy(() => import('./shopItems/CreateShopItemPage'));
+const EditShopItemPage = React.lazy(() => import('./shopItems/EditShopItemPage'));
+const NotificationsListPage = React.lazy(() => import('./notifications/NotificationsListPage'));
+const CreateNotificationPage = React.lazy(() => import('./notifications/CreateNotificationPage'));
+const EditNotificationPage = React.lazy(() => import('./notifications/EditNotificationPage'));
+const SponsorsListPage = React.lazy(() => import('./sponsors/SponsorsListPage'));
+const CreateSponsorPage = React.lazy(() => import('./sponsors/CreateSponsorPage'));
+const EditSponsorPage = React.lazy(() => import('./sponsors/EditSponsorPage'));
+const PickEmAdminPage = React.lazy(() => import('./pickem/PickEmAdminPage'));
+const BracketsAdminPage = React.lazy(() => import('./brackets/BracketsAdminPage'));
+const AdminPicksPage = React.lazy(() => import('./picks/AdminPicksPage'));
+const ReferralsAdminPage = React.lazy(() => import('./referrals/ReferralsAdminPage'));
+const UserCosmeticsAdminPage = React.lazy(() => import('./users/UserCosmeticsAdminPage'));
+const AddLinksAdminPage = React.lazy(() => import('./users/AddLinksAdminPage'));
 import {
   Users, CheckCircle2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
   FileText, Diamond, Target, Bell, Shield, Link2, Menu, X, Settings, GitMerge, Flag
 } from 'lucide-react';
 
-import ScraperSettingsPage from './settings/ScraperSettingsPage';
+const ScraperSettingsPage = React.lazy(() => import('./settings/ScraperSettingsPage'));
 
 const ADMIN_MENU = [
   { id: 'leagues', label: 'Leagues', icon: Target, path: '/admin/leagues' },
@@ -1225,7 +1225,8 @@ export default function AdminDashboard() {
           </header>
 
           <main className="flex-1 overflow-y-auto p-4 md:p-8 relative">
-             <Routes>
+             <React.Suspense fallback={<div className="flex items-center justify-center h-full text-zinc-500">Loading...</div>}>
+              <Routes>
                 <Route path="leagues" element={<AdminLeagues />} />
                 {/* Matchups routes */}
                 <Route path="matchups" element={<AdminMatchups />} />
@@ -1233,9 +1234,7 @@ export default function AdminDashboard() {
                 <Route path="picks" element={<AdminPicksPage />} />
                 {/* Picks Routes */}
                 <Route path="picks/edit/:id" element={
-                  <React.Suspense fallback={<div className="p-8 text-zinc-500">Loading...</div>}>
-                    <EditPickPage />
-                  </React.Suspense>
+                  <EditPickPage />
                 } />
 
                 <Route path="matchups/create" element={<CreateMatchupPage />} />
@@ -1286,6 +1285,7 @@ export default function AdminDashboard() {
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="matchups" replace />} />
              </Routes>
+              </React.Suspense>
           </main>
        </div>
     </div>
