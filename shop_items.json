@@ -421,7 +421,7 @@
   },
   {
     "id": "title_originator_602",
-    "name": "Originator — 602",
+    "name": "Originator \u2014 602",
     "description": "Granted to core development/admin team.",
     "cost": 0,
     "type": "TITLE",
@@ -1244,5 +1244,19 @@
     "preview": "/images/merch/tee-banner.png",
     "order": 99,
     "collectionId": ""
+  },
+  {
+    "id": "banner_board_room",
+    "name": "Board Room",
+    "description": "High-stakes war room: glowing odds boards, ambient haze, and a central command table glow.",
+    "cost": 5000,
+    "type": "PROFILE_BANNER",
+    "active": true,
+    "forSale": true,
+    "image": "BoardRoomBanner",
+    "featured": true,
+    "preview": "BoardRoomBanner",
+    "order": 1,
+    "collectionId": "board_room"
   }
 ]
