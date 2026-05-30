@@ -249,7 +249,7 @@ export default function PickEmPage() {
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-display font-black text-white mb-2 uppercase tracking-tight flex items-center gap-3">
           {theme.logoUrl ? (
-            <img src={theme.logoUrl} alt={title} className="w-10 h-10 object-contain" />
+            <img src={theme.logoUrl} alt={title} className="w-10 h-10 object-contain" loading="lazy" />
           ) : (
             <Layers className="w-8 h-8" style={{ color: primaryColor }} />
           )}
@@ -374,7 +374,7 @@ export default function PickEmPage() {
                         style={pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) ? { borderColor: primaryColor, backgroundColor: `${primaryColor}1A` } : undefined}
                       >
                         <div className="flex items-center gap-3">
-                          <img src={m.type === 'OVER_UNDER' ? '/images/over.png' : m.awayTeam.image} alt={m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.name} className="w-8 h-8 object-contain" />
+                          <img src={m.type === 'OVER_UNDER' ? '/images/over.png' : m.awayTeam.image} alt={m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.name} className="w-8 h-8 object-contain" loading="lazy" />
                           <div className="flex flex-row items-baseline gap-2">
                             <span className="font-bold text-white">{m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.name}</span>
                             {isSpread && (
@@ -409,7 +409,7 @@ export default function PickEmPage() {
                         style={pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) ? { borderColor: primaryColor, backgroundColor: `${primaryColor}1A` } : undefined}
                       >
                         <div className="flex items-center gap-3">
-                          <img src={m.type === 'OVER_UNDER' ? '/images/under.png' : m.homeTeam.image} alt={m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.name} className="w-8 h-8 object-contain" />
+                          <img src={m.type === 'OVER_UNDER' ? '/images/under.png' : m.homeTeam.image} alt={m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.name} className="w-8 h-8 object-contain" loading="lazy" />
                           <div className="flex flex-row items-baseline gap-2">
                             <span className="font-bold text-white">{m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.name}</span>
                             {isSpread && (
@@ -477,7 +477,7 @@ export default function PickEmPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <img src={participant.avatar} alt={participant.name} className="w-8 h-8 rounded-full bg-zinc-800" />
+                          <img src={participant.avatar} alt={participant.name} className="w-8 h-8 rounded-full bg-zinc-800" loading="lazy" />
                           <span className="font-medium text-white">{participant.name} {participant.uid === user?.uid && '(You)'}</span>
                         </div>
                       </td>

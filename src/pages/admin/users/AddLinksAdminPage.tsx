@@ -93,7 +93,7 @@ export default function AddLinksAdminPage() {
                     onClick={() => setSelectedUser(user)}
                     className={`w-full text-left p-4 hover:bg-zinc-800/50 transition-colors flex items-center gap-3 ${selectedUser?.id === user.id ? 'bg-zinc-800/80 border-l-2 border-cyan-500' : ''}`}
                   >
-                    <img src={user.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`} alt="" className="w-10 h-10 rounded-full bg-zinc-800" />
+                    <img src={user.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`} alt="" className="w-10 h-10 rounded-full bg-zinc-800" loading="lazy" />
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-white truncate">{user.name}</div>
                       <div className="text-xs text-zinc-400 truncate">@{user.username || 'user'}</div>
@@ -109,7 +109,7 @@ export default function AddLinksAdminPage() {
           {selectedUser ? (
             <div className="bg-[#18181A] border border-zinc-800 rounded-xl p-6">
               <div className="flex items-center gap-4 mb-6 pb-6 border-b border-zinc-800">
-                <img src={selectedUser.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedUser.id}`} alt="" className="w-16 h-16 rounded-full bg-zinc-800" />
+                <img src={selectedUser.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedUser.id}`} alt="" className="w-16 h-16 rounded-full bg-zinc-800" loading="lazy" />
                 <div>
                   <h3 className="text-xl font-bold text-white">{selectedUser.name}</h3>
                   <p className="text-zinc-400">@{selectedUser.username || 'user'}</p>

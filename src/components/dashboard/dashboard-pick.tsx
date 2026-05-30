@@ -10,7 +10,7 @@ interface DashboardPickProps {
   sponsors?: any[];
 }
 
-export function DashboardPick({ activePick, activeMatchup, sponsors = [] }: DashboardPickProps) {
+export const DashboardPick = React.memo(function DashboardPick({ activePick, activeMatchup, sponsors = [] }: DashboardPickProps) {
   let featuredColor = "";
   let featuredName = "Featured Sponsor";
   let glowStyle = {};
@@ -37,7 +37,7 @@ export function DashboardPick({ activePick, activeMatchup, sponsors = [] }: Dash
       const content = (
           <>
               {currentSponsor?.image && (
-                  <img src={currentSponsor.image} alt={featuredName} className="h-5 w-5 rounded object-contain" />
+                  <img src={currentSponsor.image} alt={featuredName} className="h-5 w-5 rounded object-contain" loading="lazy" />
               )}
               <span>{featuredName}</span>
           </>
@@ -79,7 +79,7 @@ export function DashboardPick({ activePick, activeMatchup, sponsors = [] }: Dash
 
             <div className="flex items-center justify-center gap-8 w-full">
               <div className={cn("flex flex-col items-center gap-3 p-4 rounded-xl border relative", activePick?.pick?.id === (activeMatchup.type === 'OVER_UNDER' ? 'OVER' : activeMatchup.awayTeam.id) ? 'border-green-500 bg-green-500/10' : 'border-zinc-800 opacity-50')}>
-                <img src={activeMatchup.type === 'OVER_UNDER' ? '/images/over.png' : activeMatchup.awayTeam.image} className="w-16 h-16 object-contain" alt={activeMatchup.type === 'OVER_UNDER' ? 'OVER' : activeMatchup.awayTeam.name} />
+                <img src={activeMatchup.type === 'OVER_UNDER' ? '/images/over.png' : activeMatchup.awayTeam.image} className="w-16 h-16 object-contain" alt={activeMatchup.type === 'OVER_UNDER' ? 'OVER' : activeMatchup.awayTeam.name} loading="lazy" />
                 <span className="text-sm font-bold text-zinc-200">{activeMatchup.type === 'OVER_UNDER' ? 'OVER' : activeMatchup.awayTeam.name}</span>
                 {activePick?.pick?.id === (activeMatchup.type === 'OVER_UNDER' ? 'OVER' : activeMatchup.awayTeam.id) && <span className="text-xs bg-green-500 text-green-950 px-2 py-0.5 rounded font-bold mt-1">YOUR PICK</span>}
                 {activeMatchup.type === 'SPREAD' && activeMatchup.metadata?.spread !== undefined && (
@@ -100,7 +100,7 @@ export function DashboardPick({ activePick, activeMatchup, sponsors = [] }: Dash
               </div>
               <div className="text-zinc-500 font-bold text-xl">VS</div>
               <div className={cn("flex flex-col items-center gap-3 p-4 rounded-xl border relative", activePick?.pick?.id === (activeMatchup.type === 'OVER_UNDER' ? 'UNDER' : activeMatchup.homeTeam.id) ? 'border-green-500 bg-green-500/10' : 'border-zinc-800 opacity-50')}>
-                <img src={activeMatchup.type === 'OVER_UNDER' ? '/images/under.png' : activeMatchup.homeTeam.image} className="w-16 h-16 object-contain" alt={activeMatchup.type === 'OVER_UNDER' ? 'UNDER' : activeMatchup.homeTeam.name} />
+                <img src={activeMatchup.type === 'OVER_UNDER' ? '/images/under.png' : activeMatchup.homeTeam.image} className="w-16 h-16 object-contain" alt={activeMatchup.type === 'OVER_UNDER' ? 'UNDER' : activeMatchup.homeTeam.name} loading="lazy" />
                 <span className="text-sm font-bold text-zinc-200">{activeMatchup.type === 'OVER_UNDER' ? 'UNDER' : activeMatchup.homeTeam.name}</span>
                 {activePick?.pick?.id === (activeMatchup.type === 'OVER_UNDER' ? 'UNDER' : activeMatchup.homeTeam.id) && <span className="text-xs bg-green-500 text-green-950 px-2 py-0.5 rounded font-bold mt-1">YOUR PICK</span>}
                 {activeMatchup.type === 'SPREAD' && activeMatchup.metadata?.spread !== undefined && (
@@ -130,7 +130,7 @@ export function DashboardPick({ activePick, activeMatchup, sponsors = [] }: Dash
                 <a href={currentSponsor.url ? (currentSponsor.url.startsWith('http') ? currentSponsor.url : `https://${currentSponsor.url}`) : '#'} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between w-full hover:opacity-80 transition-opacity">
                    {currentSponsor.image ? (
                      <div className="text-sm font-medium text-zinc-300 flex items-center gap-3">
-                         <img src={currentSponsor.image} alt={currentSponsor.name} className="h-6 object-contain" />
+                         <img src={currentSponsor.image} alt={currentSponsor.name} className="h-6 object-contain" loading="lazy" />
                          Your Brand & Link Here
                      </div>
                    ) : (
@@ -156,7 +156,7 @@ export function DashboardPick({ activePick, activeMatchup, sponsors = [] }: Dash
       )}
     </div>
   );
-}
+});
 
 export function DashboardPickSkeleton() {
   return (

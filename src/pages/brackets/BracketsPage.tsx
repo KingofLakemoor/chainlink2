@@ -92,7 +92,7 @@ export function BracketsPage() {
       <div className="mb-8 max-w-7xl mx-auto">
         <h1 className="text-3xl md:text-4xl font-display font-black text-white mb-2 uppercase tracking-tight flex items-center gap-3">
           {theme.logoUrl ? (
-            <img src={theme.logoUrl} alt={title} className="w-10 h-10 object-contain" />
+            <img src={theme.logoUrl} alt={title} className="w-10 h-10 object-contain" loading="lazy" />
           ) : (
             <Trophy className="w-8 h-8" style={{ color: primaryColor }} />
           )}
