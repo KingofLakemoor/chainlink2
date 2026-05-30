@@ -193,7 +193,7 @@ export default function Link4Page() {
         <div>
           <h1 className="text-3xl md:text-4xl font-display font-black text-white mb-2 uppercase tracking-tight flex items-center gap-3">
             {theme.logoUrl ? (
-              <img src={theme.logoUrl} alt="Link4 Logo" className="w-10 h-10 object-contain" />
+              <img src={theme.logoUrl} alt="Link4 Logo" className="w-10 h-10 object-contain" loading="lazy" />
             ) : (
               <Grid className="w-8 h-8" style={{ color: theme.primaryColor || '#22c55e' }} />
             )}
@@ -407,7 +407,7 @@ export default function Link4Page() {
                 <div className="flex items-center gap-4 min-w-[200px] w-full sm:w-auto">
                   <div className="text-xl font-black text-zinc-500 w-8 text-center">#{index + 1}</div>
                   <div className="w-10 h-10 rounded-full bg-zinc-800 border-2 border-zinc-700 overflow-hidden shrink-0">
-                    <img src={entry.avatarUrl} alt={entry.username} className="w-full h-full object-cover" />
+                    <img src={entry.avatarUrl} alt={entry.username} className="w-full h-full object-cover" loading="lazy" />
                   </div>
                   <div className="font-bold text-white truncate">{entry.username}</div>
                 </div>

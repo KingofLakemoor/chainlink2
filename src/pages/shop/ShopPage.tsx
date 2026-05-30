@@ -536,7 +536,7 @@ export default function ShopPage() {
           {selectedMerchItem?.id === 'merch_level_one_tee' && (
              <div className="mb-6">
                 <div className="aspect-square bg-zinc-900 rounded-lg overflow-hidden mb-3 border border-zinc-800 flex items-center justify-center">
-                  <img
+                   <img loading="lazy"
                     src={activePreviewImage || selectedMerchItem.image}
                     alt="Product Preview"
                     className="w-full h-full object-cover"
@@ -564,7 +564,7 @@ export default function ShopPage() {
                       className={`w-16 h-16 rounded-md bg-zinc-800 border-2 shrink-0 overflow-hidden ${(activePreviewImage === img.src || (activePreviewImage === '' && shippingInfo.color === img.color)) ? 'border-emerald-500' : 'border-zinc-700 hover:border-zinc-500'}`}
                     >
                       {/* Using the image directly is fine, but since we don't have them all we'll just show the color block as a fallback, or rely on broken image icons for now */}
-                      <img src={img.src} alt={img.color} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerText = img.color; e.currentTarget.parentElement!.className += ' text-xs flex items-center justify-center' }} />
+                       <img loading="lazy"  src={img.src} alt={img.color} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerText = img.color; e.currentTarget.parentElement!.className += ' text-xs flex items-center justify-center' }} />
                     </button>
                   ))}
                 </div>

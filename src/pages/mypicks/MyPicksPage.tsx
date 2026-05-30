@@ -151,7 +151,7 @@ export default function MyPicksPage() {
                 </div>
 
                 <div className="w-20 h-20 flex items-center justify-center">
-                  <img src={displayTeamImage} alt={displayTeamName} className="w-full h-full object-contain drop-shadow-md" />
+                  <img src={displayTeamImage} alt={displayTeamName} className="w-full h-full object-contain drop-shadow-md" loading="lazy" />
                 </div>
 
                 <div className="text-xs text-zinc-400 mt-2">

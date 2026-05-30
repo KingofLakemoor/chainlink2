@@ -308,7 +308,7 @@ export default function PickEmCampaignDetail() {
                   <label className="block text-sm font-medium text-zinc-400 mb-1">Logo Image</label>
                   {themeLogoUrl && (
                     <div className="mb-2">
-                      <img src={themeLogoUrl} alt="Current Logo" className="h-12 object-contain" />
+                      <img src={themeLogoUrl} alt="Current Logo" className="h-12 object-contain" loading="lazy" />
                     </div>
                   )}
                   <input

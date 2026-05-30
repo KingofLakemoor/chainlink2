@@ -47,5 +47,5 @@ export function FirebaseImage({ src, fallback, ...props }: FirebaseImageProps) {
     };
   }, [src, fallback]);
 
-  return <img src={resolvedSrc} {...props} />;
+  return <img src={resolvedSrc} {...props} loading="lazy" />;
 }

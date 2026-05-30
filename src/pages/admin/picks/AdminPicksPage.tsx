@@ -187,14 +187,14 @@ export default function AdminPicksPage() {
                   <tr key={row.id} className="hover:bg-zinc-800/30 transition-colors">
                     <td className="px-4 py-3 text-zinc-300 font-medium">
                       <div className="flex items-center gap-3">
-                        <img src={row.userImage} alt={row.userName} className="w-8 h-8 rounded-full bg-zinc-800" />
+                        <img src={row.userImage} alt={row.userName} className="w-8 h-8 rounded-full bg-zinc-800" loading="lazy" />
                         <span>{row.userName}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-zinc-300">{row.matchupTitle}</td>
                     <td className="px-4 py-3 text-zinc-300">
                       <div className="flex items-center gap-2">
-                        {pickImage && <img src={pickImage} alt={pickDisplay} className="w-6 h-6 object-contain" />}
+                        {pickImage && <img src={pickImage} alt={pickDisplay} className="w-6 h-6 object-contain" loading="lazy" />}
                         <span className="truncate max-w-[150px]" title={pickDisplay}>{pickDisplay}</span>
                       </div>
                     </td>

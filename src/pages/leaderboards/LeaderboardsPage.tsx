@@ -284,7 +284,7 @@ export default function LeaderboardsPage() {
                     <RingComponent isStatic={false} />
                  </div>
               )}
-              <img
+               <img loading="lazy"
                  src={player.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${player.id}`}
                  alt={player.displayName || player.username || player.name}
                  className="w-16 h-16 rounded-full relative z-10 border-2 border-[#121212]"
@@ -455,7 +455,7 @@ export default function LeaderboardsPage() {
                           })()}
                           <div className={`w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden border flex-shrink-0 relative z-10 ${player.equippedCosmetics?.AVATAR_RING ? 'border-transparent' : 'border-zinc-700'}`}>
                             {player.image ? (
-                              <img src={player.image} alt={player.name} className="w-full h-full object-cover" />
+                               <img loading="lazy"  src={player.image} alt={player.name} className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-xs font-bold text-zinc-500">{(player.username || player.name || '?').charAt(0).toUpperCase()}</span>
                             )}

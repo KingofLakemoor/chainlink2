@@ -257,7 +257,7 @@ function Landing() {
 
 
 
-function TopStats() {
+const TopStats = React.memo(function TopStats() {
   const { user, profile, chain } = useAuth();
 
   if (!user) {
@@ -289,7 +289,7 @@ function TopStats() {
       </div>
     </div>
   );
-}
+});
 
 function MainLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
