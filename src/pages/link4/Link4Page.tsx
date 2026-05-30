@@ -68,55 +68,6 @@ export default function Link4Page() {
   const [sponsors, setSponsors] = useState<any[]>([]);
 
   useEffect(() => {
-    // Mock Leaderboard Data
-    const mockLeaderboard: Link4LeaderboardEntry[] = [
-      {
-        userId: 'user1',
-        username: 'ChainLinkKing',
-        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user1',
-        picks: [
-          { id: '1', name: 'Chiefs -3.5', sport: 'NFL', status: 'WIN' },
-          { id: '2', name: 'Lakers ML', sport: 'NBA', status: 'WIN' },
-          { id: '3', status: 'PENDING' },
-          { id: '4', status: 'PENDING' }
-        ],
-        score: 2,
-        potentialScore: 4
-      },
-      {
-        userId: 'user2',
-        username: 'SportsGuru',
-        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user2',
-        picks: [
-          { id: '1', name: 'Yankees ML', sport: 'MLB', status: 'LOSS' },
-          { id: '2', name: 'Oilers -1.5', sport: 'NHL', status: 'WIN' },
-          { id: '3', status: 'PENDING' },
-          { id: '4', status: 'EMPTY' }
-        ],
-        score: 1,
-        potentialScore: 2
-      },
-      {
-        userId: 'user3',
-        username: 'RookiePicker',
-        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user3',
-        picks: [
-          { id: '1', name: 'Duke -8', sport: 'CBB', status: 'LOSS' },
-          { id: '2', name: 'Bulls +5.5', sport: 'NBA', status: 'LOSS' },
-          { id: '3', name: 'Celtics ML', sport: 'NBA', status: 'WIN' },
-          { id: '4', status: 'PENDING' }
-        ],
-        score: 1,
-        potentialScore: 2
-      }
-    ];
-    setLeaderboardData(mockLeaderboard);
-  }, []);
-
-
-
-
-  useEffect(() => {
     const unsubMatchups = onSnapshot(collection(db, 'matchups'), (snap) => {
       const matchups = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setAllMatchups(matchups);
@@ -192,19 +143,6 @@ export default function Link4Page() {
     const timer = setInterval(calculateTimeLeft, 1000);
     return () => clearInterval(timer);
   }, [endTime]);
-
-  const addMockPick = () => {
-    const firstEmptyIndex = picks.findIndex(p => p === null);
-    if (firstEmptyIndex !== -1) {
-      const newPicks = [...picks];
-      newPicks[firstEmptyIndex] = {
-        id: `mock-${Date.now()}`,
-        name: `Mock Pick ${firstEmptyIndex + 1}`,
-        sport: allowedSports[Math.floor(Math.random() * allowedSports.length)] || 'UNKNOWN',
-      };
-      setPicks(newPicks);
-    }
-  };
 
   const clearPicks = () => {
     setPicks([null, null, null, null]);
@@ -337,13 +275,6 @@ export default function Link4Page() {
               Your 4 Picks
             </h2>
             <div className="flex gap-2">
-              <button
-                onClick={addMockPick}
-                disabled={nextPickIndex === -1}
-                className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50"
-              >
-                Add Mock Pick
-              </button>
               <button
                 onClick={clearPicks}
                 className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium rounded-lg transition-colors"
