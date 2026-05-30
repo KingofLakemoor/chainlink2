@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-const PlayDashboard = React.lazy(() => import('./pages/play/PlayDashboard'));
 import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth-context';
 import { loginWithGoogle, loginWithEmail, signupWithEmail, logout, db } from './lib/firebase';
@@ -18,6 +17,7 @@ import {
 } from 'react-icons/md';
 import { Download } from 'lucide-react';
 
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const Sidebar = React.memo(function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
   const { user, profile } = useAuth();
@@ -350,6 +350,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   return user ? <>{children}</> : <Navigate to="/login" />;
 }
 
+const PlayDashboard = React.lazy(() => import('./pages/play/PlayDashboard'));
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
 const DashboardPage = React.lazy(() => import('./pages/dashboard/DashboardPage'));
 const ProfilePage = React.lazy(() => import('./pages/profile/ProfilePage'));
@@ -364,6 +365,7 @@ const SponsorPage = React.lazy(() => import('./pages/SponsorPage'));
 export default function App() {
   return (
     <AuthProvider>
+      <ErrorBoundary>
       <BrowserRouter>
         <React.Suspense fallback={<div className="flex items-center justify-center h-screen text-zinc-500">Loading...</div>}>
         <Routes>
@@ -386,6 +388,7 @@ export default function App() {
         </Routes>
         </React.Suspense>
       </BrowserRouter>
+      </ErrorBoundary>
     </AuthProvider>
   );
 }
