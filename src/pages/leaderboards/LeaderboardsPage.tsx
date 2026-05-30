@@ -24,9 +24,11 @@ import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-sy
 import { GlobalStageBanner } from '../../components/ui/profile-banners/global-stage';
 import { OpulentoVaultBanner } from '../../components/ui/profile-banners/opulento';
 import { ZeroZeroShaderBanner } from "../../components/ui/profile-banners/zero-zero/ZeroZeroShaderBanner";
+import { BoardRoomBanner } from '../../components/ui/profile-banners/board-room/BoardRoomBanner';
 import { DaisyChainBanner } from '../../components/ui/profile-banners/daisy-chain/DaisyChainBanner';
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {
+  'BoardRoomBanner': BoardRoomBanner,
   'InfernoBanner': InfernoBanner,
   'OceanBanner': OceanBanner,
   'PhantomStarBanner': PhantomStarBanner,
