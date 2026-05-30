@@ -280,13 +280,6 @@ function InfernoBanner({ isStatic = false, ...props }) {
         const gl = renderer.gl;
         gl.clearColor(1, 1, 1, 1);
 
-        function resize() {
-            const scale = window.devicePixelRatio || 1;
-            renderer.setSize(ctn.offsetWidth * scale, ctn.offsetHeight * scale);
-        }
-        window.addEventListener("resize", resize, false);
-        resize();
-
         const geometry = new Triangle(gl);
 
         const slipTexture = new Texture(gl, {
@@ -314,6 +307,16 @@ function InfernoBanner({ isStatic = false, ...props }) {
             },
         });
         const mesh = new Mesh(gl, { geometry, program });
+
+        function resize() {
+            const scale = window.devicePixelRatio || 1;
+            renderer.setSize(ctn.offsetWidth * scale, ctn.offsetHeight * scale);
+            if (program.uniforms.uResolution) {
+                program.uniforms.uResolution.value = new Color(gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height);
+            }
+        }
+        window.addEventListener("resize", resize, false);
+        resize();
         let animateId;
 
         if (isStatic) {
