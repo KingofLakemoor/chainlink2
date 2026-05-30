@@ -4,15 +4,20 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Alegreya SC", serif;
-}
 
-@layer base {
-  body {
-    @apply bg-[#0a0a0a] text-zinc-50 antialiased;
-  }
-}
+  --animate-vault-rotate: vault-rotate 40s linear infinite;
+  --animate-vault-pulse: vault-pulse 6s ease-in-out infinite;
+  --animate-gold-dust: gold-dust 8s linear infinite;
+  --animate-opulento-sparkle: opulento-sparkle 5s ease-in-out infinite;
+  --animate-vault-ring-rotate: vault-ring-rotate 22s linear infinite;
+  --animate-vault-lock-pulse: vault-lock-pulse 4s ease-in-out infinite;
+  --animate-zero-title-flicker: zero-title-flicker 2.8s infinite;
+  --animate-zero-title-glitch-1: zero-title-glitch-1 3.2s infinite;
+  --animate-zero-title-glitch-2: zero-title-glitch-2 3.2s infinite;
+  --animate-zero-ring-rotate: zero-ring-rotate 22s linear infinite;
+  --animate-zero-ring-pulse: zero-ring-pulse 5s ease-in-out infinite;
+  --animate-zero-buzzer-node: zero-buzzer-node 1.8s ease-in-out infinite;
 
-@layer utilities {
   @keyframes vault-rotate {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
@@ -29,27 +34,9 @@
     100% { transform: translateY(-40px); opacity: 0.1; }
   }
 
-  .animate-vault-rotate {
-    animation: vault-rotate 40s linear infinite;
-  }
-
-  .animate-vault-pulse {
-    animation: vault-pulse 6s ease-in-out infinite;
-  }
-
-  .animate-gold-dust {
-    animation: gold-dust 8s linear infinite;
-  }
-}
-
-@layer utilities {
   @keyframes opulento-sparkle {
     0%, 100% { filter: drop-shadow(0 0 8px rgba(250,204,21,0.4)); }
     50% { filter: drop-shadow(0 0 16px rgba(250,204,21,0.9)); }
-  }
-
-  .animate-opulento-sparkle {
-    animation: opulento-sparkle 5s ease-in-out infinite;
   }
 
   @keyframes vault-ring-rotate {
@@ -62,16 +49,6 @@
     50% { transform: scale(1.25); opacity: 1; }
   }
 
-  .animate-vault-ring-rotate {
-    animation: vault-ring-rotate 22s linear infinite;
-  }
-
-  .animate-vault-lock-pulse {
-    animation: vault-lock-pulse 4s ease-in-out infinite;
-  }
-}
-
-@layer utilities {
   /* Title flicker */
   @keyframes zero-title-flicker {
     0%, 100% { opacity: 1; }
@@ -79,7 +56,6 @@
     47% { opacity: 0.4; }
     50% { opacity: 1; }
   }
-  .animate-zero-title-flicker { animation: zero-title-flicker 2.8s infinite; }
 
   /* Glitch layers */
   @keyframes zero-title-glitch-1 {
@@ -87,33 +63,34 @@
     10% { transform: translate(-2px,1px); opacity: 0.4; }
     12% { transform: translate(0,0); opacity: 0; }
   }
-  .animate-zero-title-glitch-1 { animation: zero-title-glitch-1 3.2s infinite; }
 
   @keyframes zero-title-glitch-2 {
     0%, 100% { transform: translate(0,0); opacity: 0; }
     55% { transform: translate(2px,-1px); opacity: 0.4; }
     57% { transform: translate(0,0); opacity: 0; }
   }
-  .animate-zero-title-glitch-2 { animation: zero-title-glitch-2 3.2s infinite; }
 
   /* Ring rotation */
   @keyframes zero-ring-rotate {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(-360deg); }
   }
-  .animate-zero-ring-rotate { animation: zero-ring-rotate 22s linear infinite; }
 
   /* Ring pulse */
   @keyframes zero-ring-pulse {
     0%, 100% { opacity: 0.6; transform: scale(1); }
     50% { opacity: 1; transform: scale(1.12); }
   }
-  .animate-zero-ring-pulse { animation: zero-ring-pulse 5s ease-in-out infinite; }
 
   /* Buzzer node pulse */
   @keyframes zero-buzzer-node {
     0%, 100% { transform: scale(1); opacity: 0.8; }
     50% { transform: scale(1.4); opacity: 1; }
   }
-  .animate-zero-buzzer-node { animation: zero-buzzer-node 1.8s ease-in-out infinite; }
+}
+
+@layer base {
+  body {
+    @apply bg-[#0a0a0a] text-zinc-50 antialiased;
+  }
 }
