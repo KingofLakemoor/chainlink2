@@ -21,6 +21,7 @@ import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-sy
 import { GlobalStageBanner } from '../../components/ui/profile-banners/global-stage';
 import { OpulentoVaultBanner } from '../../components/ui/profile-banners/opulento';
 import { ZeroZeroShaderBanner } from "../../components/ui/profile-banners/zero-zero/ZeroZeroShaderBanner";
+import { DaisyChainBanner } from '../../components/ui/profile-banners/daisy-chain/DaisyChainBanner';
 import { PrimeCircuitRing } from '../../components/ui/avatar-rings/prime-circuit-ring';
 import { OpulentoAvatarRing } from '../../components/ui/avatar-rings/opulento';
 import { ZeroZeroAvatarRing } from '../../components/ui/avatar-rings/zero-zero';
@@ -46,7 +47,8 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'GenesisSyndicate': GenesisSyndicate,
   'GlobalStageBanner': GlobalStageBanner,
   'OpulentoVaultBanner': OpulentoVaultBanner,
-  'ZeroZeroShaderBanner': ZeroZeroShaderBanner
+  'ZeroZeroShaderBanner': ZeroZeroShaderBanner,
+  'DaisyChainBanner': DaisyChainBanner
 };
 
 export default function DashboardPage() {

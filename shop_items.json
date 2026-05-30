@@ -259,9 +259,9 @@
     "type": "PROFILE_BANNER",
     "active": true,
     "forSale": true,
-    "image": "bg-zinc-900",
+    "image": "DaisyChainBanner",
     "featured": false,
-    "preview": "bg-zinc-900",
+    "preview": "DaisyChainBanner",
     "order": 18,
     "collectionId": ""
   },
