@@ -70,3 +70,50 @@
     animation: vault-lock-pulse 4s ease-in-out infinite;
   }
 }
+
+@layer utilities {
+  /* Title flicker */
+  @keyframes zero-title-flicker {
+    0%, 100% { opacity: 1; }
+    45% { opacity: 0.85; }
+    47% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+  .animate-zero-title-flicker { animation: zero-title-flicker 2.8s infinite; }
+
+  /* Glitch layers */
+  @keyframes zero-title-glitch-1 {
+    0%, 100% { transform: translate(0,0); opacity: 0; }
+    10% { transform: translate(-2px,1px); opacity: 0.4; }
+    12% { transform: translate(0,0); opacity: 0; }
+  }
+  .animate-zero-title-glitch-1 { animation: zero-title-glitch-1 3.2s infinite; }
+
+  @keyframes zero-title-glitch-2 {
+    0%, 100% { transform: translate(0,0); opacity: 0; }
+    55% { transform: translate(2px,-1px); opacity: 0.4; }
+    57% { transform: translate(0,0); opacity: 0; }
+  }
+  .animate-zero-title-glitch-2 { animation: zero-title-glitch-2 3.2s infinite; }
+
+  /* Ring rotation */
+  @keyframes zero-ring-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
+  }
+  .animate-zero-ring-rotate { animation: zero-ring-rotate 22s linear infinite; }
+
+  /* Ring pulse */
+  @keyframes zero-ring-pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.12); }
+  }
+  .animate-zero-ring-pulse { animation: zero-ring-pulse 5s ease-in-out infinite; }
+
+  /* Buzzer node pulse */
+  @keyframes zero-buzzer-node {
+    0%, 100% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.4); opacity: 1; }
+  }
+  .animate-zero-buzzer-node { animation: zero-buzzer-node 1.8s ease-in-out infinite; }
+}
