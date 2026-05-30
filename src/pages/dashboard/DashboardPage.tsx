@@ -23,6 +23,7 @@ import { OpulentoVaultBanner } from '../../components/ui/profile-banners/opulent
 import { ZeroZeroShaderBanner } from "../../components/ui/profile-banners/zero-zero/ZeroZeroShaderBanner";
 import { PrimeCircuitRing } from '../../components/ui/avatar-rings/prime-circuit-ring';
 import { OpulentoAvatarRing } from '../../components/ui/avatar-rings/opulento';
+import { ZeroZeroAvatarRing } from '../../components/ui/avatar-rings/zero-zero';
 import { TitleMap } from '../../components/ui/titles';
 import { cn } from '../../lib/utils';
 
@@ -34,7 +35,8 @@ const AvatarRingMap: Record<string, React.FC<any>> = {
   'Ocean': Ocean,
   'PhantomStar': PhantomStar,
   'PrimeCircuitRing': PrimeCircuitRing,
-  'OpulentoAvatarRing': OpulentoAvatarRing
+  'OpulentoAvatarRing': OpulentoAvatarRing,
+  'ZeroZeroAvatarRing': ZeroZeroAvatarRing
 };
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {

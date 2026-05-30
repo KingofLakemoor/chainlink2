@@ -210,6 +210,20 @@
     "collectionId": "ocean"
   },
   {
+    "id": "ring_zero_zero_zero",
+    "name": "The 0:00 Ring",
+    "description": "Arena blackout halo + LED pulse + buzzer flash.",
+    "cost": 4500,
+    "type": "AVATAR_RING",
+    "active": true,
+    "forSale": true,
+    "image": "ZeroZeroAvatarRing",
+    "featured": true,
+    "preview": "ZeroZeroAvatarRing",
+    "order": 55,
+    "collectionId": "zero_zero"
+  },
+  {
     "id": "banner_novatrix_code",
     "name": "Novatrix Code",
     "description": "Falling violet digital rain or a cascading, matrix-style sports ticker.",
@@ -291,7 +305,7 @@
     "featured": true,
     "preview": "ZeroZeroShaderBanner",
     "order": 21,
-    "collectionId": ""
+    "collectionId": "zero_zero"
   },
   {
     "id": "banner_global_stage",
@@ -1202,5 +1216,19 @@
     "preview": "OpulentoTitle",
     "order": 19,
     "collectionId": "opulento"
+  },
+  {
+    "id": "title_zero_zero_zero",
+    "name": "The 0:00",
+    "description": "Digital LED. Glitching. Frozen in time.",
+    "cost": 4500,
+    "type": "TITLE",
+    "active": true,
+    "forSale": true,
+    "image": "ZeroZeroTitle",
+    "featured": true,
+    "preview": "ZeroZeroTitle",
+    "order": 77,
+    "collectionId": "zero_zero"
   }
 ]

@@ -15,6 +15,7 @@ import { Ocean } from '../../components/ui/avatar-rings/ocean';
 import { PhantomStar } from '../../components/ui/avatar-rings/phantomstar';
 import { PrimeCircuitRing } from '../../components/ui/avatar-rings/prime-circuit-ring';
 import { OpulentoAvatarRing } from '../../components/ui/avatar-rings/opulento';
+import { ZeroZeroAvatarRing } from '../../components/ui/avatar-rings/zero-zero';
 import { TitleMap } from '../../components/ui/titles';
 import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
 import { OceanBanner } from '../../components/ui/profile-banners/ocean';
@@ -42,7 +43,8 @@ const AvatarRingMap: Record<string, React.FC<any>> = {
   'Ocean': Ocean,
   'PhantomStar': PhantomStar,
   'PrimeCircuitRing': PrimeCircuitRing,
-  'OpulentoAvatarRing': OpulentoAvatarRing
+  'OpulentoAvatarRing': OpulentoAvatarRing,
+  'ZeroZeroAvatarRing': ZeroZeroAvatarRing
 };
 
 export default function LeaderboardsPage() {
