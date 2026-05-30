@@ -18,7 +18,7 @@ import {
 import { Download } from 'lucide-react';
 
 
-function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
+const Sidebar = React.memo(function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
   const { user, profile } = useAuth();
   const location = useLocation();
   const { isInstallable, promptInstall } = useInstallPrompt();
@@ -92,7 +92,7 @@ function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) =>
       </div>
     </>
   );
-}
+});
 
 function Landing() {
   const { user, loading } = useAuth();
@@ -258,7 +258,6 @@ import { MatchupCard } from './components/ui/MatchupCard';
 
 function PlayDashboard() {
   const { user, profile, chain } = useAuth();
-  const [matchups, setMatchups] = useState<any[]>([]);
   const [userPicks, setUserPicks] = useState<Record<string, any>>({});
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<'all' | 'available' | 'chain'>('all');
@@ -409,11 +408,11 @@ function PlayDashboard() {
     return { totalUpcomingPicks: total, matchupPickCounts: counts };
   }, [globalUpcomingPicks, allFetchedMatchups]);
 
-  useEffect(() => {
+  const matchups = React.useMemo(() => {
     const now = Date.now();
     const next24Hours = now + 24 * 60 * 60 * 1000;
 
-    const filteredMatchups = allFetchedMatchups.filter((m: any) => {
+    const filtered = allFetchedMatchups.filter((m: any) => {
       if (m.abandoned) return false;
       if (m.active === false) return false;
 
@@ -435,9 +434,8 @@ function PlayDashboard() {
       return true;
     });
 
-    filteredMatchups.sort((a: any, b: any) => a.startTime - b.startTime);
-
-    setMatchups(filteredMatchups);
+    filtered.sort((a: any, b: any) => a.startTime - b.startTime);
+    return filtered;
   }, [allFetchedMatchups, selectedSport, filterType]);
 
   const handleCancelPick = async (matchup: any) => {
@@ -559,8 +557,9 @@ function PlayDashboard() {
             <MatchupCard
               m={activeMatchup}
               user={user}
-              userPicks={userPicks}
-              matchupPickCounts={matchupPickCounts}
+              pickData={userPicks[activeMatchup.gameId]}
+              hasActivePickAnywhere={Object.values(userPicks).some((p: any) => p.status === 'PENDING')}
+              mCounts={matchupPickCounts[activeMatchup.gameId]}
               sponsors={sponsors}
               onMakePick={handleMakePick}
               onCancelPick={handleCancelPick}
@@ -604,8 +603,9 @@ function PlayDashboard() {
               <MatchupCard
                 m={m}
                 user={user}
-                userPicks={userPicks}
-                matchupPickCounts={matchupPickCounts}
+                pickData={userPicks[m.gameId]}
+                hasActivePickAnywhere={Object.values(userPicks).some((p: any) => p.status === 'PENDING')}
+                mCounts={matchupPickCounts[m.gameId]}
                 sponsors={sponsors}
                 onMakePick={handleMakePick}
                 onCancelPick={handleCancelPick}
@@ -633,7 +633,7 @@ function PlayDashboard() {
                    title={sponsor.name}
                  >
                    {sponsor.image ? (
-                     <img src={sponsor.image} alt={sponsor.name} className="h-16 md:h-24 object-contain" />
+                     <img src={sponsor.image} alt={sponsor.name} className="h-16 md:h-24 object-contain" loading="lazy" />
                    ) : (
                      <div className="text-zinc-400 font-bold text-lg font-display tracking-tight">{sponsor.name}</div>
                    )}
@@ -682,7 +682,7 @@ function TopStats() {
       </div>
       <div className="w-px h-4 bg-zinc-700"></div>
       <div className="w-8 h-8 rounded-full border border-zinc-700 overflow-hidden bg-zinc-800 shrink-0">
-        <img src={profile?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.id || 'guest'}`} className="w-full h-full object-cover" referrerPolicy="no-referrer" alt="Avatar" />
+        <img src={profile?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.id || 'guest'}`} className="w-full h-full object-cover" referrerPolicy="no-referrer" alt="Avatar" loading="lazy" />
       </div>
     </div>
   );

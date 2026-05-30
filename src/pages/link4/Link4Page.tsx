@@ -441,8 +441,9 @@ export default function Link4Page() {
                   key={m.gameId}
                   m={m}
                   user={user}
-                  userPicks={{}} // Pass empty for now, or track link4 picks properly later
-                  matchupPickCounts={{}}
+                  pickData={null}
+                  hasActivePickAnywhere={false}
+                  mCounts={{ total: 0, away: 0, home: 0 }}
                   sponsors={sponsors}
                   onMakePick={handleMakePick}
                   onCancelPick={() => {}}
