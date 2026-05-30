@@ -27,6 +27,7 @@ import { DaisyChainBanner } from '../../components/ui/profile-banners/daisy-chai
 import { PrimeCircuitRing } from '../../components/ui/avatar-rings/prime-circuit-ring';
 import { OpulentoAvatarRing } from '../../components/ui/avatar-rings/opulento';
 import { ZeroZeroAvatarRing } from '../../components/ui/avatar-rings/zero-zero';
+import { TitleMap } from '../../components/ui/titles';
 
 const AvatarRingMap: Record<string, React.FC<any>> = {
   'Hexagons': Hexagons,
@@ -439,7 +440,15 @@ export default function ShopPage() {
                           </div>
                         )}
                         {item.type === 'TITLE' && (
-                          <div className={`z-10 text-xl font-bold text-zinc-300 font-display px-4 py-2 bg-black/50 rounded-lg border border-zinc-700 ${item.image || ''}`}>{item.name}</div>
+                          <div className="z-10">
+                            {TitleMap[item.preview || item.image || ''] ? (
+                              <div className="flex justify-center py-2">
+                                {React.createElement(TitleMap[item.preview || item.image || ''], { isStatic: false })}
+                              </div>
+                            ) : (
+                              <div className={`text-xl font-bold text-zinc-300 font-display px-4 py-2 bg-black/50 rounded-lg border border-zinc-700 ${item.image || ''}`}>{item.name}</div>
+                            )}
+                          </div>
                         )}
                      </div>
                      <div className="p-5 flex flex-col flex-1 relative">
