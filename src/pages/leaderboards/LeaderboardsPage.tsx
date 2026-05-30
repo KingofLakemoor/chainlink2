@@ -24,6 +24,7 @@ import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-sy
 import { GlobalStageBanner } from '../../components/ui/profile-banners/global-stage';
 import { OpulentoVaultBanner } from '../../components/ui/profile-banners/opulento';
 import { ZeroZeroShaderBanner } from "../../components/ui/profile-banners/zero-zero/ZeroZeroShaderBanner";
+import { DaisyChainBanner } from '../../components/ui/profile-banners/daisy-chain/DaisyChainBanner';
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {
   'InfernoBanner': InfernoBanner,
@@ -32,7 +33,8 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'GenesisSyndicate': GenesisSyndicate,
   'GlobalStageBanner': GlobalStageBanner,
   'OpulentoVaultBanner': OpulentoVaultBanner,
-  'ZeroZeroShaderBanner': ZeroZeroShaderBanner
+  'ZeroZeroShaderBanner': ZeroZeroShaderBanner,
+  'DaisyChainBanner': DaisyChainBanner
 };
 
 const AvatarRingMap: Record<string, React.FC<any>> = {
