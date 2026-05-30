@@ -1,0 +1,13 @@
+--- src/components/ui/profile-banners/genesis-syndicate/index.jsx
++++ src/components/ui/profile-banners/genesis-syndicate/index.jsx
+@@ -154,10 +154,9 @@
+                             <path d="M50 15L80 32.5V67.5L50 85L20 67.5V32.5L50 15Z" fill="#000000"/>
+                         </svg>
+                     </div>
+-                     <div className="absolute inset-0 bg-white/20 animate-scanline" style={{
+-                            animation: 'scanline 4s linear infinite',
++                     <div className={`absolute inset-0 bg-white/20 ${isStatic ? 'hidden' : 'animate-scanline'}`} style={{
+                             height: '2px',
+                             width: '100%'
+                         }} />
+                 </div>

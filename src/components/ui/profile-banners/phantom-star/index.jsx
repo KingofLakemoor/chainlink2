@@ -21,11 +21,6 @@ function PhantomStarBanner({ isStatic = false, ...props }) {
             depth: false,
         });
         const gl = renderer.gl;
-        function resize() {
-            renderer.setSize(ctn.offsetWidth, ctn.offsetHeight);
-        }
-        window.addEventListener("resize", resize, false);
-        resize();
         const geometry = new Triangle(gl);
         const program = new Program(gl, {
             vertex: vert,
@@ -39,6 +34,14 @@ function PhantomStarBanner({ isStatic = false, ...props }) {
             transparent: true,
         });
         const mesh = new Mesh(gl, { geometry, program });
+        function resize() {
+            renderer.setSize(ctn.offsetWidth, ctn.offsetHeight);
+            if (program.uniforms.uResolution) {
+                program.uniforms.uResolution.value = new Color(gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height);
+            }
+        }
+        window.addEventListener("resize", resize, false);
+        resize();
         let animateId;
 
         if (isStatic) {

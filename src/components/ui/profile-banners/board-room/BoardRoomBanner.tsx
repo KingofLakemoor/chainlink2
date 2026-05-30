@@ -34,11 +34,13 @@ export function BoardRoomBanner({
     function resize() {
       if (!container.current) return;
       renderer.setSize(container.current.offsetWidth, container.current.offsetHeight);
-      program.uniforms.uResolution.value = new Color(
-        gl.canvas.width,
-        gl.canvas.height,
-        gl.canvas.width / gl.canvas.height
-      );
+      if (program.uniforms.uResolution) {
+        program.uniforms.uResolution.value = new Color(
+          gl.canvas.width,
+          gl.canvas.height,
+          gl.canvas.width / gl.canvas.height
+        );
+      }
     }
 
     window.addEventListener("resize", resize);

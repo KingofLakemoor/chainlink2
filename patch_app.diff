@@ -1,0 +1,9 @@
+--- src/App.tsx
++++ src/App.tsx
+@@ -1,5 +1,5 @@
+-const PlayDashboard = React.lazy(() => import('./pages/play/PlayDashboard'));
+ import React, { useState, useEffect } from 'react';
++const PlayDashboard = React.lazy(() => import('./pages/play/PlayDashboard'));
+ import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
+ import { AuthProvider, useAuth } from './lib/auth-context';
+ import { loginWithGoogle, loginWithEmail, signupWithEmail, logout, db } from './lib/firebase';
