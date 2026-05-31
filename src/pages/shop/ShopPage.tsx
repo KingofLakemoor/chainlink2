@@ -24,6 +24,7 @@ import { OpulentoVaultBanner } from '../../components/ui/profile-banners/opulent
 import { ZeroZeroShaderBanner } from "../../components/ui/profile-banners/zero-zero/ZeroZeroShaderBanner";
 import { BoardRoomBanner } from '../../components/ui/profile-banners/board-room/BoardRoomBanner';
 import { DaisyChainBanner } from '../../components/ui/profile-banners/daisy-chain/DaisyChainBanner';
+import { XenonTerminalBanner } from '../../components/ui/profile-banners/xenon-terminal';
 import { PrimeCircuitRing } from '../../components/ui/avatar-rings/prime-circuit-ring';
 import { OpulentoAvatarRing } from '../../components/ui/avatar-rings/opulento';
 import { ZeroZeroAvatarRing } from '../../components/ui/avatar-rings/zero-zero';
@@ -50,7 +51,8 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'GlobalStageBanner': GlobalStageBanner,
   'OpulentoVaultBanner': OpulentoVaultBanner,
   'ZeroZeroShaderBanner': ZeroZeroShaderBanner,
-  'DaisyChainBanner': DaisyChainBanner
+  'DaisyChainBanner': DaisyChainBanner,
+  'XenonTerminalBanner': XenonTerminalBanner
 };
 
 // Simple deterministic random number generator (Linear Congruential Generator)

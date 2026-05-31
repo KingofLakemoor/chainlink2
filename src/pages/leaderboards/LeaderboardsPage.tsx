@@ -26,6 +26,7 @@ import { OpulentoVaultBanner } from '../../components/ui/profile-banners/opulent
 import { ZeroZeroShaderBanner } from "../../components/ui/profile-banners/zero-zero/ZeroZeroShaderBanner";
 import { BoardRoomBanner } from '../../components/ui/profile-banners/board-room/BoardRoomBanner';
 import { DaisyChainBanner } from '../../components/ui/profile-banners/daisy-chain/DaisyChainBanner';
+import { XenonTerminalBanner } from '../../components/ui/profile-banners/xenon-terminal';
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {
   'BoardRoomBanner': BoardRoomBanner,
@@ -36,7 +37,8 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'GlobalStageBanner': GlobalStageBanner,
   'OpulentoVaultBanner': OpulentoVaultBanner,
   'ZeroZeroShaderBanner': ZeroZeroShaderBanner,
-  'DaisyChainBanner': DaisyChainBanner
+  'DaisyChainBanner': DaisyChainBanner,
+  'XenonTerminalBanner': XenonTerminalBanner
 };
 
 const AvatarRingMap: Record<string, React.FC<any>> = {

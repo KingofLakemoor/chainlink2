@@ -189,9 +189,9 @@
     "type": "PROFILE_BANNER",
     "active": true,
     "forSale": true,
-    "image": "bg-gradient-to-br from-[#0f172a] to-cyan-900",
+    "image": "XenonTerminalBanner",
     "featured": true,
-    "preview": "bg-gradient-to-br from-[#0f172a] to-cyan-900",
+    "preview": "XenonTerminalBanner",
     "order": 14,
     "collectionId": "xenon"
   },

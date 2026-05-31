@@ -75,7 +75,8 @@ export function DaisyChainBanner({
   return (
     <div
       ref={container}
-      style={{ width: "100%", height: "100%", borderRadius: 8, overflow: "hidden" }}
+      className="absolute inset-0 w-full h-full"
+      style={{ borderRadius: 8, overflow: "hidden" }}
       {...props}
     />
   );
