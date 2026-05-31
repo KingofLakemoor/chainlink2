@@ -505,8 +505,14 @@ export default function ShopPage() {
               {merchItems.map(item => (
                 <div key={item.id} className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
                   <div className="h-40 bg-zinc-900 flex items-center justify-center relative overflow-hidden border-b border-zinc-800">
-                     <div className={`absolute inset-0 ${item.image || 'bg-zinc-800'}`}></div>
-                     {item.image ? null : <div className="text-6xl z-10">👕</div>}
+                     {item.image ? (
+                        <img loading="lazy" src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                     ) : (
+                        <>
+                           <div className="absolute inset-0 bg-zinc-800"></div>
+                           <div className="text-6xl z-10">👕</div>
+                        </>
+                     )}
                   </div>
                   <div className="p-5 flex flex-col flex-1">
                     <h3 className="text-xl font-bold text-zinc-200 mb-2">{item.name}</h3>
