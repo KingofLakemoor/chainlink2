@@ -134,7 +134,8 @@ void main() {
     finalColor += trophyGlow;
 
     // 6. Subtle vignette
-    float vignette = 1.0 - smoothstep(0.6, 1.4, length(uv));
+    vec2 rawUv = vUv * 2.0 - 1.0;
+    float vignette = 1.0 - smoothstep(0.6, 1.4, length(rawUv));
     finalColor *= vignette;
 
     gl_FragColor = vec4(finalColor, 1.0);

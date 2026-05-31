@@ -206,7 +206,7 @@ void main() {
   col += vec3(0.1) * fbm(uv * 8.0 + uTime * 0.1) * 0.1;
 
   // Vignette
-  float vig = smoothstep(1.2, 0.4, length(uv));
+  float vig = smoothstep(1.2, 0.4, length(vUv * 2.0 - 1.0));
   col *= vig;
 
   gl_FragColor = vec4(col, 1.0);

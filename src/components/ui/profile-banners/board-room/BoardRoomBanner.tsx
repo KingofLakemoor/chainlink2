@@ -186,7 +186,7 @@ void main() {
   col += vec3(0.8, 1.0, 0.9) * particles * 0.15;
 
   // vignette
-  float vig = smoothstep(1.2, 0.4, length(p));
+  float vig = smoothstep(1.2, 0.4, length(uv * 2.0 - 1.0));
   col *= vig;
 
   gl_FragColor = vec4(col, 1.0);
