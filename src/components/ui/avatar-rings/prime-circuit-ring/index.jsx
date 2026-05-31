@@ -67,7 +67,7 @@ function PrimeCircuitRing({ isStatic = false, ...props }) {
             depth: false,
         });
         const gl = renderer.gl;
-        function resize() {
+        function resize() { if (!ctnDom.current) return;
             renderer.setSize(ctn.offsetWidth, ctn.offsetHeight);
         }
         window.addEventListener("resize", resize, false);
@@ -111,7 +111,7 @@ function PrimeCircuitRing({ isStatic = false, ...props }) {
             mounted = false;
             if (animateId) cancelAnimationFrame(animateId);
             window.removeEventListener("resize", resize);
-            ctn.removeChild(gl.canvas);
+            if (ctnDom.current && ctnDom.current.contains(gl.canvas)) { ctnDom.current.removeChild(gl.canvas); }
             gl.getExtension("WEBGL_lose_context")?.loseContext();
         };
     }, [isStatic, isHovered]);

@@ -308,7 +308,7 @@ function InfernoBanner({ isStatic = false, ...props }) {
         });
         const mesh = new Mesh(gl, { geometry, program });
 
-        function resize() {
+        function resize() { if (!ctnDom.current) return;
             const scale = window.devicePixelRatio || 1;
             renderer.setSize(ctn.offsetWidth * scale, ctn.offsetHeight * scale);
             if (program.uniforms.uResolution) {
@@ -343,7 +343,7 @@ function InfernoBanner({ isStatic = false, ...props }) {
             mounted = false;
             if (animateId) cancelAnimationFrame(animateId);
             window.removeEventListener("resize", resize);
-            ctn.removeChild(gl.canvas);
+            if (ctnDom.current && ctnDom.current.contains(gl.canvas)) { ctnDom.current.removeChild(gl.canvas); }
             gl.getExtension("WEBGL_lose_context")?.loseContext();
         };
     }, [isStatic]);

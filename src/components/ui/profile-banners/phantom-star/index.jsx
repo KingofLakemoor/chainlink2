@@ -34,7 +34,7 @@ function PhantomStarBanner({ isStatic = false, ...props }) {
             transparent: true,
         });
         const mesh = new Mesh(gl, { geometry, program });
-        function resize() {
+        function resize() { if (!ctnDom.current) return;
             renderer.setSize(ctn.offsetWidth, ctn.offsetHeight);
             if (program.uniforms.uResolution) {
                 program.uniforms.uResolution.value = new Color(gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height);
@@ -61,7 +61,7 @@ function PhantomStarBanner({ isStatic = false, ...props }) {
             mounted = false;
             if (animateId) cancelAnimationFrame(animateId);
             window.removeEventListener("resize", resize);
-            ctn.removeChild(gl.canvas);
+            if (ctnDom.current && ctnDom.current.contains(gl.canvas)) { ctnDom.current.removeChild(gl.canvas); }
             gl.getExtension("WEBGL_lose_context")?.loseContext();
         };
     }, [isStatic]);

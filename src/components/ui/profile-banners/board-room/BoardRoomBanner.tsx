@@ -66,7 +66,7 @@ export function BoardRoomBanner({
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
       if (container.current?.contains(gl.canvas)) {
-        container.current.removeChild(gl.canvas);
+        if (container.current && container.current.contains(gl.canvas)) { container.current.removeChild(gl.canvas); }
       }
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };

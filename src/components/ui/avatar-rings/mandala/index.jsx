@@ -20,7 +20,7 @@ function Mandala({ isStatic = false, ...props }) {
         const renderer = new Renderer();
         const gl = renderer.gl;
         gl.clearColor(1, 1, 1, 1);
-        function resize() {
+        function resize() { if (!ctnDom.current) return;
             const scale = 1;
             // camera.perspective({
             //   aspect: gl.canvas.width / gl.canvas.height,
@@ -61,7 +61,7 @@ function Mandala({ isStatic = false, ...props }) {
             mounted = false;
             if (animateId) cancelAnimationFrame(animateId);
             window.removeEventListener("resize", resize);
-            ctn.removeChild(gl.canvas);
+            if (ctnDom.current && ctnDom.current.contains(gl.canvas)) { ctnDom.current.removeChild(gl.canvas); }
             gl.getExtension("WEBGL_lose_context")?.loseContext();
         };
     }, [isStatic]);
