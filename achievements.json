@@ -32,7 +32,7 @@
   {
     "name": "Lose 10 in a row",
     "description": "You lost 10 games in a row.",
-    "image": "/icons/icon-256x256.png",
+    "image": "gs://chainlink-2-72590.firebasestorage.app/Achievements/Wins Losses In A Row/L10 (1).svg",
     "imageStorageId": "default",
     "coins": 200,
     "weight": 2,
