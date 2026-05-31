@@ -834,6 +834,7 @@ export default function ProfilePage() {
                      <strong className="text-zinc-400 block mb-1">Troubleshooting:</strong>
                      <ul className="list-disc pl-4 space-y-1">
                         <li><strong>iOS Users:</strong> You must first "Add to Home Screen" (install the app) via Safari's share menu before notifications can be enabled.</li>
+                        <li><strong>Android/Web Users:</strong> If you cannot enable notifications, tap the lock icon in your browser's address bar and go to Site Settings to ensure notifications are allowed. Installing the app may also help.</li>
                         <li>If permissions were previously denied, you must manually allow them in your device or browser settings.</li>
                      </ul>
                   </div>

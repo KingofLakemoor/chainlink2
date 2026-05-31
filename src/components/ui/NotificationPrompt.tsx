@@ -83,7 +83,7 @@ export function NotificationPrompt() {
               <span className="hidden md:inline">Never miss a pick result! Enable push notifications.</span>
             </p>
             <p className="text-xs text-slate-300 mt-0.5">
-              iOS users: You must "Add to Home Screen" first.
+              iOS users: You must "Add to Home Screen" first. Android/Web users: Check browser site settings if blocked.
             </p>
           </div>
         </div>
