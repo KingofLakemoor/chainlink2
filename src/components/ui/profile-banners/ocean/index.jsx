@@ -66,7 +66,7 @@ void main() {
     vec2 uv = vUv;
     // Aspect ratio correction for SDFs
     vec2 aspectUv = uv;
-    float aspect = uResolution.x / uResolution.y;
+    float aspect = clamp(uResolution.x / uResolution.y, 1.0, 3.0);
     aspectUv.x *= aspect;
 
     // Wave speed

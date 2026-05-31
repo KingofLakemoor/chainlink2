@@ -133,7 +133,7 @@ float rectMask(vec2 p, vec2 size, float r) {
 
 void main() {
   vec2 uv = vUv;
-  vec2 aspect = vec2(uResolution.z, 1.0);
+  vec2 aspect = vec2(clamp(uResolution.z, 1.0, 3.0), 1.0);
   vec2 p = (uv * 2.0 - 1.0) * aspect;
 
   // base: dark board room

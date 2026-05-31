@@ -51,7 +51,7 @@ float fbm(vec2 p) {
 }
 
 void main() {
-    vec2 uv = (vUv * 2.0 - 1.0) * vec2(uResolution.z, 1.0);
+    vec2 uv = (vUv * 2.0 - 1.0) * vec2(clamp(uResolution.z, 1.0, 3.0), 1.0);
 
     // 1. Background: Deep moody blue sky transitioning to emerald pitch
     vec3 colorPitch = vec3(0.0, 0.35, 0.15);
@@ -95,7 +95,7 @@ void main() {
 
     // 4. Holographic Knockout Bracket (more structured)
     vec2 buv = vUv * 2.0 - 1.0;
-    buv.x *= uResolution.z;
+    buv.x *= clamp(uResolution.z, 1.0, 3.0);
 
     float bx = abs(buv.x);
     float by = buv.y + 0.1;
