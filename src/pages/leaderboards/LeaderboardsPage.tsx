@@ -16,6 +16,8 @@ import { PhantomStar } from '../../components/ui/avatar-rings/phantomstar';
 import { PrimeCircuitRing } from '../../components/ui/avatar-rings/prime-circuit-ring';
 import { OpulentoAvatarRing } from '../../components/ui/avatar-rings/opulento';
 import { ZeroZeroAvatarRing } from '../../components/ui/avatar-rings/zero-zero';
+import { NovatrixCodeAvatarRing } from '../../components/ui/avatar-rings/novatrix-code';
+import { NovatrixQuantAvatarRing } from '../../components/ui/avatar-rings/novatrix-quant';
 import { TitleMap } from '../../components/ui/titles';
 import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
 import { OceanBanner } from '../../components/ui/profile-banners/ocean';
@@ -27,6 +29,8 @@ import { ZeroZeroShaderBanner } from "../../components/ui/profile-banners/zero-z
 import { BoardRoomBanner } from '../../components/ui/profile-banners/board-room/BoardRoomBanner';
 import { DaisyChainBanner } from '../../components/ui/profile-banners/daisy-chain/DaisyChainBanner';
 import { XenonTerminalBanner } from '../../components/ui/profile-banners/xenon-terminal';
+import { NovatrixCodeBanner } from '../../components/ui/profile-banners/novatrix/NovatrixCodeBanner';
+import { NovatrixQuantBanner } from '../../components/ui/profile-banners/novatrix/NovatrixQuantBanner';
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {
   'BoardRoomBanner': BoardRoomBanner,
@@ -38,7 +42,9 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'OpulentoVaultBanner': OpulentoVaultBanner,
   'ZeroZeroShaderBanner': ZeroZeroShaderBanner,
   'DaisyChainBanner': DaisyChainBanner,
-  'XenonTerminalBanner': XenonTerminalBanner
+  'XenonTerminalBanner': XenonTerminalBanner,
+  'NovatrixCodeBanner': NovatrixCodeBanner,
+  'NovatrixQuantBanner': NovatrixQuantBanner
 };
 
 const AvatarRingMap: Record<string, React.FC<any>> = {
@@ -50,7 +56,9 @@ const AvatarRingMap: Record<string, React.FC<any>> = {
   'PhantomStar': PhantomStar,
   'PrimeCircuitRing': PrimeCircuitRing,
   'OpulentoAvatarRing': OpulentoAvatarRing,
-  'ZeroZeroAvatarRing': ZeroZeroAvatarRing
+  'ZeroZeroAvatarRing': ZeroZeroAvatarRing,
+  'NovatrixCodeAvatarRing': NovatrixCodeAvatarRing,
+  'NovatrixQuantAvatarRing': NovatrixQuantAvatarRing
 };
 
 export default function LeaderboardsPage() {
