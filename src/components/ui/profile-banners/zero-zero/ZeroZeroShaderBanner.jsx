@@ -25,7 +25,7 @@ export function ZeroZeroShaderBanner({ isStatic = false, ...props }) {
       transparent: true,
     });
 
-    function resize() {
+    function resize() { if (!container.current) return;
       renderer.setSize(container.current.offsetWidth, container.current.offsetHeight);
       if (program.uniforms.uResolution) {
         program.uniforms.uResolution.value = new Color(
@@ -60,7 +60,7 @@ export function ZeroZeroShaderBanner({ isStatic = false, ...props }) {
       mounted = false;
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
-      container.current.removeChild(gl.canvas);
+      if (container.current && container.current.contains(gl.canvas)) { if (container.current && container.current.contains(gl.canvas)) { container.current.removeChild(gl.canvas); } }
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
   }, [isStatic]);
