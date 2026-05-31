@@ -817,17 +817,26 @@ export default function ProfilePage() {
                <h3 className="text-sm font-medium text-zinc-400 mb-4 uppercase tracking-wider flex items-center gap-2">
                   <Bell className="w-4 h-4" /> Notifications
                </h3>
-               <div className="flex items-center justify-between p-4 bg-zinc-900/50 rounded-xl border border-zinc-800/50">
-                  <div>
-                     <div className="font-medium text-zinc-200">Push Notifications</div>
-                     <div className="text-sm text-zinc-500">Receive alerts when matchups start or complete.</div>
+               <div className="flex flex-col gap-4 p-4 bg-zinc-900/50 rounded-xl border border-zinc-800/50">
+                  <div className="flex items-center justify-between">
+                     <div>
+                        <div className="font-medium text-zinc-200">Push Notifications</div>
+                        <div className="text-sm text-zinc-500">Receive alerts when matchups start or complete.</div>
+                     </div>
+                     <button
+                        onClick={handleToggleNotifications}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationsEnabled ? 'bg-[#22c55e]' : 'bg-zinc-700'}`}
+                     >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notificationsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                     </button>
                   </div>
-                  <button
-                     onClick={handleToggleNotifications}
-                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationsEnabled ? 'bg-[#22c55e]' : 'bg-zinc-700'}`}
-                  >
-                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notificationsEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
-                  </button>
+                  <div className="text-xs text-zinc-500 bg-zinc-800/30 p-3 rounded-lg border border-zinc-800/50">
+                     <strong className="text-zinc-400 block mb-1">Troubleshooting:</strong>
+                     <ul className="list-disc pl-4 space-y-1">
+                        <li><strong>iOS Users:</strong> You must first "Add to Home Screen" (install the app) via Safari's share menu before notifications can be enabled.</li>
+                        <li>If permissions were previously denied, you must manually allow them in your device or browser settings.</li>
+                     </ul>
+                  </div>
                </div>
             </div>
 
