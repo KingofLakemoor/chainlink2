@@ -1,19 +1,15 @@
 "use client";
-
-import React, { useEffect, useRef } from "react";
 import { Renderer, Triangle, Program, Mesh, Color } from "ogl";
+import React, { useRef, useEffect } from "react";
 
-export function BoardRoomBanner({
-  isStatic = false,
-  ...props
-}: { isStatic?: boolean } & React.HTMLAttributes<HTMLDivElement>) {
+export function XenonTerminalBanner({ isStatic = false, ...props }: { isStatic?: boolean } & React.HTMLAttributes<HTMLDivElement>) {
   const container = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!container.current) return;
 
     let mounted = true;
-    const renderer = new Renderer({ alpha: true, depth: false, antialias: true });
+    const renderer = new Renderer({ alpha: true, depth: false });
     const gl = renderer.gl;
 
     const geometry = new Triangle(gl);
@@ -47,9 +43,10 @@ export function BoardRoomBanner({
     resize();
 
     let raf: number;
+
     if (isStatic) {
-      program.uniforms.uTime.value = 2.5;
-      renderer.render({ scene: mesh });
+      program.uniforms.uTime.value = 5.0;
+      if (mounted) renderer.render({ scene: mesh });
     } else {
       const update = (t: number) => {
         raf = requestAnimationFrame(update);
@@ -76,7 +73,7 @@ export function BoardRoomBanner({
     <div
       ref={container}
       className="absolute inset-0 w-full h-full"
-      style={{ borderRadius: 8, overflow: "hidden" }}
+      style={{ borderRadius: "8px", overflow: "hidden" }}
       {...props}
     />
   );
@@ -99,10 +96,10 @@ uniform float uTime;
 uniform vec3 uResolution;
 varying vec2 vUv;
 
-// hash / noise / fbm
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
 }
+
 float noise(vec2 p) {
   vec2 i = floor(p);
   vec2 f = fract(p);
@@ -113,82 +110,61 @@ float noise(vec2 p) {
     u.y
   );
 }
-float fbm(vec2 p) {
-  float f = 0.0;
-  float a = 0.5;
-  for (int i = 0; i < 5; i++) {
-    f += a * noise(p);
-    p *= 2.02;
-    a *= 0.5;
-  }
-  return f;
-}
-
-// soft rect mask
-float rectMask(vec2 p, vec2 size, float r) {
-  vec2 d = abs(p) - size;
-  float outside = length(max(d, 0.0));
-  float inside = min(max(d.x, d.y), 0.0);
-  return smoothstep(r, 0.0, outside + inside);
-}
 
 void main() {
   vec2 uv = vUv;
   vec2 aspect = vec2(clamp(uResolution.z, 1.0, 3.0), 1.0);
   vec2 p = (uv * 2.0 - 1.0) * aspect;
 
-  // base: dark board room
-  float baseN = fbm(p * 1.5 + uTime * 0.03);
-  vec3 col = mix(vec3(0.02, 0.03, 0.05), vec3(0.03, 0.05, 0.08), baseN * 0.7);
+  // Background
+  vec3 col = vec3(0.04, 0.06, 0.1);
 
-  // overhead haze
-  float haze = fbm(p * vec2(1.0, 0.6) + vec2(0.0, uTime * 0.02));
-  col += vec3(0.08, 0.09, 0.11) * haze * 0.35;
+  // Moving perspective grid
+  vec2 gridP = p;
 
-  // central "table" glow
-  vec2 tableP = p * vec2(1.2, 2.0) + vec2(0.0, 0.6);
-  float table = rectMask(tableP, vec2(0.9, 0.12), 0.08);
-  float tablePulse = 0.6 + 0.4 * sin(uTime * 0.8);
-  vec3 tableCol = vec3(0.0, 0.9, 0.6) * tablePulse;
-  col = mix(col, tableCol, table * 0.9);
+  // Create a 3D floor perspective effect
+  float horizon = 0.5;
+  float y = (gridP.y + horizon);
+  if (y > 0.0) {
+    vec2 planeP = vec2(gridP.x / y, 1.0 / y);
+    planeP.y -= uTime * 2.0; // move grid forward
 
-  // vertical odds boards (left & right)
-  for (int i = 0; i < 2; i++) {
-    float side = (i == 0) ? -1.0 : 1.0;
-    vec2 bp = p;
-    bp.x -= side * 0.9;
-    bp.y *= 1.4;
-    float panel = rectMask(bp, vec2(0.32, 0.7), 0.06);
-    vec3 panelBase = vec3(0.02, 0.08, 0.08);
-    col = mix(col, panelBase, panel);
+    // Grid lines
+    vec2 gridId = fract(planeP * 5.0);
+    float lineW = 0.05 * y; // lines get thinner in distance
 
-    // grid lines
-    float vLines = step(0.96, fract(bp.x * 12.0));
-    float hLines = step(0.96, fract((bp.y + 0.7) * 10.0));
-    float grid = (vLines + hLines) * panel;
-    vec3 gridCol = vec3(0.0, 0.9, 0.6);
-    col += gridCol * grid * 0.35;
+    float grid = smoothstep(lineW, 0.0, gridId.x) + smoothstep(lineW, 0.0, gridId.y);
+    float fade = smoothstep(0.0, 1.0, y) * smoothstep(1.5, 0.5, length(p));
 
-    // flickering cells
-    vec2 cellId = floor((bp + vec2(0.32, 0.7)) * vec2(6.0, 8.0));
-    float cellNoise = hash(cellId + floor(uTime * 0.7));
-    float cell = step(0.7, cellNoise) * panel;
-    col += vec3(0.0, 1.0, 0.7) * cell * 0.4;
+    col += vec3(0.0, 0.8, 1.0) * grid * fade * 0.5;
   }
 
-  // subtle "data lines" across center
-  float lineY = fract((p.y + 0.4) * 12.0);
-  float midLines = smoothstep(0.02, 0.0, min(lineY, 1.0 - lineY));
-  col += vec3(0.0, 0.7, 0.5) * midLines * 0.15;
+  // Terminal text / code falling lines in background
+  float fallSpeed = uTime * 1.5;
+  float stream = fract(p.x * 20.0);
+  float streamId = floor(p.x * 20.0);
+  float yOffset = hash(vec2(streamId, 1.0)) * 10.0;
+  float streamVal = fract(p.y * 5.0 + fallSpeed * (0.5 + hash(vec2(streamId, 2.0))) + yOffset);
 
-  // floating particles
-  float particles = step(0.995, noise(p * 8.0 + uTime * 0.9));
-  col += vec3(0.8, 1.0, 0.9) * particles * 0.15;
+  float charMask = step(0.8, noise(p * 50.0 + uTime * 10.0));
+  float textAlpha = smoothstep(0.0, 0.2, streamVal) * smoothstep(1.0, 0.8, streamVal);
+  col += vec3(0.0, 1.0, 0.8) * charMask * textAlpha * 0.15;
 
-  // vignette
-  float vig = smoothstep(1.2, 0.4, length(p));
+  // Scanline overlay
+  float scanline = sin(uv.y * 150.0) * 0.04;
+  col -= scanline;
+
+  // Screen refresh bar
+  float refresh = smoothstep(0.0, 0.05, fract(uv.y - uTime * 0.4)) * smoothstep(0.1, 0.05, fract(uv.y - uTime * 0.4));
+  col += vec3(0.0, 0.5, 1.0) * refresh * 0.1;
+
+  // Vignette
+  float vig = smoothstep(1.5, 0.4, length(p));
   col *= vig;
+
+  // Overall terminal tint
+  col *= vec3(0.8, 0.95, 1.0);
 
   gl_FragColor = vec4(col, 1.0);
 }
-`;
+`

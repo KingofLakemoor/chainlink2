@@ -145,10 +145,7 @@ function GenesisSyndicate({ isStatic = false, ...props }) {
         };
     }, [isStatic]);
     return (
-        <div ref={ctnDom} className={styles['container']} style={{
-            width: "100%",
-            height: "100%",
-        }} {...props}>
+        <div ref={ctnDom} className={`${styles['container']} absolute inset-0 w-full h-full`} {...props}>
              <div className="absolute inset-0 flex items-center justify-end pr-10 pointer-events-none">
                 <div className="relative overflow-hidden w-[100px] h-[120px]">
                     <div className="absolute inset-0 flex items-center justify-center">

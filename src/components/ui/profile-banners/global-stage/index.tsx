@@ -207,7 +207,7 @@ function GlobalStageBanner({ isStatic = false, ...props }: { isStatic?: boolean,
     }, [isStatic]);
 
     return (
-        <div style={{ position: "relative", width: "100%", height: "100%", borderRadius: "8px", overflow: "hidden" }} {...props}>
+        <div className="absolute inset-0 w-full h-full" style={{ borderRadius: "8px", overflow: "hidden" }} {...props}>
             <div
                 ref={ctnDom}
                 className={styles['container']}

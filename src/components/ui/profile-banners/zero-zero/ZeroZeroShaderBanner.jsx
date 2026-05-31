@@ -68,7 +68,8 @@ export function ZeroZeroShaderBanner({ isStatic = false, ...props }) {
   return (
     <div
       ref={container}
-      style={{ width: "100%", height: "100%", borderRadius: "8px", overflow: "hidden" }}
+      className="absolute inset-0 w-full h-full"
+      style={{ borderRadius: "8px", overflow: "hidden" }}
       {...props}
     />
   );

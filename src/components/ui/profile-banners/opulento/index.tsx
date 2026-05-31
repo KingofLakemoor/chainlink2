@@ -54,47 +54,71 @@ const VaultRings = ({ isStatic }: { isStatic: boolean }) => {
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
       <svg
         viewBox="0 0 300 300"
-        className={`w-[90%] h-[90%] ${isStatic ? '' : 'animate-vault-rotate'} opacity-90`}
+        className={`absolute w-[90%] h-[90%] ${isStatic ? '' : 'animate-vault-rotate'} opacity-90`}
       >
         <defs>
-          <radialGradient id="vaultGold" cx="50%" cy="50%" r="50%">
+          <radialGradient id="vaultGoldOuter" cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="#fef3c7" />
             <stop offset="40%" stopColor="#facc15" />
             <stop offset="100%" stopColor="#b45309" />
           </radialGradient>
         </defs>
-
-        {/* Outer ring */}
         <circle
           cx="150"
           cy="150"
           r="130"
-          stroke="url(#vaultGold)"
+          stroke="url(#vaultGoldOuter)"
           strokeWidth="10"
           fill="none"
           className="drop-shadow-[0_0_12px_rgba(250,204,21,0.6)]"
+          strokeDasharray="4 8"
         />
+      </svg>
 
-        {/* Middle ring */}
+      <svg
+        viewBox="0 0 300 300"
+        className={`absolute w-[90%] h-[90%] ${isStatic ? '' : 'animate-vault-ring-rotate'} opacity-90`}
+      >
+        <defs>
+          <radialGradient id="vaultGoldMiddle" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#fef3c7" />
+            <stop offset="40%" stopColor="#facc15" />
+            <stop offset="100%" stopColor="#b45309" />
+          </radialGradient>
+        </defs>
         <circle
           cx="150"
           cy="150"
           r="95"
-          stroke="url(#vaultGold)"
+          stroke="url(#vaultGoldMiddle)"
           strokeWidth="6"
           fill="none"
           className="opacity-70"
+          strokeDasharray="20 10"
         />
+      </svg>
 
-        {/* Inner ring */}
+      <svg
+        viewBox="0 0 300 300"
+        className={`absolute w-[90%] h-[90%] ${isStatic ? '' : 'animate-vault-rotate'} opacity-90`}
+        style={{ animationDirection: 'reverse' }}
+      >
+        <defs>
+          <radialGradient id="vaultGoldInner" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#fef3c7" />
+            <stop offset="40%" stopColor="#facc15" />
+            <stop offset="100%" stopColor="#b45309" />
+          </radialGradient>
+        </defs>
         <circle
           cx="150"
           cy="150"
           r="60"
-          stroke="url(#vaultGold)"
+          stroke="url(#vaultGoldInner)"
           strokeWidth="4"
           fill="none"
           className="opacity-50"
+          strokeDasharray="15 15"
         />
       </svg>
     </div>
@@ -111,7 +135,7 @@ const VaultLock = ({ isStatic }: { isStatic: boolean }) => {
         {/* Lock icon */}
         <svg
           viewBox="0 0 24 24"
-          className="relative w-full h-full text-yellow-300 drop-shadow-[0_0_12px_rgba(250,204,21,0.8)]"
+          className={`relative w-full h-full text-yellow-300 drop-shadow-[0_0_12px_rgba(250,204,21,0.8)] ${isStatic ? '' : 'animate-vault-lock-pulse'}`}
         >
           <path
             d="M12 1a5 5 0 0 0-5 5v3H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2h-2V6a5 5 0 0 0-5-5z"
