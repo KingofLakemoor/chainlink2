@@ -18,6 +18,7 @@ import {
 import { Download } from 'lucide-react';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { QRCodeSVG } from 'qrcode.react';
 
 const Sidebar = React.memo(function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
   const { user, profile } = useAuth();
@@ -325,7 +326,12 @@ function MainLayout({ children }: { children: React.ReactNode }) {
              {!user && <Link2 className="w-6 h-6 text-[#22c55e]" />}
              <span className="font-bold text-lg font-display text-zinc-100">{pageTitle}</span>
            </div>
-           <div className="flex items-center gap-3"><div className="pointer-events-auto"><TopStats /></div></div>
+           <div className="flex items-center gap-3">
+             <div className="bg-white p-1 rounded pointer-events-auto hidden sm:block">
+               <QRCodeSVG value="https://darts.club602.com" size={32} />
+             </div>
+             <div className="pointer-events-auto"><TopStats /></div>
+           </div>
          </div>
 
          {/* Desktop Header */}
@@ -333,7 +339,12 @@ function MainLayout({ children }: { children: React.ReactNode }) {
            <div className="pointer-events-auto flex items-center gap-3">
              <h1 className="text-2xl font-bold font-display text-zinc-100 tracking-tight">{pageTitle}</h1>
            </div>
-           <div className="pointer-events-auto"><TopStats /></div>
+           <div className="pointer-events-auto flex items-center gap-4">
+             <div className="bg-white p-1 rounded">
+               <QRCodeSVG value="https://darts.club602.com" size={40} />
+             </div>
+             <TopStats />
+           </div>
          </div>
 
          <div className="flex-1 overflow-y-auto custom-scrollbar relative z-10 w-full max-w-full">
