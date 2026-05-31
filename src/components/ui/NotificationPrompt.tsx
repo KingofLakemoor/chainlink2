@@ -90,7 +90,7 @@ export function NotificationPrompt() {
 
         {denied ? (
           <div className="order-3 mt-2 w-full flex-shrink-0 sm:order-2 sm:mt-0 sm:w-auto sm:ml-4 text-sm text-red-400 font-medium">
-            Permission denied. Please enable them in your browser settings.
+            Permission denied. Please enable them in your <a href="https://support.google.com/chrome/answer/3220216?hl=en&co=GENIE.Platform%3DAndroid" target="_blank" rel="noopener noreferrer" className="underline hover:text-red-300">browser settings</a>.
           </div>
         ) : (
           <div className="order-3 mt-2 w-full flex-shrink-0 sm:order-2 sm:mt-0 sm:w-auto">
