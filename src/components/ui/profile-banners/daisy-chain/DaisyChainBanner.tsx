@@ -154,7 +154,7 @@ float chainMask(vec2 p) {
 
 void main() {
   vec2 uv = vUv;
-  vec2 aspect = vec2(uResolution.z, 1.0);
+  vec2 aspect = vec2(clamp(uResolution.z, 1.0, 3.0), 1.0);
   vec2 p = (uv * 2.0 - 1.0) * aspect;
 
   // background: soft teal/blue with noise

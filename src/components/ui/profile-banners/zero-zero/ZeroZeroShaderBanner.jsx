@@ -167,7 +167,7 @@ float digit(vec2 uv, int num) {
 // Main
 // ----------------------
 void main() {
-  vec2 uv = (vUv * 2.0 - 1.0) * vec2(uResolution.z, 1.0);
+  vec2 uv = (vUv * 2.0 - 1.0) * vec2(clamp(uResolution.z, 1.0, 3.0), 1.0);
 
   // Arena blackout
   vec3 col = vec3(0.0);
