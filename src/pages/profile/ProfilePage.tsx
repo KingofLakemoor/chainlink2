@@ -66,7 +66,7 @@ export default function ProfilePage() {
   const [newName, setNewName] = useState('');
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [updatingSettings, setUpdatingSettings] = useState(false);
-  const [settingsMessage, setSettingsMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+  const [settingsMessage, setSettingsMessage] = useState<{type: 'success' | 'error', text: React.ReactNode} | null>(null);
 
   useEffect(() => {
     if (profile) {
@@ -120,7 +120,7 @@ export default function ProfilePage() {
       const granted = await requestNotificationPermission(user.uid, profile);
       if (!granted) {
         setNotificationsEnabled(false);
-        setSettingsMessage({ type: 'error', text: 'Notification permission denied. Please enable them in your browser settings.' });
+        setSettingsMessage({ type: 'error', text: <span>Notification permission denied. Please enable them in your <a href="https://support.google.com/chrome/answer/3220216?hl=en&co=GENIE.Platform%3DAndroid" target="_blank" rel="noopener noreferrer" className="underline hover:text-red-400">browser settings</a>.</span> });
         return;
       }
     }
@@ -835,7 +835,7 @@ export default function ProfilePage() {
                      <ul className="list-disc pl-4 space-y-1">
                         <li><strong>iOS Users:</strong> You must first "Add to Home Screen" (install the app) via Safari's share menu before notifications can be enabled.</li>
                         <li><strong>Android/Web Users:</strong> If you cannot enable notifications, tap the lock icon in your browser's address bar and go to Site Settings to ensure notifications are allowed. Installing the app may also help.</li>
-                        <li>If permissions were previously denied, you must manually allow them in your device or browser settings.</li>
+                        <li>If permissions were previously denied, you must manually allow them in your device or <a href="https://support.google.com/chrome/answer/3220216?hl=en&co=GENIE.Platform%3DAndroid" target="_blank" rel="noopener noreferrer" className="underline hover:text-zinc-300">browser settings</a>.</li>
                      </ul>
                   </div>
                </div>
