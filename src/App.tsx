@@ -18,7 +18,6 @@ import {
 import { Download } from 'lucide-react';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { QRCodeSVG } from 'qrcode.react';
 
 const Sidebar = React.memo(function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
   const { user, profile } = useAuth();
@@ -327,9 +326,6 @@ function MainLayout({ children }: { children: React.ReactNode }) {
              <span className="font-bold text-lg font-display text-zinc-100">{pageTitle}</span>
            </div>
            <div className="flex items-center gap-3">
-             <div className="bg-white p-1 rounded pointer-events-auto hidden sm:block">
-               <QRCodeSVG value="https://darts.club602.com" size={32} />
-             </div>
              <div className="pointer-events-auto"><TopStats /></div>
            </div>
          </div>
@@ -340,9 +336,6 @@ function MainLayout({ children }: { children: React.ReactNode }) {
              <h1 className="text-2xl font-bold font-display text-zinc-100 tracking-tight">{pageTitle}</h1>
            </div>
            <div className="pointer-events-auto flex items-center gap-4">
-             <div className="bg-white p-1 rounded">
-               <QRCodeSVG value="https://darts.club602.com" size={40} />
-             </div>
              <TopStats />
            </div>
          </div>
