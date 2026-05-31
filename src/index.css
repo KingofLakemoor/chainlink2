@@ -18,6 +18,9 @@
   --animate-zero-ring-pulse: zero-ring-pulse 5s ease-in-out infinite;
   --animate-zero-buzzer-node: zero-buzzer-node 1.8s ease-in-out infinite;
   --animate-scanline: scanline 4s linear infinite;
+  --animate-novatrix-title-glow: novatrix-title-glow 4.2s ease-in-out infinite;
+  --animate-novatrix-ring-rotate: novatrix-ring-rotate 26s linear infinite;
+  --animate-novatrix-ring-pulse: novatrix-ring-pulse 5s ease-in-out infinite;
 
   @keyframes vault-rotate {
     0% { transform: rotate(0deg); }
@@ -92,6 +95,21 @@
   @keyframes scanline {
     0% { transform: translateY(-100%); }
     100% { transform: translateY(100%); }
+  }
+
+  @keyframes novatrix-title-glow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(167,139,250,0.6)); }
+    50% { filter: drop-shadow(0 0 18px rgba(94,234,212,1)); }
+  }
+
+  @keyframes novatrix-ring-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes novatrix-ring-pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.08); }
   }
 }
 

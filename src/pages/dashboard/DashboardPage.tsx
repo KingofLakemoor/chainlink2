@@ -27,6 +27,10 @@ import { XenonTerminalBanner } from '../../components/ui/profile-banners/xenon-t
 import { PrimeCircuitRing } from '../../components/ui/avatar-rings/prime-circuit-ring';
 import { OpulentoAvatarRing } from '../../components/ui/avatar-rings/opulento';
 import { ZeroZeroAvatarRing } from '../../components/ui/avatar-rings/zero-zero';
+import { NovatrixCodeAvatarRing } from '../../components/ui/avatar-rings/novatrix-code';
+import { NovatrixQuantAvatarRing } from '../../components/ui/avatar-rings/novatrix-quant';
+import { NovatrixCodeBanner } from '../../components/ui/profile-banners/novatrix/NovatrixCodeBanner';
+import { NovatrixQuantBanner } from '../../components/ui/profile-banners/novatrix/NovatrixQuantBanner';
 import { TitleMap } from '../../components/ui/titles';
 import { cn } from '../../lib/utils';
 
@@ -39,7 +43,9 @@ const AvatarRingMap: Record<string, React.FC<any>> = {
   'PhantomStar': PhantomStar,
   'PrimeCircuitRing': PrimeCircuitRing,
   'OpulentoAvatarRing': OpulentoAvatarRing,
-  'ZeroZeroAvatarRing': ZeroZeroAvatarRing
+  'ZeroZeroAvatarRing': ZeroZeroAvatarRing,
+  'NovatrixCodeAvatarRing': NovatrixCodeAvatarRing,
+  'NovatrixQuantAvatarRing': NovatrixQuantAvatarRing
 };
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {
@@ -52,7 +58,9 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'OpulentoVaultBanner': OpulentoVaultBanner,
   'ZeroZeroShaderBanner': ZeroZeroShaderBanner,
   'DaisyChainBanner': DaisyChainBanner,
-  'XenonTerminalBanner': XenonTerminalBanner
+  'XenonTerminalBanner': XenonTerminalBanner,
+  'NovatrixCodeBanner': NovatrixCodeBanner,
+  'NovatrixQuantBanner': NovatrixQuantBanner
 };
 
 export default function DashboardPage() {
