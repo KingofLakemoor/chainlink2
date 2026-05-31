@@ -47,5 +47,17 @@ export function FirebaseImage({ src, fallback, ...props }: FirebaseImageProps) {
     };
   }, [src, fallback]);
 
-  return <img src={resolvedSrc} {...props} loading="lazy" />;
+  return (
+    <img
+      src={resolvedSrc}
+      {...props}
+      loading="lazy"
+      onError={(e) => {
+        if (fallback) {
+          e.currentTarget.src = fallback;
+          e.currentTarget.onerror = null; // Prevent infinite loop if fallback also fails
+        }
+      }}
+    />
+  );
 }
