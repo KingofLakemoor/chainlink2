@@ -685,7 +685,7 @@ export default function ProfilePage() {
                            <div key={ach.id} className="w-[60px] md:w-[76px] flex flex-col group relative" title={`${ach.name}\n${ach.description}`}>
                               {/* Icon Container */}
                               <div className={`h-[60px] flex items-center justify-center border-r border-zinc-800/50 ${hasEarned ? 'opacity-100' : 'opacity-20 grayscale'}`}>
-                                 <FirebaseImage src={ach.image || ''} fallback="/logo.svg" alt={ach.name} className="w-10 h-10 object-contain drop-shadow-md" />
+                                 <FirebaseImage src={ach.image || ''} fallback="/logo.png" alt={ach.name} className="w-10 h-10 object-contain drop-shadow-md" />
                               </div>
                               {/* Count Banner */}
                               <div className={`h-4 text-[9px] md:text-[10px] font-mono font-bold flex items-center justify-center border-t border-r border-zinc-800/50 ${hasEarned ? 'text-zinc-300' : 'text-zinc-600'}`}>

@@ -42,7 +42,7 @@
   {
     "name": "Lose 15 in a row",
     "description": "You lost 15 games in a row.",
-    "image": "/icons/icon-256x256.png",
+    "image": "gs://chainlink-2-72590.firebasestorage.app/Achievements/Wins Losses In A Row/L15 (1).svg",
     "imageStorageId": "default",
     "coins": 300,
     "weight": 3,
@@ -52,7 +52,7 @@
   {
     "name": "Lose 20 in a row",
     "description": "You lost 20 games in a row.",
-    "image": "/icons/icon-256x256.png",
+    "image": "gs://chainlink-2-72590.firebasestorage.app/Achievements/Wins Losses In A Row/L20 (1).svg",
     "imageStorageId": "default",
     "coins": 400,
     "weight": 4,
@@ -72,7 +72,7 @@
   {
     "name": "Win 5 in a row",
     "description": "You won 5 games in a row!",
-    "image": "/icons/icon-256x256.png",
+    "image": "gs://chainlink-2-72590.firebasestorage.app/Achievements/Wins Losses In A Row/W5.svg",
     "imageStorageId": "default",
     "coins": 500,
     "weight": 2,
@@ -92,7 +92,7 @@
   {
     "name": "Win 15 in a row",
     "description": "You won 15 games in a row!",
-    "image": "/icons/icon-256x256.png",
+    "image": "gs://chainlink-2-72590.firebasestorage.app/Achievements/Wins Losses In A Row/W15.svg",
     "imageStorageId": "default",
     "coins": 1500,
     "weight": 4,
@@ -102,7 +102,7 @@
   {
     "name": "Win 20 in a row",
     "description": "You won 20 games in a row!",
-    "image": "/icons/icon-256x256.png",
+    "image": "gs://chainlink-2-72590.firebasestorage.app/Achievements/Wins Losses In A Row/W20.svg",
     "imageStorageId": "default",
     "coins": 2000,
     "weight": 5,
@@ -112,7 +112,7 @@
   {
     "name": "Win 25 in a row",
     "description": "You won 25 games in a row!",
-    "image": "/icons/icon-256x256.png",
+    "image": "gs://chainlink-2-72590.firebasestorage.app/Achievements/Wins Losses In A Row/W25.svg",
     "imageStorageId": "default",
     "coins": 2500,
     "weight": 6,
@@ -122,7 +122,7 @@
   {
     "name": "Win 30 in a row",
     "description": "You won 30 games in a row!",
-    "image": "/icons/icon-256x256.png",
+    "image": "gs://chainlink-2-72590.firebasestorage.app/Achievements/Wins Losses In A Row/W30.svg",
     "imageStorageId": "default",
     "coins": 3000,
     "weight": 7,
@@ -212,7 +212,7 @@
   {
     "name": "Win 30 in a month",
     "description": "You won 30 games this month!",
-    "image": "/icons/icon-256x256.png",
+    "image": "gs://chainlink-2-72590.firebasestorage.app/Achievements/Totals/30 month.png",
     "imageStorageId": "default",
     "coins": 1000,
     "weight": 4,
@@ -222,7 +222,7 @@
   {
     "name": "Win 60 in a month",
     "description": "You won 60 games this month!",
-    "image": "/icons/icon-256x256.png",
+    "image": "gs://chainlink-2-72590.firebasestorage.app/Achievements/Totals/60 month.png",
     "imageStorageId": "default",
     "coins": 2000,
     "weight": 5,
