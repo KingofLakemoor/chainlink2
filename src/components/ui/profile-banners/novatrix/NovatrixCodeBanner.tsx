@@ -164,12 +164,12 @@ void main() {
 
   // vertical code rain
   float rain = 0.0;
-  for (int i = -6; i <= 6; i++) {
+  for (int i = -15; i <= 15; i++) {
     float idx = float(i);
     vec2 rp = p;
     rp.x -= idx * 0.18;
     float c = codeColumn(rp * vec2(1.0, 1.4), idx * 1.37, 0.35, 4.0);
-    float fade = smoothstep(1.0, 0.0, abs(rp.x));
+    float fade = smoothstep(aspect.x + 0.5, 0.0, abs(rp.x));
     rain += c * fade;
   }
   vec3 rainCol = vec3(0.7, 0.6, 1.0);
@@ -193,7 +193,7 @@ void main() {
   col += vec3(0.9, 0.8, 1.0) * particles * 0.18;
 
   // vignette
-  float vig = smoothstep(1.2, 0.4, length(p));
+  float vig = smoothstep(1.2, 0.4, length(uv * 2.0 - 1.0));
   col *= vig;
 
   gl_FragColor = vec4(col, 1.0);

@@ -148,14 +148,14 @@ void main() {
 
   // faster, denser rain
   float rain = 0.0;
-  for (int i = -7; i <= 7; i++) {
+  for (int i = -18; i <= 18; i++) {
     float idx = float(i);
     vec2 rp = p;
     rp.x -= idx * 0.16;
     float colMask = step(0.96, fract((rp.x + idx * 0.3) * 6.0));
     float y = rp.y + uTime * 0.9 + idx * 2.17;
     float glyph = step(0.6, fract(y * 18.0));
-    float fade = smoothstep(1.0, 0.0, abs(rp.x));
+    float fade = smoothstep(aspect.x + 0.5, 0.0, abs(rp.x));
     rain += colMask * glyph * fade;
   }
   col += vec3(0.9, 0.8, 1.0) * rain * 0.7;
@@ -174,7 +174,7 @@ void main() {
   col += vec3(1.0, 0.8, 1.0) * glitch * 0.25;
 
   // vignette
-  float vig = smoothstep(1.2, 0.4, length(p));
+  float vig = smoothstep(1.2, 0.4, length(uv * 2.0 - 1.0));
   col *= vig;
 
   gl_FragColor = vec4(col, 1.0);

@@ -159,7 +159,7 @@ void main() {
   col += vec3(0.0, 0.5, 1.0) * refresh * 0.1;
 
   // Vignette
-  float vig = smoothstep(1.5, 0.4, length(p));
+  float vig = smoothstep(1.5, 0.4, length(uv * 2.0 - 1.0));
   col *= vig;
 
   // Overall terminal tint
