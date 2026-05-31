@@ -41,6 +41,13 @@ export async function gradeSingleMatchup(matchup: any) {
 
   console.log(`[Grader] Grading ${pendingPicksSnap.size} picks for matchup ${matchup.gameId}.`);
 
+  // Fetch achievements and earnable titles once for the matchup grading run
+  const achievementsSnap = await adminDb.collection('achievements').get();
+  const allAchievements = achievementsSnap.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
+
+  const shopItemsSnap = await adminDb.collection('shopItems').where('type', '==', 'TITLE').where('forSale', '==', false).get();
+  const earnableTitles = shopItemsSnap.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
+
   const homeScore = Number(matchup.homeTeam?.score || 0);
   const awayScore = Number(matchup.awayTeam?.score || 0);
   const lowerScoreWins = matchup.metadata?.lowerScoreWins;
@@ -133,6 +140,8 @@ export async function gradeSingleMatchup(matchup: any) {
         const userData = userDoc.data()!;
         let links = userData.links || 0;
         let stats = userData.stats || { wins: 0, losses: 0, pushes: 0 };
+        let achievements = userData.achievements || [];
+        let inventory = userData.inventory || [];
 
         let chainData = chainDoc.exists ? chainDoc.data()! : { chain: 0, wins: 0, losses: 0, best: 0 };
 
@@ -157,6 +166,53 @@ export async function gradeSingleMatchup(matchup: any) {
           // Chain typically doesn't break on a push, but doesn't increase
         }
 
+        // Check Achievements
+        const earnedAchievements: any[] = [];
+        allAchievements.forEach(ach => {
+          // Check if already earned
+          if (achievements.some((a: any) => a.achievementId === ach.id)) return;
+
+          let earned = false;
+          const threshold = Number(ach.threshold || 0);
+
+          if (ach.type === 'CHAINWIN' && chainData.chain >= threshold) {
+            earned = true;
+          } else if (ach.type === 'CHAINLOSS' && chainData.chain <= -threshold) {
+            earned = true;
+          } else if (ach.type === 'WINS' && stats.wins >= threshold) {
+            earned = true;
+          } else if (ach.type === 'LOSS' && stats.losses >= threshold) {
+            earned = true;
+          }
+          // Note: MONTHLYWIN, MONTHLYLOSS, MONTHLYPUSH logic can be added here,
+          // but typically requires looking at picks within the month.
+          // Assuming basic chain and lifetime stats for now based on available data in this transaction.
+
+          if (earned) {
+            earnedAchievements.push(ach);
+            achievements.push({
+              achievementId: ach.id,
+              unlockedAt: Date.now()
+            });
+            links += Number(ach.coins || ach.links || 0);
+          }
+        });
+
+        // Earned Titles from Achievements
+        earnableTitles.forEach(title => {
+          if (inventory.includes(title.id)) return;
+
+          let earned = false;
+          // Heuristic matching based on description text from `shop_items.json`
+          if (title.name === 'On Fire' && chainData.chain >= 5) earned = true;
+          else if (title.name === 'Absolute Heater' && chainData.chain >= 10) earned = true;
+          else if (title.name === 'Needs a Win' && chainData.chain <= -5) earned = true;
+
+          if (earned) {
+            inventory.push(title.id);
+          }
+        });
+
         // Check for W10 Chain Global Notification
         if (pickStatus === 'WIN' && chainData.chain === 10) {
           const globalNotifRef = adminDb!.collection('notifications').doc();
@@ -179,6 +235,8 @@ export async function gradeSingleMatchup(matchup: any) {
         transaction.update(userRef, {
           links,
           stats,
+          achievements,
+          inventory,
           updatedAt: Date.now()
         });
 
