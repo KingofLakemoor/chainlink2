@@ -77,10 +77,15 @@ export function NotificationPrompt() {
           <span className="flex rounded-lg bg-cyan-500 p-2">
             <Bell className="h-5 w-5 text-white" aria-hidden="true" />
           </span>
-          <p className="ml-3 truncate font-medium text-white">
-            <span className="md:hidden">Enable notifications</span>
-            <span className="hidden md:inline">Never miss a pick result! Enable push notifications.</span>
-          </p>
+          <div className="ml-3 flex flex-col">
+            <p className="font-medium text-white">
+              <span className="md:hidden">Enable notifications</span>
+              <span className="hidden md:inline">Never miss a pick result! Enable push notifications.</span>
+            </p>
+            <p className="text-xs text-slate-300 mt-0.5">
+              iOS users: You must "Add to Home Screen" first.
+            </p>
+          </div>
         </div>
 
         {denied ? (
