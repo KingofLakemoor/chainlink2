@@ -7,6 +7,7 @@ import { cn } from '../../lib/utils';
 import { CheckCircle2 } from 'lucide-react';
 import { MdOutlineSportsSoccer, MdOutlineSportsBasketball, MdOutlineSportsHockey, MdOutlineSportsBaseball, MdOutlineSportsTennis } from 'react-icons/md';
 import { MatchupCard } from '../../components/ui/MatchupCard';
+import { FirebaseImage } from '../../components/ui/FirebaseImage';
 
 export default function PlayDashboard() {
   const { user, profile, chain } = useAuth();
@@ -340,7 +341,7 @@ export default function PlayDashboard() {
                    title={sponsor.name}
                  >
                    {sponsor.image ? (
-                     <img src={sponsor.image} alt={sponsor.name} className="h-16 md:h-24 object-contain" loading="lazy" />
+                     <FirebaseImage src={sponsor.image} alt={sponsor.name} className="h-16 md:h-24 object-contain" />
                    ) : (
                      <div className="text-zinc-400 font-bold text-lg font-display tracking-tight">{sponsor.name}</div>
                    )}

@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { db } from '../../lib/firebase';
 import { collection, getDocs, query, where, documentId, onSnapshot } from 'firebase/firestore';
 import { DashboardPick, DashboardPickSkeleton } from '../../components/dashboard/dashboard-pick';
+import { FirebaseImage } from '../../components/ui/FirebaseImage';
 
 import { Hexagons } from '../../components/ui/avatar-rings/hexagons';
 import { Hip } from '../../components/ui/avatar-rings/hip';
@@ -365,7 +366,7 @@ export default function DashboardPage() {
                    title={sponsor.name}
                  >
                    {sponsor.image ? (
-                     <img src={sponsor.image} alt={sponsor.name} className="h-16 md:h-24 object-contain" loading="lazy" />
+                     <FirebaseImage src={sponsor.image} alt={sponsor.name} className="h-16 md:h-24 object-contain" />
                    ) : (
                      <div className="text-zinc-400 font-bold text-lg font-display tracking-tight">{sponsor.name}</div>
                    )}
