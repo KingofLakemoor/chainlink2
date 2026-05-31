@@ -1,0 +1,2 @@
+1. Update achievements to use links instead of coins and remove link reward.
+2. Update grader.ts to unlock titles programatically based on the logic described in their descriptions.
