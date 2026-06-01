@@ -320,7 +320,7 @@ app.use((req, res) => {
 
 export const api = onRequest({ invoker: "public" }, app as any);
 
-export const monthlyRollover = onSchedule({ schedule: "0 9 1 * *", timeZone: "America/Chicago", timeoutSeconds: 540 }, async (event) => {
+export const monthlyRollover = onSchedule({ schedule: "0 9 1 * *", timeoutSeconds: 540 }, async (event) => {
   console.log(`[Cron] Starting monthly rollover...`);
   try {
     const { adminDb } = await import("./src/lib/firebase-admin.js");
