@@ -63,7 +63,7 @@ export const MatchupCard = React.memo(function MatchupCard({
       const content = (
           <>
               {featuredSponsorObj?.image && (
-                  <FirebaseImage src={featuredSponsorObj.image} alt={featuredName} className="h-5 w-5 rounded object-contain" />
+                  <FirebaseImage src={featuredSponsorObj.image} fallback="/logo.png" alt={featuredName} className="h-5 w-5 rounded object-contain" />
               )}
               <span>{featuredName}</span>
           </>
@@ -112,7 +112,7 @@ export const MatchupCard = React.memo(function MatchupCard({
                  onClick={() => !isPickDisabled && onMakePick(m, m.type === 'OVER_UNDER' ? { id: 'OVER', name: 'OVER', image: '/images/over.png' } : m.awayTeam)}
                  className={cn("w-20 h-20 sm:w-28 sm:h-28 rounded-xl border flex items-center justify-center p-1.5 bg-[#1a1a1a] transition-all", pickData?.pick?.id === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
                >
-                  <FirebaseImage src={m.type === 'OVER_UNDER' ? '/images/over.png' : m.awayTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.name} />
+                  <FirebaseImage fallback="/logo.png" src={m.type === 'OVER_UNDER' ? '/images/over.png' : m.awayTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.name} />
                </button>
                {pickData?.pick?.id === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) && (
                  <div className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-[#22c55e] flex items-center justify-center shadow-lg">
@@ -246,7 +246,7 @@ export const MatchupCard = React.memo(function MatchupCard({
                  onClick={() => !isPickDisabled && onMakePick(m, m.type === 'OVER_UNDER' ? { id: 'UNDER', name: 'UNDER', image: '/images/under.png' } : m.homeTeam)}
                  className={cn("w-20 h-20 sm:w-28 sm:h-28 rounded-xl border flex items-center justify-center p-1.5 bg-[#1a1a1a] transition-all", pickData?.pick?.id === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
                >
-                  <FirebaseImage src={m.type === 'OVER_UNDER' ? '/images/under.png' : m.homeTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.name} />
+                  <FirebaseImage fallback="/logo.png" src={m.type === 'OVER_UNDER' ? '/images/under.png' : m.homeTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.name} />
                </button>
                {pickData?.pick?.id === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) && (
                  <div className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-[#22c55e] flex items-center justify-center shadow-lg">

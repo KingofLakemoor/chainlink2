@@ -22,7 +22,11 @@ export function FirebaseImage({ src, fallback, ...props }: FirebaseImageProps) {
       if (src.startsWith('gs://')) {
         try {
           const storage = getStorage(app);
-          const imageRef = ref(storage, src);
+          let adjustedSrc = src;
+          if (adjustedSrc.includes("Scriptless.png")) {
+            adjustedSrc = adjustedSrc.replace("Scriptless.png", "ScriptLess.png");
+          }
+          const imageRef = ref(storage, adjustedSrc);
           const url = await getDownloadURL(imageRef);
           if (isMounted) {
             setResolvedSrc(url);
