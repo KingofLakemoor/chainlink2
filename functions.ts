@@ -74,6 +74,7 @@ export const frequentSync = onSchedule({ schedule: "every 2 minutes", timeoutSec
         for (const doc of pendingNotifsSnap.docs) {
           const notifData = doc.data();
           let tokens: string[] = [];
+          const tokenToUserId = new Map<string, string>();
 
           if (notifData.audience === 'GLOBAL') {
             // Fetch all users and filter in memory since array inequality filters are not fully supported
@@ -82,6 +83,7 @@ export const frequentSync = onSchedule({ schedule: "every 2 minutes", timeoutSec
               const uData = uDoc.data();
               if (uData.notificationsEnabled !== false && uData.fcmTokens && Array.isArray(uData.fcmTokens) && uData.fcmTokens.length > 0) {
                 tokens.push(...uData.fcmTokens);
+                uData.fcmTokens.forEach((t: string) => tokenToUserId.set(t, uDoc.id));
               }
             });
           } else if (notifData.audience === 'USER' && notifData.targetUserId) {
@@ -90,6 +92,7 @@ export const frequentSync = onSchedule({ schedule: "every 2 minutes", timeoutSec
               const uData = userSnap.data()!;
               if (uData.notificationsEnabled !== false && uData.fcmTokens && Array.isArray(uData.fcmTokens)) {
                 tokens = uData.fcmTokens;
+                uData.fcmTokens.forEach((t: string) => tokenToUserId.set(t, userSnap.id));
               }
             }
           }
@@ -117,13 +120,37 @@ export const frequentSync = onSchedule({ schedule: "every 2 minutes", timeoutSec
                 console.log(`[Cron] Successfully sent message chunk to ${response.successCount} devices. Failed: ${response.failureCount}`);
 
                 if (response.failureCount > 0) {
-                  const failedTokens: string[] = [];
+                  const tokensToRemoveByUserId = new Map<string, string[]>();
                   response.responses.forEach((resp: any, idx: number) => {
                     if (!resp.success) {
-                      failedTokens.push(tokenChunk[idx]);
+                      const errCode = resp.error?.code;
+                      if (errCode === 'messaging/invalid-registration-token' ||
+                          errCode === 'messaging/registration-token-not-registered' ||
+                          errCode === 'messaging/invalid-argument') {
+                        const token = tokenChunk[idx];
+                        const userId = tokenToUserId.get(token);
+                        if (userId) {
+                          if (!tokensToRemoveByUserId.has(userId)) {
+                            tokensToRemoveByUserId.set(userId, []);
+                          }
+                          tokensToRemoveByUserId.get(userId)!.push(token);
+                        }
+                      }
                     }
                   });
-                  // In a robust implementation, you might want to remove these failed tokens from the users.
+
+                  if (tokensToRemoveByUserId.size > 0) {
+                    const { FieldValue } = await import("firebase-admin/firestore");
+                    const cleanupBatch = adminDb.batch();
+                    for (const [userId, staleTokens] of tokensToRemoveByUserId.entries()) {
+                      const userRef = adminDb.collection('users').doc(userId);
+                      cleanupBatch.update(userRef, {
+                        fcmTokens: FieldValue.arrayRemove(...staleTokens)
+                      });
+                    }
+                    await cleanupBatch.commit();
+                    console.log(`[Cron] Cleaned up stale tokens for ${tokensToRemoveByUserId.size} users.`);
+                  }
                 }
               } catch (err) {
                 console.error(`[Cron] Error sending multicast message chunk for notification ${doc.id}:`, err);
