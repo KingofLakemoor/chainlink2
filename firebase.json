@@ -16,6 +16,9 @@
   "firestore": {
     "rules": "firestore.rules", "indexes": "firestore.indexes.json"
   },
+  "storage": {
+    "rules": "storage.rules"
+  },
   "hosting": {
     "predeploy": "npm run build",
     "public": "dist",
