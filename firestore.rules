@@ -40,7 +40,7 @@ service cloud.firestore {
           (isAdmin() && isValidUser(incoming())) ||
           (
             request.auth.uid == userId &&
-            incoming().diff(existing()).affectedKeys().hasOnly(['name', 'image', 'settings', 'status', 'updatedAt', 'username'])
+            incoming().diff(existing()).affectedKeys().hasOnly(['name', 'image', 'settings', 'status', 'updatedAt', 'username', 'fcmTokens', 'notificationsEnabled'])
           )
         )
       );
