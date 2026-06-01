@@ -324,8 +324,8 @@ export default function ProfilePage() {
     );
   }
 
-  // Calculate Win Rate
-  const stats = profile.stats || { wins: 0, losses: 0, pushes: 0 };
+  // Calculate Win Rate (using allTimeStats for lifetime profile view)
+  const stats = profile.allTimeStats || profile.stats || { wins: 0, losses: 0, pushes: 0 };
   const totalDecisions = stats.wins + stats.losses;
   const winRate = totalDecisions > 0 ? (stats.wins / totalDecisions) * 100 : 0;
 

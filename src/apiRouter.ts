@@ -592,3 +592,140 @@ apiRouter.post("/admin/matchups/external", async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+apiRouter.post("/admin/monthly-rollover", validateAdmin, async (req, res) => {
+  try {
+    const usersSnap = await adminDb!.collection('users').get();
+    const chainsSnap = await adminDb!.collection('chains').get();
+
+    const chainsMap = new Map();
+    chainsSnap.docs.forEach(doc => {
+      chainsMap.set(doc.data().userId, { id: doc.id, ...doc.data() });
+    });
+
+    const currentMonthStats = usersSnap.docs.map(doc => {
+      const data = doc.data();
+      const chainData = chainsMap.get(doc.id) || { chain: 0, best: 0 };
+      const wins = data.stats?.wins || 0;
+      const losses = data.stats?.losses || 0;
+      const pushes = data.stats?.pushes || 0;
+      const total = wins + losses;
+      const winRate = total > 0 ? (wins / total) * 100 : 0;
+      return {
+        id: doc.id,
+        username: data.username || data.name || 'A user',
+        wins,
+        losses,
+        pushes,
+        winRate,
+        totalDecisions: total,
+        currentChain: chainData.chain || 0,
+        bestChain: chainData.best || 0,
+        chainDocId: chainData.id,
+        userData: data,
+      };
+    });
+
+    // 1. Calculate winners
+    // Current longest Chain
+    const topCurrentChain = [...currentMonthStats].sort((a, b) => b.currentChain - a.currentChain)[0];
+    // Most Wins
+    const topWins = [...currentMonthStats].sort((a, b) => b.wins - a.wins)[0];
+    // Longest Chain for the month
+    const topBestChain = [...currentMonthStats].sort((a, b) => b.bestChain - a.bestChain)[0];
+    // Best win % (minimum 10 picks)
+    const eligibleForWinRate = currentMonthStats.filter(p => p.totalDecisions >= 10);
+    const topWinRate = eligibleForWinRate.length > 0 ? [...eligibleForWinRate].sort((a, b) => {
+      if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+      return b.wins - a.wins;
+    })[0] : null;
+
+    // Build the global notification body
+    const lines = [];
+    if (topCurrentChain) lines.push(`🔥 Longest Active Chain: ${topCurrentChain.username} (${topCurrentChain.currentChain < 0 ? 'L' + Math.abs(topCurrentChain.currentChain) : 'W' + topCurrentChain.currentChain})`);
+    if (topBestChain) lines.push(`🏆 Best Monthly Chain: ${topBestChain.username} (W${topBestChain.bestChain})`);
+    if (topWins) lines.push(`🥇 Most Wins: ${topWins.username} (${topWins.wins} Wins)`);
+    if (topWinRate) lines.push(`🎯 Best Win %: ${topWinRate.username} (${topWinRate.winRate.toFixed(1)}%)`);
+
+    const notifBody = lines.length > 0 ? lines.join('\n') : 'No stats for this month.';
+
+    const globalNotifRef = adminDb!.collection('notifications').doc();
+    await globalNotifRef.set({
+      title: 'Monthly Winners! 🏅',
+      body: `The month has concluded! Here are the winners:\n\n${notifBody}`,
+      audience: 'GLOBAL',
+      status: 'PENDING',
+      scheduledTime: Date.now(),
+      createdAt: Date.now()
+    });
+
+    // 2. Archiving and Resetting
+    const date = new Date();
+    // Use last month's key for the archive
+    date.setMonth(date.getMonth() - 1);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const monthLabel = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+    let batch = adminDb!.batch();
+    let count = 0;
+
+    for (const user of currentMonthStats) {
+      const userRef = adminDb!.collection('users').doc(user.id);
+
+      // Initialize allTimeStats if missing so we don't lose anything
+      let allTimeStats = user.userData.allTimeStats;
+      if (!allTimeStats) {
+        allTimeStats = { wins: user.wins, losses: user.losses, pushes: user.pushes };
+      }
+
+      let historicalStats = user.userData.historicalStats || {};
+      historicalStats[monthKey] = {
+        monthKey,
+        monthLabel,
+        wins: user.wins,
+        losses: user.losses,
+        pushes: user.pushes,
+        longestWinChain: user.bestChain,
+        longestLossChain: 0, // We aren't fully tracking best monthly loss chain in chain collection yet
+      };
+
+      batch.update(userRef, {
+        allTimeStats,
+        historicalStats,
+        stats: { wins: 0, losses: 0, pushes: 0 }
+      });
+      count++;
+
+      if (user.chainDocId) {
+        const chainRef = adminDb!.collection('chains').doc(user.chainDocId);
+        // Note: We carry over the current chain? Wait! The user requested:
+        // "When a month ends, a user current chain resets to 0"
+
+        let allTimeBest = user.userData.allTimeBest || user.bestChain || 0; // The new grader tracks it in chain collection, but let's be safe
+
+        batch.update(chainRef, {
+          chain: 0,
+          best: 0,
+          wins: 0,
+          losses: 0
+        });
+        count++;
+      }
+
+      // Firestore batches have a limit of 500 writes
+      if (count >= 400) {
+        await batch.commit();
+        batch = adminDb!.batch();
+        count = 0;
+      }
+    }
+
+    if (count > 0) {
+      await batch.commit();
+    }
+
+    res.json({ success: true, message: 'Monthly rollover completed successfully.' });
+  } catch (error: any) {
+    console.error("Monthly rollover error:", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});

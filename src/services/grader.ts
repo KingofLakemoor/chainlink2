@@ -140,29 +140,37 @@ export async function gradeSingleMatchup(matchup: any) {
         const userData = userDoc.data()!;
         let links = userData.links || 0;
         let stats = userData.stats || { wins: 0, losses: 0, pushes: 0 };
+        let allTimeStats = userData.allTimeStats || { wins: stats.wins, losses: stats.losses, pushes: stats.pushes };
         let achievements = userData.achievements || [];
         let inventory = userData.inventory || [];
 
-        let chainData = chainDoc.exists ? chainDoc.data()! : { chain: 0, wins: 0, losses: 0, best: 0 };
+        let chainData = chainDoc.exists ? chainDoc.data()! : { chain: 0, wins: 0, losses: 0, best: 0, allTimeBest: 0 };
+        let allTimeBest = chainData.allTimeBest || chainData.best || 0;
 
         // Apply logic
         if (pickStatus === 'WIN') {
           // Typically reward is cost * 2, let's assume standard wager * 2 for win
           links += wager + (matchup.reward ?? 10);
           stats.wins += 1;
+          allTimeStats.wins += 1;
           chainData.chain = chainData.chain < 0 ? 1 : chainData.chain + 1;
           chainData.wins += 1;
           if (chainData.chain > (chainData.best || 0)) {
             chainData.best = chainData.chain;
           }
+          if (chainData.chain > allTimeBest) {
+            allTimeBest = chainData.chain;
+          }
         } else if (pickStatus === 'LOSS') {
           stats.losses += 1;
+          allTimeStats.losses += 1;
           chainData.chain = chainData.chain > 0 ? -1 : (chainData.chain === 0 ? -1 : chainData.chain - 1);
           chainData.losses += 1;
         } else if (pickStatus === 'PUSH') {
           // Refund wager
           links += wager;
           stats.pushes += 1;
+          allTimeStats.pushes += 1;
           // Chain typically doesn't break on a push, but doesn't increase
         }
 
@@ -235,6 +243,7 @@ export async function gradeSingleMatchup(matchup: any) {
         transaction.update(userRef, {
           links,
           stats,
+          allTimeStats,
           achievements,
           inventory,
           updatedAt: Date.now()
@@ -242,6 +251,7 @@ export async function gradeSingleMatchup(matchup: any) {
 
         transaction.set(chainRef, {
           ...chainData,
+          allTimeBest,
           userId,
           active: true,
           updatedAt: Date.now()
