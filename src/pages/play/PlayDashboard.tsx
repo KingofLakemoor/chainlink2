@@ -21,8 +21,6 @@ export default function PlayDashboard() {
   const [sponsors, setSponsors] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!user) return;
-
     let unsubMatchups = () => {};
 
     const setupMatchups = () => {
