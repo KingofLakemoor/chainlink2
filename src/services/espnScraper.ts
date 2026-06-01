@@ -43,6 +43,8 @@ export const MATCHUP_POSTPONED_STATUSES = [
   "STATUS_CANCELED",
   "STATUS_SUSPENDED",
   "STATUS_ABANDONDED",
+  "STATUS_RETIRED",
+  "STATUS_WALKOVER",
 ];
 
 export const MATCHUP_SCHEDULED_STATUSES = ["STATUS_SCHEDULED"];
@@ -262,12 +264,12 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                   const descLower = finalStatusDesc.toLowerCase();
                   const detailLower = (comp.status?.type?.detail || "").toLowerCase();
 
-                  if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || descLower.includes('final') || compState === 'post') {
-                      finalStatus = "STATUS_FINAL";
-          } else if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus) || descLower.includes('postponed') || descLower.includes('canceled') || descLower.includes('cancelled') || descLower.includes('suspended') || descLower.includes('abandoned') || detailLower.includes('postponed') || detailLower.includes('canceled') || detailLower.includes('cancelled') || detailLower.includes('suspended') || detailLower.includes('abandoned')) {
+                  if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus) || descLower.includes('postponed') || descLower.includes('canceled') || descLower.includes('cancelled') || descLower.includes('suspended') || descLower.includes('abandoned') || detailLower.includes('postponed') || detailLower.includes('canceled') || detailLower.includes('cancelled') || detailLower.includes('suspended') || detailLower.includes('abandoned')) {
                       finalStatus = "STATUS_POSTPONED";
                   } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus)) {
                       finalStatus = "STATUS_DELAYED";
+                  } else if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || (comp.status?.type?.completed === true && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus))) {
+                      finalStatus = "STATUS_FINAL";
                   } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || compState === 'in') {
                       finalStatus = "STATUS_IN_PROGRESS";
                       if (comp.status?.type?.detail) {
@@ -412,10 +414,12 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
           const descLower = finalStatusDesc.toLowerCase();
           const detailLower = (competition.status?.type?.detail || "").toLowerCase();
 
-          if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || descLower.includes('final')) {
-              finalStatus = "STATUS_FINAL";
-          } else if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus) || descLower.includes('postponed') || descLower.includes('canceled') || descLower.includes('cancelled') || descLower.includes('suspended') || descLower.includes('abandoned') || detailLower.includes('postponed') || detailLower.includes('canceled') || detailLower.includes('cancelled') || detailLower.includes('suspended') || detailLower.includes('abandoned')) {
+          if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus) || descLower.includes('postponed') || descLower.includes('canceled') || descLower.includes('cancelled') || descLower.includes('suspended') || descLower.includes('abandoned') || detailLower.includes('postponed') || detailLower.includes('canceled') || detailLower.includes('cancelled') || detailLower.includes('suspended') || detailLower.includes('abandoned')) {
               finalStatus = "STATUS_POSTPONED";
+          } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus)) {
+              finalStatus = "STATUS_DELAYED";
+          } else if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || (descLower.includes('final') && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus))) {
+              finalStatus = "STATUS_FINAL";
           } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || (rawStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0))) {
               finalStatus = "STATUS_IN_PROGRESS";
               if (league === "MLB" || league === "CBASE") {
@@ -430,8 +434,6 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                       }
                   }
               }
-          } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus)) {
-              finalStatus = "STATUS_DELAYED";
           } else {
               finalStatus = "STATUS_SCHEDULED";
               finalStatusDesc = "Upcoming";
