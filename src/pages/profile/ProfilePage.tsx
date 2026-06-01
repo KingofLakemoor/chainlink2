@@ -701,17 +701,6 @@ export default function ProfilePage() {
                               <div className={`h-4 text-[9px] md:text-[10px] font-mono font-bold flex items-center justify-center border-t border-r border-zinc-800/50 ${hasEarned ? 'text-zinc-300' : 'text-zinc-600'}`}>
                                  {count}
                               </div>
-
-                              {/* Tooltip on hover */}
-                              <div className="absolute opacity-0 group-hover:opacity-100 bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-black/90 backdrop-blur text-white text-xs rounded-lg p-3 pointer-events-none z-50 shadow-xl border border-zinc-700 transition-opacity">
-                                 <div className="font-bold mb-1 text-[#22c55e]">{ach.name}</div>
-                                 <div className="text-zinc-300">{ach.description}</div>
-                                 {hasEarned && (
-                                     <div className="mt-2 text-[10px] text-zinc-400 border-t border-zinc-700/50 pt-2">
-                                         Earned <span className="text-white font-bold">{count}</span> time{count !== 1 ? 's' : ''}
-                                     </div>
-                                 )}
-                              </div>
                            </div>
                         );
                      })}
