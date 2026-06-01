@@ -706,7 +706,8 @@ apiRouter.post("/admin/monthly-rollover", validateAdmin, async (req, res) => {
           chain: 0,
           best: 0,
           wins: 0,
-          losses: 0
+          losses: 0,
+          allTimeBest
         });
         count++;
       }
