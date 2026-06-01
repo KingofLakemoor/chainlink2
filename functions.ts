@@ -211,6 +211,35 @@ export const nightlySync = onSchedule({ schedule: "0 9 * * *", timeoutSeconds: 3
     console.error(`[Cron] Error purging abandoned matchups:`, e);
   }
 
+  console.log(`[Cron] Starting purge of old notifications...`);
+  try {
+    const { adminDb } = await import("./src/lib/firebase-admin.js");
+    if (adminDb) {
+      const threeDaysAgo = Date.now() - (3 * 24 * 60 * 60 * 1000);
+      let purgedCount = 0;
+      while (true) {
+        const oldNotifsSnap = await adminDb.collection('notifications')
+          .where('createdAt', '<', threeDaysAgo)
+          .limit(500)
+          .get();
+
+        if (oldNotifsSnap.empty) {
+          break;
+        }
+
+        const batch = adminDb.batch();
+        oldNotifsSnap.docs.forEach((doc: any) => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
+        purgedCount += oldNotifsSnap.size;
+      }
+      console.log(`[Cron] Purged ${purgedCount} old notifications.`);
+    }
+  } catch (e) {
+    console.error(`[Cron] Error purging old notifications:`, e);
+  }
+
   console.log(`[Cron] Nightly scheduled sync cycle complete.`);
 });
 
