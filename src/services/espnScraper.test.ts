@@ -60,6 +60,8 @@ test('MATCHUP_POSTPONED_STATUSES contains expected values', () => {
     "STATUS_CANCELED",
     "STATUS_SUSPENDED",
     "STATUS_ABANDONDED",
+    "STATUS_RETIRED",
+    "STATUS_WALKOVER",
   ];
   expect(MATCHUP_POSTPONED_STATUSES).toEqual(expected);
 });
