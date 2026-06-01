@@ -622,6 +622,7 @@ apiRouter.post("/admin/monthly-rollover", validateAdmin, async (req, res) => {
         bestChain: chainData.best || 0,
         chainDocId: chainData.id,
         userData: data,
+        chainData: chainData,
       };
     });
 
@@ -700,7 +701,7 @@ apiRouter.post("/admin/monthly-rollover", validateAdmin, async (req, res) => {
         // Note: We carry over the current chain? Wait! The user requested:
         // "When a month ends, a user current chain resets to 0"
 
-        let allTimeBest = user.userData.allTimeBest || user.bestChain || 0; // The new grader tracks it in chain collection, but let's be safe
+        let allTimeBest = Math.max(user.chainData.allTimeBest || 0, user.userData.allTimeBest || 0, user.bestChain || 0); // The new grader tracks it in chain collection, but let's be safe
 
         batch.update(chainRef, {
           chain: 0,
