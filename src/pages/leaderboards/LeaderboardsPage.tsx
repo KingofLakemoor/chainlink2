@@ -136,10 +136,34 @@ export default function LeaderboardsPage() {
 
         const mergedData = usersSnap.docs.map(doc => {
             const userData = doc.data();
-            const chainData = chainsMap.get(doc.id) || { chain: 0, best: 0 };
+            const chainData = chainsMap.get(doc.id) || { chain: 0, best: 0, allTimeBest: 0 };
 
-            const wins = userData.stats?.wins || 0;
-            const losses = userData.stats?.losses || 0;
+            let statsToUse = userData.stats || { wins: 0, losses: 0, pushes: 0 };
+            let currentChainToUse = chainData.chain || 0;
+            let bestChainToUse = chainData.best || 0;
+
+            if (selectedMonth === 'all-time') {
+                statsToUse = userData.allTimeStats || statsToUse;
+                bestChainToUse = chainData.allTimeBest || bestChainToUse;
+            } else if (selectedMonth === 'previous') {
+                const date = new Date();
+                date.setMonth(date.getMonth() - 1);
+                const prevMonthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+                if (userData.historicalStats && userData.historicalStats[prevMonthKey]) {
+                    const hStats = userData.historicalStats[prevMonthKey];
+                    statsToUse = { wins: hStats.wins, losses: hStats.losses, pushes: hStats.pushes };
+                    bestChainToUse = hStats.longestWinChain || 0;
+                    currentChainToUse = 0; // Not applicable for past months
+                } else {
+                    statsToUse = { wins: 0, losses: 0, pushes: 0 };
+                    bestChainToUse = 0;
+                    currentChainToUse = 0;
+                }
+            }
+
+            const wins = statsToUse.wins || 0;
+            const losses = statsToUse.losses || 0;
             const total = wins + losses;
             const winRate = total > 0 ? (wins / total) * 100 : 0;
 
@@ -159,9 +183,9 @@ export default function LeaderboardsPage() {
             return {
                 id: doc.id,
                 ...userData,
-                stats: userData.stats || { wins: 0, losses: 0, pushes: 0 },
-                currentChain: chainData.chain || 0,
-                bestChain: chainData.best || 0,
+                stats: statsToUse,
+                currentChain: currentChainToUse,
+                bestChain: bestChainToUse,
                 winRate,
                 totalDecisions: total,
                 nextPickText
