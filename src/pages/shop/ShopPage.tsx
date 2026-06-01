@@ -268,7 +268,92 @@ export default function ShopPage() {
   const rings = getMonthlySelection(items, 'AVATAR_RING', 3, 3);
 
   const featuredCosmetics = items.filter(item => item.featured && (item.type === 'AVATAR_RING' || item.type === 'PROFILE_BANNER' || item.type === 'TITLE'));
-  const cosmetics = [...featuredCosmetics, ...banners, ...titles, ...rings];
+    const allBanners = [...featuredCosmetics.filter(item => item.type === 'PROFILE_BANNER'), ...banners];
+  const allRings = [...featuredCosmetics.filter(item => item.type === 'AVATAR_RING'), ...rings];
+  const allTitles = [...featuredCosmetics.filter(item => item.type === 'TITLE'), ...titles];
+
+  const renderCosmeticCard = (item: any) => {
+    const ownsItem = profile?.inventory?.includes(item.id);
+
+    return (
+      <div key={item.id} className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
+         {/* Preview area */}
+         <div className="h-32 bg-zinc-900 flex items-center justify-center relative overflow-hidden border-b border-zinc-800">
+            {item.type === 'PROFILE_BANNER' && (
+              ProfileBannerMap[item.image] ? (
+                <div className="absolute inset-0">
+                  {React.createElement(ProfileBannerMap[item.image], { isStatic: false })}
+                </div>
+              ) : (
+                <div className={`absolute inset-0 ${item.image || 'bg-zinc-800'}`}></div>
+              )
+            )}
+            {item.type === 'AVATAR_RING' && (
+              <div className="relative w-16 h-16 flex items-center justify-center z-10">
+                {AvatarRingMap[item.image] ? (
+                   <>
+                     <div className="absolute inset-0 rounded-full overflow-hidden transform scale-125">
+                       {React.createElement(AvatarRingMap[item.image], { isStatic: false })}
+                     </div>
+                     <div className="relative w-full h-full p-1.5">
+                       <div className="w-full h-full rounded-full bg-zinc-800 flex items-center justify-center text-[10px] text-zinc-500 shadow-inner">Avatar</div>
+                     </div>
+                   </>
+                ) : (
+                  <div className={`w-16 h-16 rounded-full border-4 ${item.image || 'border-zinc-500'} bg-zinc-800 flex items-center justify-center text-xs text-zinc-500`}>Avatar</div>
+                )}
+              </div>
+            )}
+            {item.type === 'TITLE' && (
+              <div className="z-10">
+                {TitleMap[item.preview || item.image || ''] ? (
+                  <div className="flex justify-center py-2">
+                    {React.createElement(TitleMap[item.preview || item.image || ''], { isStatic: false })}
+                  </div>
+                ) : (
+                  <div className={`text-xl font-bold text-zinc-300 font-display px-4 py-2 bg-black/50 rounded-lg border border-zinc-700 ${item.image || ''}`}>{item.name}</div>
+                )}
+              </div>
+            )}
+         </div>
+         <div className="p-5 flex flex-col flex-1 relative">
+            <div className="flex justify-between items-start mb-2">
+               <div className="flex flex-col">
+                  <h3 className="text-lg font-bold text-zinc-200">{item.name}</h3>
+                  {item.premiumOnly && (
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-purple-400 mt-1">ChainLink Pro Exclusive</span>
+                  )}
+               </div>
+               <span className="text-xs px-2 py-1 bg-zinc-800 text-zinc-400 rounded uppercase font-bold tracking-wider">{item.category || item.type.replace('_', ' ')}</span>
+            </div>
+            <p className="text-sm text-zinc-400 flex-1 mb-4">{item.description}</p>
+
+            <div className="flex items-center justify-between mt-auto">
+               <div className="font-mono font-bold text-cyan-400 flex items-center gap-1">
+                 <Coins className="w-4 h-4" /> {item.cost.toLocaleString()}
+               </div>
+               {item.premiumOnly && !profile?.premium && !ownsItem ? (
+                 <Button
+                   disabled
+                   className="bg-purple-500/20 text-purple-300 border border-purple-500/30 cursor-not-allowed opacity-80"
+                 >
+                   Requires Pro
+                 </Button>
+               ) : (
+                 <Button
+                   onClick={() => handleBuy(item.id, item.cost)}
+                   disabled={ownsItem || buyLoading === item.id || !user || (profile?.links || 0) < item.cost}
+                   variant={ownsItem ? "secondary" : "default"}
+                   className={ownsItem ? "" : "bg-[#22c55e] hover:bg-[#16a34a] text-white"}
+                 >
+                   {buyLoading === item.id ? 'Processing...' : ownsItem ? 'Owned' : 'Buy Now'}
+                 </Button>
+               )}
+            </div>
+         </div>
+      </div>
+    );
+  };
 
   const merchItems = items.filter(item => item.type === 'MERCH');
 
@@ -407,98 +492,49 @@ export default function ShopPage() {
         </section>
 
         <section>
-          <h2 className="text-2xl font-bold text-zinc-200 mb-4 border-b border-zinc-800 pb-2">Cosmetics</h2>
+          <h2 className="text-2xl font-bold text-zinc-200 mb-4 border-b border-zinc-800 pb-2">Banners</h2>
 
           {loading ? (
             <div className="text-zinc-500">Loading shop...</div>
-          ) : cosmetics.length === 0 ? (
+          ) : allBanners.length === 0 ? (
             <div className="bg-[#121212] border border-zinc-800 rounded-xl p-8 text-center text-zinc-500">
-              No cosmetics available right now.
+              No banners available right now.
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {cosmetics.map(item => {
-                const ownsItem = profile?.inventory?.includes(item.id);
+              {allBanners.map(item => renderCosmeticCard(item))}
+            </div>
+          )}
+        </section>
 
-                return (
-                  <div key={item.id} className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
-                     {/* Preview area */}
-                     <div className="h-32 bg-zinc-900 flex items-center justify-center relative overflow-hidden border-b border-zinc-800">
-                        {item.type === 'PROFILE_BANNER' && (
-                          ProfileBannerMap[item.image] ? (
-                            <div className="absolute inset-0">
-                              {React.createElement(ProfileBannerMap[item.image], { isStatic: false })}
-                            </div>
-                          ) : (
-                            <div className={`absolute inset-0 ${item.image || 'bg-zinc-800'}`}></div>
-                          )
-                        )}
-                        {item.type === 'AVATAR_RING' && (
-                          <div className="relative w-16 h-16 flex items-center justify-center z-10">
-                            {AvatarRingMap[item.image] ? (
-                               <>
-                                 <div className="absolute inset-0 rounded-full overflow-hidden transform scale-125">
-                                   {React.createElement(AvatarRingMap[item.image], { isStatic: false })}
-                                 </div>
-                                 <div className="relative w-full h-full p-1.5">
-                                   <div className="w-full h-full rounded-full bg-zinc-800 flex items-center justify-center text-[10px] text-zinc-500 shadow-inner">Avatar</div>
-                                 </div>
-                               </>
-                            ) : (
-                              <div className={`w-16 h-16 rounded-full border-4 ${item.image || 'border-zinc-500'} bg-zinc-800 flex items-center justify-center text-xs text-zinc-500`}>Avatar</div>
-                            )}
-                          </div>
-                        )}
-                        {item.type === 'TITLE' && (
-                          <div className="z-10">
-                            {TitleMap[item.preview || item.image || ''] ? (
-                              <div className="flex justify-center py-2">
-                                {React.createElement(TitleMap[item.preview || item.image || ''], { isStatic: false })}
-                              </div>
-                            ) : (
-                              <div className={`text-xl font-bold text-zinc-300 font-display px-4 py-2 bg-black/50 rounded-lg border border-zinc-700 ${item.image || ''}`}>{item.name}</div>
-                            )}
-                          </div>
-                        )}
-                     </div>
-                     <div className="p-5 flex flex-col flex-1 relative">
-                        <div className="flex justify-between items-start mb-2">
-                           <div className="flex flex-col">
-                              <h3 className="text-lg font-bold text-zinc-200">{item.name}</h3>
-                              {item.premiumOnly && (
-                                <span className="text-[10px] uppercase font-bold tracking-wider text-purple-400 mt-1">ChainLink Pro Exclusive</span>
-                              )}
-                           </div>
-                           <span className="text-xs px-2 py-1 bg-zinc-800 text-zinc-400 rounded uppercase font-bold tracking-wider">{item.category || item.type.replace('_', ' ')}</span>
-                        </div>
-                        <p className="text-sm text-zinc-400 flex-1 mb-4">{item.description}</p>
+        <section>
+          <h2 className="text-2xl font-bold text-zinc-200 mb-4 border-b border-zinc-800 pb-2">Rings</h2>
 
-                        <div className="flex items-center justify-between mt-auto">
-                           <div className="font-mono font-bold text-cyan-400 flex items-center gap-1">
-                             <Coins className="w-4 h-4" /> {item.cost.toLocaleString()}
-                           </div>
-                           {item.premiumOnly && !profile?.premium && !ownsItem ? (
-                             <Button
-                               disabled
-                               className="bg-purple-500/20 text-purple-300 border border-purple-500/30 cursor-not-allowed opacity-80"
-                             >
-                               Requires Pro
-                             </Button>
-                           ) : (
-                             <Button
-                               onClick={() => handleBuy(item.id, item.cost)}
-                               disabled={ownsItem || buyLoading === item.id || !user || (profile?.links || 0) < item.cost}
-                               variant={ownsItem ? "secondary" : "default"}
-                               className={ownsItem ? "" : "bg-[#22c55e] hover:bg-[#16a34a] text-white"}
-                             >
-                               {buyLoading === item.id ? 'Processing...' : ownsItem ? 'Owned' : 'Buy Now'}
-                             </Button>
-                           )}
-                        </div>
-                     </div>
-                  </div>
-                );
-              })}
+          {loading ? (
+            <div className="text-zinc-500">Loading shop...</div>
+          ) : allRings.length === 0 ? (
+            <div className="bg-[#121212] border border-zinc-800 rounded-xl p-8 text-center text-zinc-500">
+              No rings available right now.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {allRings.map(item => renderCosmeticCard(item))}
+            </div>
+          )}
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-zinc-200 mb-4 border-b border-zinc-800 pb-2">Titles</h2>
+
+          {loading ? (
+            <div className="text-zinc-500">Loading shop...</div>
+          ) : allTitles.length === 0 ? (
+            <div className="bg-[#121212] border border-zinc-800 rounded-xl p-8 text-center text-zinc-500">
+              No titles available right now.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {allTitles.map(item => renderCosmeticCard(item))}
             </div>
           )}
         </section>
