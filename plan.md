@@ -1,0 +1,5 @@
+1. **Analyze achievements data**: I will load the `achievements.json` in the `src/services/grader.ts` file or define a mechanism to evaluate when an achievement condition is met.
+2. **Implement Achievement Logic**: Add logic within `gradeSingleMatchup` (inside the transaction block) to check the updated user stats (`userData.stats`, `chainData.chain`, etc.) against the thresholds defined for different achievement types (`CHAINWIN`, `CHAINLOSS`, `WINS`, `LOSS`, etc.).
+3. **Update Inventory and Links**: If a new achievement is unlocked (i.e., not already in `userData.achievements`), I will add the achievement ID to their `achievements` array, and apply any associated reward (like adding links to the `links` variable). Since `userData.achievements` doesn't exist, I need to create it.
+4. **Update Titles (Cosmetics)**: Shop items with `type: 'TITLE'`, `forSale: false`, and `cost: 0` are earned via achievements. I will add logic to grant these titles by adding them to `userData.inventory` array based on specific criteria like streaks.
+5. **Handle Pre-commit Instructions**: Run the pre-commit script to verify the tests and codebase format.
