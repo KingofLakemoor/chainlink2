@@ -1,24 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { db } from '../../lib/firebase';
-import { collection, query, where, getDocs, onSnapshot, limit, startAfter, orderBy, DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
-import { Link2 } from 'lucide-react';
+import { collection, query, where, getDocs, onSnapshot } from 'firebase/firestore';
+import { Link2, ArrowRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import LifetimeStats from './LifetimeStats';
+import { useNavigate } from 'react-router-dom';
 
 export default function MyPicksPage() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [picks, setPicks] = useState<any[]>([]);
   const [matchups, setMatchups] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'CURRENT_MONTH' | 'ALL_TIME'>('CURRENT_MONTH');
 
-  // Pagination state for all-time picks
-  const [lastVisiblePick, setLastVisiblePick] = useState<QueryDocumentSnapshot<DocumentData, DocumentData> | null>(null);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMorePicks, setHasMorePicks] = useState(true);
-
-  // Fetch picks based on current tab
+  // Fetch picks
   useEffect(() => {
     if (!user) return;
 
@@ -32,31 +27,10 @@ export default function MyPicksPage() {
              { id: '3', status: 'PENDING', updatedAt: Date.now() - 2 * 60 * 60 * 1000, matchupId: 'mock-2', pick: { id: 'teamC', name: 'Spartak Moscow', image: 'https://via.placeholder.com/150' } },
            ]);
         } else {
-          let q;
-          if (activeTab === 'CURRENT_MONTH') {
-             // For current month, fetch all to allow memory filtering
-             q = query(collection(db, 'picks'), where('userId', '==', user.uid));
-          } else {
-             // For all time, fetch first 30 paginated
-             q = query(
-               collection(db, 'picks'),
-               where('userId', '==', user.uid),
-               orderBy('updatedAt', 'desc'),
-               limit(30)
-             );
-          }
+          const q = query(collection(db, 'picks'), where('userId', '==', user.uid));
           const snap = await getDocs(q);
           const fetchedPicks = snap.docs.map(doc => ({ id: doc.id, ...(doc.data() as object) }));
           setPicks(fetchedPicks);
-
-          if (activeTab === 'ALL_TIME') {
-             if (snap.docs.length > 0) {
-                setLastVisiblePick(snap.docs[snap.docs.length - 1]);
-             }
-             if (snap.docs.length < 30) {
-                setHasMorePicks(false);
-             }
-          }
         }
       } catch (e) {
         console.error("Error fetching picks", e);
@@ -65,7 +39,7 @@ export default function MyPicksPage() {
       }
     };
     fetchPicks();
-  }, [user, activeTab]);
+  }, [user]);
 
   // Fetch matchups globally
   useEffect(() => {
@@ -122,36 +96,6 @@ export default function MyPicksPage() {
     });
   }, [picks, matchups]);
 
-
-  const loadMorePicks = async () => {
-    if (!user || !lastVisiblePick || isLoadingMore) return;
-    setIsLoadingMore(true);
-    try {
-      const q = query(
-        collection(db, 'picks'),
-        where('userId', '==', user.uid),
-        orderBy('updatedAt', 'desc'),
-        startAfter(lastVisiblePick),
-        limit(30)
-      );
-      const snap = await getDocs(q);
-      const fetchedPicks = snap.docs.map(doc => ({ id: doc.id, ...(doc.data() as object) }));
-      setPicks(prev => [...prev, ...fetchedPicks]);
-      if (snap.docs.length > 0) {
-        setLastVisiblePick(snap.docs[snap.docs.length - 1]);
-      }
-      if (snap.docs.length < 30) {
-        setHasMorePicks(false);
-      }
-    } catch (e) {
-      console.error("Error loading more picks", e);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  };
-
-  const displayedPicks = activeTab === 'CURRENT_MONTH' ? currentMonthPicks : picks;
-
   if (isLoading) {
     return <div className="p-8 text-center text-zinc-400">Loading My Picks...</div>;
   }
@@ -159,32 +103,22 @@ export default function MyPicksPage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-zinc-100 font-display">My Picks</h1>
-        <div className="flex bg-zinc-900 rounded-lg p-1">
-          <button
-            onClick={() => setActiveTab('CURRENT_MONTH')}
-            className={cn("px-4 py-1.5 text-sm font-medium rounded-md transition-colors", activeTab === 'CURRENT_MONTH' ? "bg-zinc-800 text-white" : "text-zinc-400 hover:text-zinc-200")}
-          >
-            Current Month
-          </button>
-          <button
-            onClick={() => setActiveTab('ALL_TIME')}
-            className={cn("px-4 py-1.5 text-sm font-medium rounded-md transition-colors", activeTab === 'ALL_TIME' ? "bg-zinc-800 text-white" : "text-zinc-400 hover:text-zinc-200")}
-          >
-            All Time (Lifetime)
-          </button>
-        </div>
+        <h1 className="text-2xl font-bold text-zinc-100 font-display">Current Month Picks</h1>
+        <button
+          onClick={() => navigate('/advanced-metrics')}
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold transition-colors"
+        >
+          Advanced Metrics <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
 
-      {activeTab === 'ALL_TIME' && <LifetimeStats userStats={profile?.statsByLeague || {}} />}
-
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
-        {displayedPicks.length === 0 ? (
+        {currentMonthPicks.length === 0 ? (
            <div className="col-span-full text-center py-20 text-zinc-500">
-             <p>{activeTab === 'CURRENT_MONTH' ? "No picks found for this month." : "No picks found."}</p>
+             <p>No picks found for this month.</p>
            </div>
         ) : (
-          displayedPicks.map(pick => {
+          currentMonthPicks.map(pick => {
             const matchup = matchups.find(m => m.gameId === pick.matchupId);
 
             let statusColorClass = 'bg-[#121212] border-zinc-800';
@@ -253,17 +187,6 @@ export default function MyPicksPage() {
         )}
       </div>
 
-      {activeTab === 'ALL_TIME' && hasMorePicks && displayedPicks.length > 0 && (
-        <div className="mt-8 flex justify-center">
-          <button
-            onClick={loadMorePicks}
-            disabled={isLoadingMore}
-            className="px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-          >
-            {isLoadingMore ? 'Loading...' : 'Load More Picks'}
-          </button>
-        </div>
-      )}
     </div>
   );
 }
