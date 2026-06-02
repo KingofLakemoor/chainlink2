@@ -29,8 +29,8 @@ void main() {
     float a = atan(p.y, p.x);
 
     // ring mask
-    float inner = 0.72;
-    float outer = 0.94;
+    float inner = 0.85;
+    float outer = 1.0;
     float ringMask = step(inner, r) * (1.0 - step(outer, r));
 
     // circuit lines
@@ -156,11 +156,11 @@ function PrimeCircuitRing({ isStatic = false, ...props }) {
                         fill="transparent"/>
 
                 <g transform="translate(128, 128)">
-                    <rect x="-18" y="70" width="36" height="18" rx="4"
+                    <rect x="-18" y="104" width="36" height="18" rx="4"
                         fill="#000000"
                         stroke="#00FF9C"
                         strokeWidth="2"/>
-                    <text x="0" y="83"
+                    <text x="0" y="117"
                         textAnchor="middle"
                         dominantBaseline="middle"
                         fontFamily="Oswald, system-ui"
