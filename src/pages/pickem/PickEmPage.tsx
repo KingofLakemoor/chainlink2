@@ -345,6 +345,8 @@ export default function PickEmPage() {
                 const isSpread = m.type === 'SPREAD' && m.metadata?.spread !== undefined;
                 const spread = m.metadata?.spread || 0;
 
+                const isSpreadPendingLock = isSpread && (m.league === 'CFB' || m.league === 'NFL') && !m.metadata?.spreadLocked;
+
                 return (
                   <div key={m.id} className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
                     <div className="p-3 bg-[#18181A] border-b border-zinc-800 text-xs text-zinc-400 font-medium flex justify-between items-center">
@@ -362,6 +364,12 @@ export default function PickEmPage() {
                     </div>
 
                     <div className="p-4 flex-1 flex flex-col gap-3">
+                      {isSpreadPendingLock && (
+                        <div className="text-center text-xs font-bold text-yellow-500/80 bg-yellow-500/10 py-1.5 rounded-md border border-yellow-500/20 mb-1">
+                          Spread Lock Thursday Morning
+                        </div>
+                      )}
+
                       <button
                         onClick={() => handlePick(m, m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id)}
                         disabled={isLocked}
@@ -377,7 +385,7 @@ export default function PickEmPage() {
                           <img src={m.type === 'OVER_UNDER' ? '/images/over.png' : m.awayTeam.image} alt={m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.name} className="w-8 h-8 object-contain" loading="lazy" />
                           <div className="flex flex-row items-baseline gap-2">
                             <span className="font-bold text-white">{m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.name}</span>
-                            {isSpread && (
+                            {isSpread && !isSpreadPendingLock && (
                                <span className="text-base text-zinc-400 font-medium">{spread > 0 ? `-${spread}` : `+${Math.abs(spread)}`}</span>
                             )}
                             {m.type === 'SOCCER_SCORE' && (() => {
@@ -412,7 +420,7 @@ export default function PickEmPage() {
                           <img src={m.type === 'OVER_UNDER' ? '/images/under.png' : m.homeTeam.image} alt={m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.name} className="w-8 h-8 object-contain" loading="lazy" />
                           <div className="flex flex-row items-baseline gap-2">
                             <span className="font-bold text-white">{m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.name}</span>
-                            {isSpread && (
+                            {isSpread && !isSpreadPendingLock && (
                                <span className="text-base text-zinc-400 font-medium">{spread > 0 ? `+${spread}` : `-${Math.abs(spread)}`}</span>
                             )}
                             {m.type === 'SOCCER_SCORE' && (() => {

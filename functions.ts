@@ -290,6 +290,68 @@ export const dailyPickReminder = onSchedule({ schedule: "0 9 * * *", timeZone: "
   }
 });
 
+export const weeklyPickEmOddsLock = onSchedule({ schedule: "0 9 * * 4", timeoutSeconds: 300 }, async (event) => {
+  console.log(`[Cron] Starting weekly Pick 'Em odds lock (Thursday 2 AM Arizona time)...`);
+  try {
+    const { adminDb } = await import("./src/lib/firebase-admin.js");
+    if (adminDb) {
+      let batch = adminDb.batch();
+      let opCount = 0;
+      let totalUpdated = 0;
+
+      // Find all active CFB and NFL pickem matchups that are scheduled
+      const activeMatchupsSnap = await adminDb.collection('pickemMatchups')
+        .where('status', '==', 'STATUS_SCHEDULED')
+        .where('type', '==', 'SPREAD')
+        .get();
+
+      for (const doc of activeMatchupsSnap.docs) {
+        const data = doc.data();
+        if (data.league !== 'CFB' && data.league !== 'NFL') continue;
+
+        // Ensure we only lock if we haven't already
+        if (data.metadata?.spreadLocked) continue;
+
+        // Fetch the standard matchup to get the most up-to-date spread
+        const gameSnap = await adminDb.collection('matchups').doc(data.gameId).get();
+        if (!gameSnap.exists) continue;
+
+        const gameData = gameSnap.data();
+        if (!gameData || gameData.type !== 'SPREAD' || gameData.metadata?.spread === undefined) continue;
+
+        const updatedMetadata = {
+          ...(data.metadata || {}),
+          spread: gameData.metadata.spread,
+          overUnder: gameData.metadata.overUnder,
+          spreadLocked: true
+        };
+
+        batch.update(doc.ref, {
+          metadata: updatedMetadata,
+          updatedAt: Date.now()
+        });
+
+        opCount++;
+        totalUpdated++;
+
+        if (opCount >= 500) {
+          await batch.commit();
+          batch = adminDb.batch();
+          opCount = 0;
+        }
+      }
+
+      if (opCount > 0) {
+        await batch.commit();
+      }
+
+      console.log(`[Cron] Weekly Pick 'Em odds lock complete. Locked ${totalUpdated} matchups.`);
+    }
+  } catch (e) {
+    console.error(`[Cron] Error locking Pick 'Em odds:`, e);
+  }
+});
+
 export const monthlyShopRefresh = onSchedule({ schedule: "0 0 1 * *", timeoutSeconds: 300 }, async (event) => {
   console.log(`[Cron] Starting monthly shop refresh cycle...`);
   try {
