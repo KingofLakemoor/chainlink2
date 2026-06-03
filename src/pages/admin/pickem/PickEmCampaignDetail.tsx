@@ -137,6 +137,43 @@ export default function PickEmCampaignDetail() {
           const pickemMatchupId = `${id}_${selectedWeek}_${m.gameId}`;
           const docRef = doc(db, 'pickemMatchups', pickemMatchupId);
 
+          let metadataToSave = m.metadata || null;
+
+          // For CFB and NFL, check if it's before Thursday 2AM AZ time (9AM UTC) relative to the GAME'S week
+          if ((lg === 'CFB' || lg === 'NFL') && m.metadata) {
+             // Find the previous Thursday at 9AM UTC relative to the game's start time
+             const gameDate = new Date(m.startTime);
+             const gameDay = gameDate.getUTCDay();
+
+             // How many days since the last Thursday?
+             // If gameDay is Thursday (4), and hour >= 9, it's 0 days.
+             // If gameDay is Thursday (4) and hour < 9, the "last Thursday" was 7 days ago.
+             // We can simplify by just getting the current timestamp and finding the MOST RECENT Thursday 9AM UTC,
+             // then checking if the current time is before that.
+             // Wait, the lock time is the Thursday *of the game's week*.
+             // For a CFB game on Saturday, lock is that same week's Thursday.
+             // Let's construct the lock date based on the game's start time:
+             const lockDate = new Date(m.startTime);
+
+             // Determine days to subtract to get to Thursday (4)
+             let daysToSubtract = gameDay - 4;
+             if (daysToSubtract < 0) {
+                 daysToSubtract += 7; // e.g., if game is Wed (3), lock was last Thursday (subtract 6)
+             }
+
+             lockDate.setUTCDate(lockDate.getUTCDate() - daysToSubtract);
+             lockDate.setUTCHours(9, 0, 0, 0); // 9 AM UTC
+
+             const now = new Date();
+             const isBeforeThursdayLock = now.getTime() < lockDate.getTime();
+
+             if (isBeforeThursdayLock) {
+                metadataToSave = { ...m.metadata, spreadLocked: false };
+             } else {
+                metadataToSave = { ...m.metadata, spreadLocked: true };
+             }
+          }
+
           batch.set(docRef, {
             campaignId: id,
             week: selectedWeek,
@@ -148,7 +185,7 @@ export default function PickEmCampaignDetail() {
             homeTeam: m.homeTeam,
             awayTeam: m.awayTeam,
             type: campaign.defaultMatchType || "STANDARD",
-            metadata: m.metadata || null,
+            metadata: metadataToSave,
             createdAt: Date.now()
           }, { merge: true });
 
