@@ -120,7 +120,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
     case "MLB": return [`https://cdn.espn.com/core/mlb/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "MLS": return [`https://cdn.espn.com/core/soccer/schedule/_/league/usa.1??dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "EPL": return [`https://cdn.espn.com/core/soccer/schedule/_/league/eng.1??dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
-    case "FIFA": return [`https://cdn.espn.com/core/soccer/schedule/_/league/fifa.world?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
+    case "FIFA": return [ `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${year}&limit=300` ];
     case "FRA": return [`https://cdn.espn.com/core/soccer/schedule/_/league/fra.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "TUR": return [`https://cdn.espn.com/core/soccer/schedule/_/league/tur.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "RPL": return [`https://cdn.espn.com/core/soccer/schedule/_/league/rus.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
@@ -138,7 +138,7 @@ export async function fetchScheduleData(endpoint: string, league: League, isScor
   const scheduleData: Record<string, any> = {};
 
   // For scoreboards or leagues already using scoreboard
-  if (league === "MBB" || league === "WBB" || league === "PGA" || league === "CBASE" || league === "ATP" || league === "WTA" || isScoreboardOnly) {
+  if (league === "MBB" || league === "WBB" || league === "PGA" || league === "CBASE" || league === "ATP" || league === "WTA" || league === "FIFA" || isScoreboardOnly) {
     const seenGameIds = new Set<string>();
     const uniqueEvents = [];
 
