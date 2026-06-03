@@ -357,6 +357,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 const PlayDashboard = React.lazy(() => import('./pages/play/PlayDashboard'));
 const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
 const DashboardPage = React.lazy(() => import('./pages/dashboard/DashboardPage'));
+const AdvancedMetricsPage = React.lazy(() => import('./pages/advancedMetrics/AdvancedMetricsPage'));
 const ProfilePage = React.lazy(() => import('./pages/profile/ProfilePage'));
 const LeaderboardsPage = React.lazy(() => import('./pages/leaderboards/LeaderboardsPage'));
 const ShopPage = React.lazy(() => import('./pages/shop/ShopPage'));
@@ -384,6 +385,7 @@ export default function App() {
           <Route path="/brackets/:bracketId" element={<PrivateRoute><MainLayout><BracketsPage /></MainLayout></PrivateRoute>} />
           <Route path="/link4" element={<PrivateRoute><MainLayout><Link4Page /></MainLayout></PrivateRoute>} />
           <Route path="/mypicks" element={<PrivateRoute><MainLayout><MyPicksPage /></MainLayout></PrivateRoute>} />
+          <Route path="/advanced-metrics" element={<PrivateRoute><MainLayout><AdvancedMetricsPage /></MainLayout></PrivateRoute>} />
           <Route path="/leaderboards" element={<PrivateRoute><MainLayout><LeaderboardsPage /></MainLayout></PrivateRoute>} />
           <Route path="/shop" element={<PrivateRoute><MainLayout><ShopPage /></MainLayout></PrivateRoute>} />
           <Route path="/sponsor" element={<SponsorPage />} />

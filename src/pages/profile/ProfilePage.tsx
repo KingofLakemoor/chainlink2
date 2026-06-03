@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
-import { Trophy, Coins, Calendar, Mail, CheckCircle2, XCircle, MinusCircle, Medal, BarChart3, Pencil, Share2, Copy, Settings, Bell, Lock, Download } from 'lucide-react';
+import { Trophy, Coins, Calendar, Mail, CheckCircle2, XCircle, MinusCircle, BarChart3, Pencil, Share2, Copy, Settings, Bell, Lock, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { auth, db } from '../../lib/firebase';
 import { sendPasswordResetEmail } from 'firebase/auth';
@@ -159,8 +159,6 @@ export default function ProfilePage() {
     }
   };
 
-  const [achievements, setAchievements] = useState<any[]>([]);
-  const [achievementsLoading, setAchievementsLoading] = useState(true);
 
   const [inventoryItems, setInventoryItems] = useState<any[]>([]);
   const [inventoryLoading, setInventoryLoading] = useState(true);
@@ -170,21 +168,6 @@ export default function ProfilePage() {
   const { isInstallable, promptInstall } = useInstallPrompt();
   const [avatarUrlInput, setAvatarUrlInput] = useState('');
   const [avatarUpdateLoading, setAvatarUpdateLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchAchievements = async () => {
-      try {
-        const snap = await getDocs(query(collection(db, 'achievements'), orderBy('weight', 'desc')));
-        const achs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setAchievements(achs);
-      } catch (e) {
-        console.error("Error fetching achievements", e);
-      } finally {
-        setAchievementsLoading(false);
-      }
-    };
-    fetchAchievements();
-  }, []);
 
   useEffect(() => {
     const fetchInventory = async () => {
@@ -389,24 +372,6 @@ export default function ProfilePage() {
           console.error("Error formatting date", e);
       }
   }
-
-  // Calculate achievement counts
-  const userAchievements = profile.achievements || [];
-
-  // Group achievements by weight (rarity)
-  const achievementsByWeight: Record<number, any[]> = {};
-  achievements.forEach(ach => {
-      const weight = ach.weight || 0;
-      if (!achievementsByWeight[weight]) {
-          achievementsByWeight[weight] = [];
-      }
-      achievementsByWeight[weight].push(ach);
-  });
-
-  // Sort weights descending (rarer first)
-  const sortedWeights = Object.keys(achievementsByWeight)
-      .map(Number)
-      .sort((a, b) => b - a);
 
   const equippedBannerItem = inventoryItems.find(i => i.id === profile?.equippedCosmetics?.PROFILE_BANNER);
   const equippedBannerImage = equippedBannerItem?.image;
@@ -659,56 +624,6 @@ export default function ProfilePage() {
          )}
       </div>
 
-      {/* Medal Table */}
-      <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6 mt-6">
-         <h2 className="text-lg font-bold text-zinc-200 mb-6 flex items-center gap-2">
-            <Medal className="w-5 h-5 text-yellow-400" /> Medal Table
-         </h2>
-
-         {achievementsLoading ? (
-            <div className="text-center text-zinc-500 py-8">Loading achievements...</div>
-         ) : achievements.length === 0 ? (
-            <div className="text-center text-zinc-500 py-8">No achievements found.</div>
-         ) : (
-            <div className="flex flex-col gap-[2px] bg-zinc-800 border border-zinc-800 rounded overflow-hidden">
-               {sortedWeights.map((weight) => (
-                  <div key={weight} className="bg-[#1e1e1e] flex flex-wrap min-h-[76px] relative">
-                     {/* Background gradient hint based on rarity/weight */}
-                     {weight >= 3 && <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/5 to-transparent pointer-events-none"></div>}
-                     {weight === 2 && <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent pointer-events-none"></div>}
-
-                     {achievementsByWeight[weight].map((ach) => {
-                        // Count how many times the user earned this achievement
-                        // Assuming userAchievements is an array of achievement IDs or objects
-                        let count = 0;
-                        if (userAchievements && Array.isArray(userAchievements)) {
-                            count = userAchievements.filter(id => {
-                                if (typeof id === 'string') return id === ach.id;
-                                if (id && typeof id === 'object' && id.id) return id.id === ach.id;
-                                return false;
-                            }).length;
-                        }
-
-                        const hasEarned = count > 0;
-
-                        return (
-                           <div key={ach.id} className="w-[60px] md:w-[76px] flex flex-col group relative" title={`${ach.name}\n${ach.description}`}>
-                              {/* Icon Container */}
-                              <div className={`h-[60px] flex items-center justify-center border-r border-zinc-800/50 ${hasEarned ? 'opacity-100' : 'opacity-20 grayscale'}`}>
-                                 <FirebaseImage src={ach.image || ''} fallback="/logo.png" alt={ach.name} className="w-10 h-10 object-contain drop-shadow-md" />
-                              </div>
-                              {/* Count Banner */}
-                              <div className={`h-4 text-[9px] md:text-[10px] font-mono font-bold flex items-center justify-center border-t border-r border-zinc-800/50 ${hasEarned ? 'text-zinc-300' : 'text-zinc-600'}`}>
-                                 {count}
-                              </div>
-                           </div>
-                        );
-                     })}
-                  </div>
-               ))}
-            </div>
-         )}
-      </div>
 
       {/* Inventory & Cosmetics */}
       <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6 mt-6">
