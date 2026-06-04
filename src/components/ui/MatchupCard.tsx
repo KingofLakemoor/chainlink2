@@ -124,6 +124,11 @@ export const MatchupCard = React.memo(function MatchupCard({
                    {m.metadata.spread > 0 ? `-${m.metadata.spread}` : `+${Math.abs(m.metadata.spread)}`}
                  </div>
                )}
+               {(m.type === 'SCORE' || m.type === 'MONEYLINE') && m.metadata?.mlAway !== undefined && m.metadata?.mlAway !== null && (
+                 <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#1f1f22] text-zinc-300 text-[11px] font-bold px-2 py-0.5 rounded-md border border-[#3f3f46] shadow-sm">
+                   {m.metadata.mlAway > 0 ? `+${m.metadata.mlAway}` : m.metadata.mlAway}
+                 </div>
+               )}
                {m.type === 'SOCCER_SCORE' && (() => {
                  const type = m.metadata?.awayScoreType || 'WIN_BY';
                  const val = m.metadata?.awayScoreValue;
@@ -256,6 +261,11 @@ export const MatchupCard = React.memo(function MatchupCard({
                {m.type === 'SPREAD' && m.metadata?.spread !== undefined && (
                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#1f1f22] text-zinc-300 text-[11px] font-bold px-2 py-0.5 rounded-md border border-[#3f3f46] shadow-sm">
                    {m.metadata.spread > 0 ? `+${m.metadata.spread}` : `-${Math.abs(m.metadata.spread)}`}
+                 </div>
+               )}
+               {(m.type === 'SCORE' || m.type === 'MONEYLINE') && m.metadata?.mlHome !== undefined && m.metadata?.mlHome !== null && (
+                 <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#1f1f22] text-zinc-300 text-[11px] font-bold px-2 py-0.5 rounded-md border border-[#3f3f46] shadow-sm">
+                   {m.metadata.mlHome > 0 ? `+${m.metadata.mlHome}` : m.metadata.mlHome}
                  </div>
                )}
                {m.type === 'SOCCER_SCORE' && (() => {

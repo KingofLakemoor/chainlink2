@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Clock, Trophy, Lock } from 'lucide-react';
-import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, limit, doc, setDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { MatchupCard } from '../../components/ui/MatchupCard';
 import { onSnapshot } from 'firebase/firestore';
@@ -30,22 +30,6 @@ interface Link4LeaderboardEntry {
 }
 
 
-interface Link4LeaderboardPick {
-  id: string;
-  name?: string;
-  sport?: string;
-  status: 'PENDING' | 'WIN' | 'LOSS' | 'PUSH' | 'EMPTY';
-}
-
-interface Link4LeaderboardEntry {
-  userId: string;
-  username: string;
-  avatarUrl: string;
-  picks: Link4LeaderboardPick[];
-  score: number;
-  potentialScore: number;
-}
-
 interface Link4Pick {
   id: string;
   name: string;
@@ -55,6 +39,7 @@ interface Link4Pick {
 
 export default function Link4Page() {
   const { user } = useAuth();
+  const [activeSegmentId, setActiveSegmentId] = useState<string | null>(null);
   const [endTime, setEndTime] = useState<string>('');
   const [allowedSports, setAllowedSports] = useState<string[]>([]);
   const [theme, setTheme] = useState<Link4SegmentTheme>({});
@@ -62,6 +47,8 @@ export default function Link4Page() {
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
 
   const [leaderboardData, setLeaderboardData] = useState<Link4LeaderboardEntry[]>([]);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [isSelectingPick, setIsSelectingPick] = useState(false);
   const [allMatchups, setAllMatchups] = useState<any[]>([]);
@@ -100,7 +87,8 @@ export default function Link4Page() {
 
         if (!querySnapshot.empty) {
           // We found an upcoming or active segment based on end time
-          const activeSegment = querySnapshot.docs[0].data();
+          const activeDoc = querySnapshot.docs[0];
+          const activeSegment = activeDoc.data();
 
           // Only show it if it has actually started
           // If we want it to be visible before it starts, we could handle 'PENDING' vs 'ACTIVE' state
@@ -111,6 +99,7 @@ export default function Link4Page() {
             // We'll leave it as is to keep the countdown to end time, but it's noted.
           }
 
+          setActiveSegmentId(activeDoc.id);
           if (activeSegment.endTime) setEndTime(activeSegment.endTime);
           if (activeSegment.allowedSports) setAllowedSports(activeSegment.allowedSports);
           if (activeSegment.theme) setTheme(activeSegment.theme);
@@ -121,6 +110,128 @@ export default function Link4Page() {
     };
     fetchActiveSegment();
   }, []);
+
+  useEffect(() => {
+    if (!user || !activeSegmentId) return;
+
+    // Fetch user's picks if they exist
+    const fetchUserPicks = async () => {
+      try {
+        const q = query(collection(db, 'link4Picks'), where('segmentId', '==', activeSegmentId), where('userId', '==', user.uid));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const data = snap.docs[0].data();
+          if (data.picks) {
+             setPicks(data.picks);
+             setHasSubmitted(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user Link4 picks:", error);
+      }
+    };
+    fetchUserPicks();
+  }, [user, activeSegmentId]);
+
+  useEffect(() => {
+    if (!activeSegmentId) return;
+
+    // Listen to all picks for this segment to calculate the leaderboard
+    const unsubPicks = onSnapshot(query(collection(db, 'link4Picks'), where('segmentId', '==', activeSegmentId)), async (snap) => {
+        const allUserPicks = snap.docs.map(d => d.data());
+
+        // Wait for allMatchups to be ready
+        if (allMatchups.length === 0) return;
+
+        const leaderboardEntries: Link4LeaderboardEntry[] = [];
+
+        for (const userPickData of allUserPicks) {
+           let score = 0;
+           let potentialScore = 0;
+           let hasLoss = false;
+
+           const processedPicks = userPickData.picks.map((pick: any) => {
+              const pickMatchup = allMatchups.find(m => m.gameId === pick.id.replace('pick-', ''));
+              let status: 'PENDING' | 'WIN' | 'LOSS' | 'PUSH' | 'EMPTY' = 'PENDING';
+
+              if (!pickMatchup || pickMatchup.status === 'STATUS_SCHEDULED' || pickMatchup.status === 'STATUS_IN_PROGRESS') {
+                 status = 'PENDING';
+              } else if (pickMatchup.status === 'STATUS_FINAL') {
+                 // Determine win/loss
+                 const homeScore = pickMatchup.homeTeam.score;
+                 const awayScore = pickMatchup.awayTeam.score;
+                 let won = false;
+                 let isPush = false;
+
+                 if (homeScore === awayScore) {
+                    isPush = true;
+                    status = 'PUSH';
+                 } else {
+                    const pickedHome = pick.name === pickMatchup.homeTeam.name;
+                    if (pickedHome && homeScore > awayScore) won = true;
+                    if (!pickedHome && awayScore > homeScore) won = true;
+                    status = won ? 'WIN' : 'LOSS';
+                 }
+
+                 if (status === 'LOSS') {
+                    hasLoss = true;
+                 }
+
+                 if (status === 'WIN') {
+                    // Add Moneyline logic for calculating score
+                    const pickedHome = pick.name === pickMatchup.homeTeam.name;
+                    const ml = pickedHome ? pickMatchup.metadata?.mlHome : pickMatchup.metadata?.mlAway;
+                    if (ml !== undefined && ml !== null) {
+                       score += ml;
+                    }
+                 }
+              }
+
+              return {
+                 id: pick.id,
+                 name: pick.name,
+                 sport: pick.sport,
+                 status
+              };
+           });
+
+           // Calculate potential score by assuming PENDING games are WINs
+           processedPicks.forEach((pick: any) => {
+              if (pick.status === 'PENDING') {
+                 const pickMatchup = allMatchups.find(m => m.gameId === pick.id.replace('pick-', ''));
+                 if (pickMatchup) {
+                    const pickedHome = pick.name === pickMatchup.homeTeam.name;
+                    const ml = pickedHome ? pickMatchup.metadata?.mlHome : pickMatchup.metadata?.mlAway;
+                    if (ml !== undefined && ml !== null && ml > 0) {
+                       potentialScore += ml;
+                    } else if (ml !== undefined && ml !== null && ml < 0) {
+                       potentialScore += ml;
+                    }
+                 }
+              }
+           });
+
+           if (hasLoss) {
+              score = -99999;
+           }
+
+           leaderboardEntries.push({
+              userId: userPickData.userId,
+              username: userPickData.username,
+              avatarUrl: userPickData.avatarUrl,
+              picks: processedPicks,
+              score,
+              potentialScore: hasLoss ? -99999 : score + potentialScore
+           });
+        }
+
+        // Sort Leaderboard
+        leaderboardEntries.sort((a, b) => b.score - a.score);
+        setLeaderboardData(leaderboardEntries);
+    });
+
+    return () => unsubPicks();
+  }, [activeSegmentId, allMatchups]);
 
   useEffect(() => {
     if (!endTime) return;
@@ -145,6 +256,7 @@ export default function Link4Page() {
   }, [endTime]);
 
   const clearPicks = () => {
+    if (hasSubmitted) return;
     setPicks([null, null, null, null]);
   };
 
@@ -157,7 +269,7 @@ export default function Link4Page() {
   };
 
   const handleMakePick = (matchup: any, team: any) => {
-    if (nextPickIndex === -1) return;
+    if (nextPickIndex === -1 || hasSubmitted) return;
 
     const newPicks = [...picks];
     newPicks[nextPickIndex] = {
@@ -170,8 +282,32 @@ export default function Link4Page() {
     setIsSelectingPick(false);
   };
 
+  const handleSubmitPicks = async () => {
+    if (!user || !activeSegmentId) return;
+    if (picks.some(p => p === null)) return;
+
+    setIsSubmitting(true);
+    try {
+      await setDoc(doc(db, 'link4Picks', `${activeSegmentId}_${user.uid}`), {
+        segmentId: activeSegmentId,
+        userId: user.uid,
+        username: user.username || 'Anonymous',
+        avatarUrl: user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+        picks: picks,
+        submittedAt: new Date().toISOString()
+      });
+      setHasSubmitted(true);
+    } catch (error) {
+      console.error('Error submitting Link4 picks:', error);
+      alert('Failed to submit picks. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const availableMatchups = allMatchups.filter(m => {
     if (!m.active) return false;
+    if (m.metadata?.mlHome === undefined && m.metadata?.mlAway === undefined) return false;
     if (allowedSports.length > 0 && !allowedSports.includes(m.league)) return false;
     if (m.status !== 'STATUS_SCHEDULED') return false;
 
@@ -338,10 +474,24 @@ export default function Link4Page() {
             })}
           </div>
 
-          {nextPickIndex === -1 && (
+          {nextPickIndex === -1 && !hasSubmitted && (
+            <div className="mt-8 p-4 bg-zinc-900 border border-zinc-800 rounded-xl text-center">
+              <h3 className="text-lg font-bold text-white mb-2">Ready to Submit?</h3>
+              <p className="text-zinc-400 mb-4">Once you submit, your picks are locked for this Link4 segment.</p>
+              <button
+                onClick={handleSubmitPicks}
+                disabled={isSubmitting}
+                className="px-6 py-2 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold rounded-lg transition-colors"
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Picks'}
+              </button>
+            </div>
+          )}
+
+          {hasSubmitted && (
             <div className="mt-8 p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-center">
               <Trophy className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-              <h3 className="text-lg font-bold text-white">All 4 Picks Locked In!</h3>
+              <h3 className="text-lg font-bold text-white">Picks Submitted!</h3>
               <p className="text-zinc-400">Good luck! You've completed your Link4 selection.</p>
             </div>
           )}
