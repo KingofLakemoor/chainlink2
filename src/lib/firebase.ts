@@ -1,5 +1,5 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, signOut, Auth, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, fetchSignInMethodsForEmail, sendPasswordResetEmail } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, OAuthProvider, linkWithCredential, AuthCredential, signInWithRedirect, signInWithPopup, getRedirectResult, signOut, Auth, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, fetchSignInMethodsForEmail, sendPasswordResetEmail } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, Firestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 import firebaseConfig from '../../firebase-applet-config.json';
@@ -37,6 +37,10 @@ export const initFirebase = async () => {
 
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
+
+const discordProvider = new OAuthProvider('discord.com');
+discordProvider.addScope('identify');
+discordProvider.addScope('email');
 
 const ensureUserProfile = async (user: User, username?: string, referrerId?: string) => {
   // Check if user exists, if not create default profile
@@ -92,6 +96,30 @@ const ensureUserProfile = async (user: User, username?: string, referrerId?: str
   }
 };
 
+const handlePendingCredential = async (user: User) => {
+  const pendingCredStr = sessionStorage.getItem('pendingCred');
+  if (pendingCredStr) {
+    try {
+      const parsed = JSON.parse(pendingCredStr);
+      let cred = null;
+      if (parsed.providerId === 'google.com') {
+        cred = GoogleAuthProvider.credential(parsed.idToken, parsed.accessToken);
+      } else if (parsed.providerId === 'discord.com') {
+        // Use OAuthProvider.credentialFromJSON if available in the type definitions,
+        // otherwise we cast to any since we know it exists in the implementation.
+        cred = (OAuthProvider as any).credentialFromJSON(parsed);
+      }
+      if (cred) {
+        await linkWithCredential(user, cred);
+      }
+    } catch (e) {
+      console.error("Failed to link pending credential:", e);
+    } finally {
+      sessionStorage.removeItem('pendingCred');
+    }
+  }
+};
+
 export const loginWithEmail = async (email: string, pass: string) => {
   if (import.meta.env.DEV && (!app.options.apiKey || app.options.apiKey === 'MY_FIREBASE_API_KEY')) {
     console.log('Mock login triggered (no valid API key in dev mode)');
@@ -102,6 +130,7 @@ export const loginWithEmail = async (email: string, pass: string) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, pass);
     if (userCredential && userCredential.user) {
       await ensureUserProfile(userCredential.user);
+      await handlePendingCredential(userCredential.user);
     }
   } catch (error: any) {
     if (error.code === 'auth/invalid-credential') {
@@ -144,6 +173,46 @@ export const signupWithEmail = async (email: string, pass: string, username: str
   }
 };
 
+export const loginWithDiscord = async () => {
+  if (import.meta.env.DEV && (!app.options.apiKey || app.options.apiKey === 'MY_FIREBASE_API_KEY')) {
+    console.log('Mock login triggered (no valid API key in dev mode)');
+    window.dispatchEvent(new Event('mock-login'));
+    return;
+  }
+  try {
+    const userCredential = await signInWithPopup(auth, discordProvider);
+    if (userCredential && userCredential.user) {
+      const referrerId = localStorage.getItem('chainlink_referrer_id') || undefined;
+      await ensureUserProfile(userCredential.user, undefined, referrerId);
+      await handlePendingCredential(userCredential.user);
+      if (referrerId) localStorage.removeItem('chainlink_referrer_id');
+    }
+  } catch (error: any) {
+    if (error.code === 'auth/account-exists-with-different-credential') {
+      const pendingCred = OAuthProvider.credentialFromError(error);
+      if (pendingCred) {
+        sessionStorage.setItem('pendingCred', JSON.stringify(pendingCred.toJSON()));
+      }
+      const email = error.customData?.email;
+      if (email) {
+        let methods: string[] = [];
+        try {
+          methods = await fetchSignInMethodsForEmail(auth, email);
+        } catch (e) {}
+        if (methods.includes('password')) {
+          throw new Error(`An account already exists with ${email}. Please sign in using your Email/Password to link accounts.`);
+        }
+        if (methods.includes('google.com')) {
+          throw new Error(`An account already exists with ${email}. Please sign in with Google to link accounts.`);
+        }
+      }
+      throw new Error('An account already exists with different credentials. Please sign in using the original method to link accounts.');
+    }
+    console.error('Discord login failed', error);
+    throw error;
+  }
+};
+
 export const loginWithGoogle = async () => {
   if (import.meta.env.DEV && (!app.options.apiKey || app.options.apiKey === 'MY_FIREBASE_API_KEY')) {
     console.log('Mock login triggered (no valid API key in dev mode)');
@@ -155,10 +224,15 @@ export const loginWithGoogle = async () => {
     if (userCredential && userCredential.user) {
       const referrerId = localStorage.getItem('chainlink_referrer_id') || undefined;
       await ensureUserProfile(userCredential.user, undefined, referrerId);
+      await handlePendingCredential(userCredential.user);
       if (referrerId) localStorage.removeItem('chainlink_referrer_id');
     }
   } catch (error: any) {
     if (error.code === 'auth/account-exists-with-different-credential') {
+      const pendingCred = GoogleAuthProvider.credentialFromError(error);
+      if (pendingCred) {
+        sessionStorage.setItem('pendingCred', JSON.stringify(pendingCred.toJSON()));
+      }
       const email = error.customData?.email;
       if (email) {
         let methods: string[] = [];
@@ -166,10 +240,12 @@ export const loginWithGoogle = async () => {
           methods = await fetchSignInMethodsForEmail(auth, email);
         } catch (e) {}
         if (methods.includes('password')) {
-          throw new Error(`An account already exists with ${email}. Please sign in using your Email/Password.`);
+          throw new Error(`An account already exists with ${email}. Please sign in using your Email/Password to link accounts.`);
         }
+        // Since we are logging in with Google, the collision might be with Discord
+        throw new Error(`An account already exists with ${email}. Please sign in using the original method to link accounts.`);
       }
-      throw new Error('An account already exists with different credentials. Please sign in using the original method.');
+      throw new Error('An account already exists with different credentials. Please sign in using the original method to link accounts.');
     }
     console.warn('Popup login failed, falling back to redirect', error);
     try {
@@ -188,6 +264,7 @@ export const handleAuthRedirect = async () => {
       const user = result.user;
       const referrerId = localStorage.getItem('chainlink_referrer_id') || undefined;
       await ensureUserProfile(user, undefined, referrerId);
+      await handlePendingCredential(user);
       if (referrerId) localStorage.removeItem('chainlink_referrer_id');
       return user;
     }
