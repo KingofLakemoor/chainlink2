@@ -15,6 +15,7 @@ import {
 import {
   MdOutlineSportsSoccer, MdOutlineSportsBasketball, MdOutlineSportsHockey, MdOutlineSportsBaseball, MdOutlineSportsTennis
 } from 'react-icons/md';
+import { FaDiscord } from 'react-icons/fa';
 import { Download } from 'lucide-react';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -81,6 +82,11 @@ const Sidebar = React.memo(function Sidebar({ open, setOpen }: { open: boolean, 
       </div>
 
       <div className="p-4 mt-auto border-t border-[#27272a] space-y-2">
+        <Button variant="ghost" asChild className="w-full justify-start text-[#5865F2] hover:text-[#5865F2] hover:bg-[#5865F2]/10">
+          <a href="https://discord.gg/xUyEhaV9TH" target="_blank" rel="noopener noreferrer">
+            <FaDiscord className="w-4 h-4 mr-2" /> Join Discord
+          </a>
+        </Button>
         {isInstallable && (
           <Button variant="outline" onClick={promptInstall} className="w-full justify-start bg-cyan-950/30 text-cyan-400 border-cyan-900/50 hover:bg-cyan-900/50 hover:text-cyan-300">
             <Download className="w-4 h-4 mr-2" /> Install App
