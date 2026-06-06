@@ -201,7 +201,7 @@ export default function Link4AdminPage() {
       const pickedGameIds = new Set<string>();
       picksSnap.docs.forEach(d => {
          const data = d.data();
-         const picks = Array.isArray(data.picks) ? data.picks : [];
+         const picks = Array.isArray(data.picks) ? data.picks : (data.picks ? Object.values(data.picks) : []);
          picks.forEach((p: any) => {
             if (p?.matchupId) {
                pickedGameIds.add(p.matchupId);
