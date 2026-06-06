@@ -536,6 +536,11 @@ apiRouter.post("/admin/grade-matchup", validateAdmin, async (req, res) => {
 apiRouter.get("/external/check-premium", async (req, res) => {
   if (!adminDb) return res.status(500).json({ success: false, error: "adminDb not configured" });
   try {
+    const providedApiKey = req.headers['x-api-key'];
+    if (!providedApiKey || providedApiKey !== process.env.SCRIPTLESS_API_KEY) {
+      return res.status(401).json({ success: false, error: "Unauthorized: Invalid or missing API key" });
+    }
+
     const { email } = req.query;
     if (!email || typeof email !== 'string') {
       return res.status(400).json({ success: false, error: "Missing or invalid email parameter" });
