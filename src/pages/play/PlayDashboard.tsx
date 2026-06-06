@@ -152,7 +152,7 @@ export default function PlayDashboard() {
   const handleCancelPick = async (matchup: any) => {
     if (!user || !profile) return;
 
-    const isCancelablePGA = matchup.league === 'PGA' && matchup.status === 'STATUS_IN_PROGRESS' && matchup.statusDesc === 'In Progress';
+    const isCancelablePGA = matchup.league === 'PGA' && matchup.status === 'STATUS_IN_PROGRESS' && (matchup.statusDesc === 'In Progress' || matchup.statusDesc === 'Delayed');
 
     if (matchup.status !== 'STATUS_SCHEDULED' && !isCancelablePGA) {
       alert("This game has already started and cannot be cancelled.");
