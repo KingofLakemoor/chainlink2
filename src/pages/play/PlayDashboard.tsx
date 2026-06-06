@@ -5,7 +5,7 @@ import { collection, query, where, onSnapshot, getDocs, doc, setDoc, deleteDoc }
 import { Button } from '../../components/ui/button';
 import { cn } from '../../lib/utils';
 import { CheckCircle2 } from 'lucide-react';
-import { MdOutlineSportsSoccer, MdOutlineSportsBasketball, MdOutlineSportsHockey, MdOutlineSportsBaseball, MdOutlineSportsTennis } from 'react-icons/md';
+import { MdOutlineSportsSoccer, MdOutlineSportsBasketball, MdOutlineSportsHockey, MdOutlineSportsBaseball, MdOutlineSportsTennis, MdOutlineSportsGolf } from 'react-icons/md';
 import { MatchupCard } from '../../components/ui/MatchupCard';
 import { FirebaseImage } from '../../components/ui/FirebaseImage';
 
@@ -124,9 +124,13 @@ export default function PlayDashboard() {
 
       const isFinal = m.status === 'STATUS_FINAL' || m.statusDesc?.toLowerCase().includes('final');
       const isLive = m.status !== 'STATUS_SCHEDULED' && !isFinal && m.status !== 'STATUS_POSTPONED' && m.status !== 'STATUS_CANCELED';
-      const isUpcomingWithin24Hours = m.status === 'STATUS_SCHEDULED' && m.startTime <= next24Hours && m.startTime > (now - 24 * 60 * 60 * 1000);
 
-      if (!((isLive || isUpcomingWithin24Hours) && !isFinal)) return false;
+      let isUpcoming = m.status === 'STATUS_SCHEDULED' && m.startTime <= next24Hours && m.startTime > (now - 24 * 60 * 60 * 1000);
+      if (m.league === 'PGA' && m.status === 'STATUS_SCHEDULED') {
+        isUpcoming = true;
+      }
+
+      if (!((isLive || isUpcoming) && !isFinal)) return false;
 
       if (filterType === 'available' && m.status !== 'STATUS_SCHEDULED') return false;
       if (filterType === 'chain' && !m.featured) return false;
@@ -136,6 +140,7 @@ export default function PlayDashboard() {
       if (selectedSport === 'HOCKEY' && !['NHL'].includes(m.league)) return false;
       if (selectedSport === 'BASEBALL' && !['MLB', 'CBASE'].includes(m.league)) return false;
       if (selectedSport === 'TENNIS' && !['ATP', 'WTA'].includes(m.league)) return false;
+      if (selectedSport === 'GOLF' && !['PGA'].includes(m.league)) return false;
 
       return true;
     });
@@ -291,6 +296,7 @@ export default function PlayDashboard() {
           <Button variant="ghost" onClick={() => setSelectedSport('HOCKEY')} className={cn("rounded-lg px-3 h-9", selectedSport === 'HOCKEY' ? "bg-zinc-950 text-zinc-100" : "text-zinc-400 hover:text-zinc-200")}><MdOutlineSportsHockey className="w-5 h-5" /></Button>
           <Button variant="ghost" onClick={() => setSelectedSport('BASEBALL')} className={cn("rounded-lg px-3 h-9", selectedSport === 'BASEBALL' ? "bg-zinc-950 text-zinc-100" : "text-zinc-400 hover:text-zinc-200")}><MdOutlineSportsBaseball className="w-5 h-5" /></Button>
           <Button variant="ghost" onClick={() => setSelectedSport('TENNIS')} className={cn("rounded-lg px-3 h-9", selectedSport === 'TENNIS' ? "bg-zinc-950 text-zinc-100" : "text-zinc-400 hover:text-zinc-200")}><MdOutlineSportsTennis className="w-5 h-5" /></Button>
+          <Button variant="ghost" onClick={() => setSelectedSport('GOLF')} className={cn("rounded-lg px-3 h-9", selectedSport === 'GOLF' ? "bg-zinc-950 text-zinc-100" : "text-zinc-400 hover:text-zinc-200")}><MdOutlineSportsGolf className="w-5 h-5" /></Button>
         </div>
       </div>
 
