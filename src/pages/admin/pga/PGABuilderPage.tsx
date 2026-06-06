@@ -47,6 +47,7 @@ export default function PGABuilderPage() {
     title: '',
     matchupType: 'TOURNAMENT_FINISH',
     period: 1,
+    holes: 3,
     startTime: '',
     homeTeamId: '',
     awayTeamId: '',
@@ -63,12 +64,14 @@ export default function PGABuilderPage() {
           newTitle += ` (Tournament Finish)`;
         } else if (formData.matchupType === 'ROUND_SCORE') {
           newTitle += ` (R${formData.period} Score)`;
+        } else if (formData.matchupType === 'THRU_HOLES') {
+          newTitle += ` (R${formData.period} Thru ${formData.holes} Holes)`;
         }
 
         setFormData(prev => ({ ...prev, title: newTitle }));
       }
     }
-  }, [formData.awayTeamId, formData.homeTeamId, formData.matchupType, formData.period, golfers]);
+  }, [formData.awayTeamId, formData.homeTeamId, formData.matchupType, formData.period, formData.holes, golfers]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,7 +135,8 @@ export default function PGABuilderPage() {
         metadata: {
           golf: true,
           lowerScoreWins: true,
-          period: formData.matchupType === 'ROUND_SCORE' ? formData.period : 0,
+          period: (formData.matchupType === 'ROUND_SCORE' || formData.matchupType === 'THRU_HOLES') ? formData.period : 0,
+          holes: formData.matchupType === 'THRU_HOLES' ? formData.holes : 0,
           pgaBuilder: true,
           matchupType: formData.matchupType
         }
@@ -191,10 +195,11 @@ export default function PGABuilderPage() {
             >
               <option value="TOURNAMENT_FINISH">Tournament Finish (Full Event)</option>
               <option value="ROUND_SCORE">Round Score</option>
+              <option value="THRU_HOLES">Thru Holes</option>
             </select>
           </div>
 
-          {formData.matchupType === 'ROUND_SCORE' && (
+          {(formData.matchupType === 'ROUND_SCORE' || formData.matchupType === 'THRU_HOLES') && (
             <div>
               <label className="block text-sm font-medium text-zinc-400 mb-1">Round Number</label>
               <input
@@ -207,6 +212,21 @@ export default function PGABuilderPage() {
               />
             </div>
           )}
+
+          {formData.matchupType === 'THRU_HOLES' && (
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-1">Through Holes</label>
+              <input
+                type="number"
+                min="1"
+                max="18"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2 text-white focus:outline-none focus:border-green-500"
+                value={formData.holes}
+                onChange={e => setFormData({ ...formData, holes: parseInt(e.target.value) || 1 })}
+              />
+            </div>
+          )}
+
           {formData.matchupType === 'TOURNAMENT_FINISH' && (
              <div></div>
           )}

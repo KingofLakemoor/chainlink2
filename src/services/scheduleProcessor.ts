@@ -62,7 +62,9 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
             if (homeComp && awayComp) {
               const period = data.metadata?.period || 1;
+              const holes = data.metadata?.holes || 18;
               const isRoundScore = data.metadata?.matchupType === 'ROUND_SCORE';
+              const isThruHoles = data.metadata?.matchupType === 'THRU_HOLES';
 
               let homeScore = 0;
               let awayScore = 0;
@@ -72,6 +74,9 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               let homeStarted = false;
               let awayStarted = false;
 
+              let homeFrozenScore = data.metadata?.homeFinalScore;
+              let awayFrozenScore = data.metadata?.awayFinalScore;
+
               const parseGolfScore = (val: any) => {
                  if (val === null || val === undefined) return 0;
                  const strVal = String(val).toUpperCase();
@@ -80,7 +85,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                  return isNaN(parsed) ? 0 : parsed;
               };
 
-              if (isRoundScore) {
+              if (isRoundScore || isThruHoles) {
                  const homeLs = homeComp.linescores?.find((ls: any) => ls.period === period);
                  const awayLs = awayComp.linescores?.find((ls: any) => ls.period === period);
 
@@ -95,10 +100,22 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                  // Note: ESPN doesn't always cleanly mark individual rounds as 'post', so we rely on teeTimes and general status if needed
                  // But typically if they are on a later round, the previous round is final.
                  const currentRound = homeComp.status?.period || 1;
-                 if (homeComp.status?.type?.state === 'post' || currentRound > period || (currentRound === period && homeComp.status?.type?.completed)) homeFinal = true;
+                 const isHomeRoundDone = homeComp.status?.type?.state === 'post' || currentRound > period || (currentRound === period && homeComp.status?.type?.completed);
 
                  const awayCurrentRound = awayComp.status?.period || 1;
-                 if (awayComp.status?.type?.state === 'post' || awayCurrentRound > period || (awayCurrentRound === period && awayComp.status?.type?.completed)) awayFinal = true;
+                 const isAwayRoundDone = awayComp.status?.type?.state === 'post' || awayCurrentRound > period || (awayCurrentRound === period && awayComp.status?.type?.completed);
+
+                 if (isThruHoles) {
+                    if (isHomeRoundDone || (currentRound === period && (homeComp.status?.thru || 0) >= holes)) {
+                        homeFinal = true;
+                    }
+                    if (isAwayRoundDone || (awayCurrentRound === period && (awayComp.status?.thru || 0) >= holes)) {
+                        awayFinal = true;
+                    }
+                 } else {
+                    homeFinal = isHomeRoundDone;
+                    awayFinal = isAwayRoundDone;
+                 }
 
               } else {
                  homeScore = parseGolfScore(homeComp.score?.displayValue || homeComp.score?.value || homeComp.score);
@@ -109,6 +126,20 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
                  if (homeComp.status?.type?.state === 'in' || homeFinal) homeStarted = true;
                  if (awayComp.status?.type?.state === 'in' || awayFinal) awayStarted = true;
+              }
+
+              if (homeFrozenScore !== undefined) {
+                 homeScore = homeFrozenScore;
+                 homeFinal = true;
+              } else if (isThruHoles && homeFinal) {
+                 homeFrozenScore = homeScore;
+              }
+
+              if (awayFrozenScore !== undefined) {
+                 awayScore = awayFrozenScore;
+                 awayFinal = true;
+              } else if (isThruHoles && awayFinal) {
+                 awayFrozenScore = awayScore;
               }
 
               let newStatus = data.status;
@@ -141,11 +172,19 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                 }
               }
 
+              let isMetadataChanged = false;
+              if (isThruHoles) {
+                  if (homeFrozenScore !== data.metadata?.homeFinalScore || awayFrozenScore !== data.metadata?.awayFinalScore) {
+                      isMetadataChanged = true;
+                  }
+              }
+
               const needsUpdate = data.status !== newStatus ||
                   data.statusDesc !== (newStatus === 'STATUS_FINAL' ? 'Final' : newStatus === 'STATUS_IN_PROGRESS' ? currentThruDesc : 'Upcoming') ||
                   data.homeTeam?.score !== homeScore ||
                   data.awayTeam?.score !== awayScore ||
-                  data.active !== newActive;
+                  data.active !== newActive ||
+                  isMetadataChanged;
 
               if (needsUpdate) {
                 const updateData: any = {
@@ -161,8 +200,16 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                       ...data.awayTeam,
                       score: awayScore
                   },
+                  metadata: {
+                      ...(data.metadata || {})
+                  },
                   updatedAt: Date.now()
                 };
+
+                if (isThruHoles) {
+                    if (homeFrozenScore !== undefined) updateData.metadata.homeFinalScore = homeFrozenScore;
+                    if (awayFrozenScore !== undefined) updateData.metadata.awayFinalScore = awayFrozenScore;
+                }
 
                 const flattenedUpdate: any = {
                   active: updateData.active,
@@ -172,6 +219,11 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                   'awayTeam.score': updateData.awayTeam.score,
                   updatedAt: updateData.updatedAt
                 };
+
+                if (isThruHoles) {
+                    if (homeFrozenScore !== undefined) flattenedUpdate['metadata.homeFinalScore'] = homeFrozenScore;
+                    if (awayFrozenScore !== undefined) flattenedUpdate['metadata.awayFinalScore'] = awayFrozenScore;
+                }
 
                 Object.keys(flattenedUpdate).forEach(key => flattenedUpdate[key] === undefined && delete flattenedUpdate[key]);
 
