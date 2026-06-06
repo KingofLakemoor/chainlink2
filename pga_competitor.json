@@ -1,0 +1,121 @@
+{
+  "id": "10054",
+  "uid": "s:1100~a:10054",
+  "movement": 5,
+  "earnings": 0,
+  "sortOrder": 43,
+  "amateur": false,
+  "featured": false,
+  "status": {
+    "displayValue": "2026-06-06T13:50:00Z",
+    "period": 3,
+    "teeTime": "2026-06-06T13:50Z",
+    "hole": 18,
+    "startHole": 1,
+    "thru": 0,
+    "playoff": false,
+    "behindCurrentRound": false,
+    "detail": "9:50 AM ET",
+    "type": {
+      "id": "0",
+      "name": "STATUS_SCHEDULED",
+      "state": "pre",
+      "completed": false,
+      "description": "Scheduled",
+      "detail": "Scheduled",
+      "shortDetail": "Scheduled"
+    },
+    "position": {
+      "id": "38",
+      "displayName": "T38",
+      "isTie": true
+    }
+  },
+  "score": {
+    "value": 148,
+    "displayValue": "+4"
+  },
+  "linescores": [
+    {
+      "value": 73,
+      "displayValue": "+1",
+      "period": 1,
+      "inScore": 37,
+      "outScore": 36,
+      "currentPosition": 33,
+      "teeTime": "2026-06-04T16:10Z",
+      "hasStream": false,
+      "isPlayoff": false
+    },
+    {
+      "value": 75,
+      "displayValue": "+3",
+      "period": 2,
+      "inScore": 39,
+      "outScore": 36,
+      "startPosition": 33,
+      "currentPosition": 38,
+      "teeTime": "2026-06-05T12:55Z",
+      "hasStream": false,
+      "isPlayoff": false
+    },
+    {
+      "period": 3,
+      "teeTime": "2026-06-06T13:50Z",
+      "hasStream": false,
+      "isPlayoff": false
+    }
+  ],
+  "statistics": [
+    {
+      "name": "scoreToPar",
+      "value": 4,
+      "displayValue": "+4"
+    },
+    {
+      "name": "officialAmount",
+      "displayValue": "--"
+    },
+    {
+      "name": "cupPoints",
+      "value": 0,
+      "displayValue": "0"
+    }
+  ],
+  "athlete": {
+    "id": "10054",
+    "uid": "s:1100~a:10054",
+    "guid": "7be4a840-b6c1-c44d-618e-6b672f78fc92",
+    "displayName": "Denny McCarthy",
+    "shortName": "D. McCarthy",
+    "lastName": "McCarthy",
+    "amateur": false,
+    "headshot": {
+      "href": "https://a.espncdn.com/i/headshots/golf/players/full/10054.png"
+    },
+    "flag": {
+      "href": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
+      "alt": "USA"
+    },
+    "birthPlace": {
+      "countryAbbreviation": "USA",
+      "stateAbbreviation": "MD"
+    },
+    "links": [
+      {
+        "language": "en-US",
+        "rel": [
+          "playercard",
+          "desktop",
+          "athlete"
+        ],
+        "href": "https://www.espn.com/golf/player/_/id/10054/denny-mccarthy",
+        "text": "Player Card",
+        "shortText": "Player Card",
+        "isExternal": false,
+        "isPremium": false,
+        "isHidden": false
+      }
+    ]
+  }
+}

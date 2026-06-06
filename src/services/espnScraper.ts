@@ -137,6 +137,39 @@ export async function fetchScheduleData(endpoint: string, league: League, isScor
   const data = await response.json();
   const scheduleData: Record<string, any> = {};
 
+  if (league === "PGA") {
+    // For PGA, we merge the scoreboard API data (which contains hole-by-hole stats) into the leaderboard data
+    try {
+      const sbResponse = await fetch('http://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard');
+      const sbData = await sbResponse.json();
+
+      for (const event of (data.events || [])) {
+        const sbEvent = sbData.events?.find((e: any) => e.id === event.id);
+        if (sbEvent && event.competitions?.[0]?.competitors && sbEvent.competitions?.[0]?.competitors) {
+           const sbMap = new Map();
+           for (const c of sbEvent.competitions[0].competitors) {
+               sbMap.set(c.id, c);
+           }
+
+           for (const c of event.competitions[0].competitors) {
+               const sbC = sbMap.get(c.id);
+               if (sbC && sbC.linescores && c.linescores) {
+                   for (const lbLs of c.linescores) {
+                       const sbLs = sbC.linescores.find((s: any) => s.period === lbLs.period);
+                       if (sbLs && sbLs.linescores) {
+                           // Store hole-by-hole stats inside the period's linescore
+                           lbLs.holes = sbLs.linescores;
+                       }
+                   }
+               }
+           }
+        }
+      }
+    } catch (e) {
+      console.error("Error fetching or merging PGA scoreboard data:", e);
+    }
+  }
+
   // For scoreboards or leagues already using scoreboard
   if (league === "MBB" || league === "WBB" || league === "PGA" || league === "CBASE" || league === "ATP" || league === "WTA" || league === "FIFA" || isScoreboardOnly) {
     const seenGameIds = new Set<string>();

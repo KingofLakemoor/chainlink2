@@ -66,6 +66,14 @@ export default function PGABuilderPage() {
           newTitle += ` (R${formData.period} Score)`;
         } else if (formData.matchupType === 'THRU_HOLES') {
           newTitle += ` (R${formData.period} Thru ${formData.holes} Holes)`;
+        } else if (formData.matchupType === 'BIRDIES_THRU_HOLES') {
+          newTitle += ` (Most Birdies or Better R${formData.period} Thru ${formData.holes} Holes)`;
+        } else if (formData.matchupType === 'EAGLES_THRU_HOLES') {
+          newTitle += ` (Most Eagles or Better R${formData.period} Thru ${formData.holes} Holes)`;
+        } else if (formData.matchupType === 'PARS_THRU_HOLES') {
+          newTitle += ` (Most Pars R${formData.period} Thru ${formData.holes} Holes)`;
+        } else if (formData.matchupType === 'BOGEYS_THRU_HOLES') {
+          newTitle += ` (Fewer Bogeys or Worse R${formData.period} Thru ${formData.holes} Holes)`;
         }
 
         setFormData(prev => ({ ...prev, title: newTitle }));
@@ -107,6 +115,13 @@ export default function PGABuilderPage() {
         else if (teeAway) finalStartTime = teeAway;
       }
 
+      const isThruHolesMatchup = ['THRU_HOLES', 'BIRDIES_THRU_HOLES', 'EAGLES_THRU_HOLES', 'PARS_THRU_HOLES', 'BOGEYS_THRU_HOLES'].includes(formData.matchupType);
+
+      let lowerScoreWins = true;
+      if (['BIRDIES_THRU_HOLES', 'EAGLES_THRU_HOLES', 'PARS_THRU_HOLES'].includes(formData.matchupType)) {
+          lowerScoreWins = false;
+      }
+
       const matchupData = {
         title: formData.title,
         league: 'PGA',
@@ -134,9 +149,9 @@ export default function PGABuilderPage() {
         },
         metadata: {
           golf: true,
-          lowerScoreWins: true,
-          period: (formData.matchupType === 'ROUND_SCORE' || formData.matchupType === 'THRU_HOLES') ? formData.period : 0,
-          holes: formData.matchupType === 'THRU_HOLES' ? formData.holes : 0,
+          lowerScoreWins,
+          period: (formData.matchupType === 'ROUND_SCORE' || isThruHolesMatchup) ? formData.period : 0,
+          holes: isThruHolesMatchup ? formData.holes : 0,
           pgaBuilder: true,
           matchupType: formData.matchupType
         }
@@ -196,10 +211,14 @@ export default function PGABuilderPage() {
               <option value="TOURNAMENT_FINISH">Tournament Finish (Full Event)</option>
               <option value="ROUND_SCORE">Round Score</option>
               <option value="THRU_HOLES">Thru Holes</option>
+              <option value="BIRDIES_THRU_HOLES">Birdies or Better Thru Holes</option>
+              <option value="EAGLES_THRU_HOLES">Eagles or Better Thru Holes</option>
+              <option value="PARS_THRU_HOLES">Pars Thru Holes</option>
+              <option value="BOGEYS_THRU_HOLES">Fewer Bogeys or Worse Thru Holes</option>
             </select>
           </div>
 
-          {(formData.matchupType === 'ROUND_SCORE' || formData.matchupType === 'THRU_HOLES') && (
+          {(formData.matchupType !== 'TOURNAMENT_FINISH') && (
             <div>
               <label className="block text-sm font-medium text-zinc-400 mb-1">Round Number</label>
               <input
@@ -213,7 +232,7 @@ export default function PGABuilderPage() {
             </div>
           )}
 
-          {formData.matchupType === 'THRU_HOLES' && (
+          {['THRU_HOLES', 'BIRDIES_THRU_HOLES', 'EAGLES_THRU_HOLES', 'PARS_THRU_HOLES', 'BOGEYS_THRU_HOLES'].includes(formData.matchupType) && (
             <div>
               <label className="block text-sm font-medium text-zinc-400 mb-1">Through Holes</label>
               <input
