@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { collection, doc, getDocs, setDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, deleteDoc, query, orderBy, writeBatch, where } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
-import { Save, Loader2, Calendar, Plus, Edit2, Trash2, Clock, PlayCircle, Link as LinkIcon, Palette, Image as ImageIcon } from 'lucide-react';
-import { SUPPORTED_LEAGUES } from '../../../services/espnScraper';
+import { Save, Loader2, Calendar, Plus, Edit2, Trash2, Clock, PlayCircle, Link as LinkIcon, Palette, Image as ImageIcon, RefreshCw } from 'lucide-react';
+import { SUPPORTED_LEAGUES, scrapeLeagueSchedules } from '../../../services/espnScraper';
 
 interface Link4SegmentTheme {
   primaryColor: string;
@@ -44,6 +44,9 @@ export default function Link4AdminPage() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const fetchSegments = async () => {
     try {
@@ -187,6 +190,128 @@ export default function Link4AdminPage() {
     if (now < startTime) return { label: 'Upcoming', color: 'text-blue-400 border-blue-400/30 bg-blue-400/10' };
     if (now >= startTime && now <= endTime) return { label: 'Active', color: 'text-green-400 border-green-400/30 bg-green-400/10' };
     return { label: 'Completed', color: 'text-zinc-500 border-zinc-700 bg-zinc-800' };
+  };
+
+  const handleSyncEligible = async () => {
+    setIsSyncing(true);
+    setSyncStatus(null);
+    try {
+      // 1. Get all picked matchups to exclude them from updates
+      const picksSnap = await getDocs(collection(db, 'link4Picks'));
+      const pickedGameIds = new Set<string>();
+      picksSnap.docs.forEach(d => {
+         const picks = d.data().picks || [];
+         picks.forEach((p: any) => {
+            if (p?.id && p.id.startsWith('pick-')) {
+               pickedGameIds.add(p.id.replace('pick-', ''));
+            }
+         });
+      });
+
+      let scraperConfig: { maxMoneylineOdds?: number, sportOverrides?: Record<string, number> } = {};
+      try {
+        const scraperSnap = await getDocs(query(collection(db, 'systemSettings')));
+        const scraperDoc = scraperSnap.docs.find(d => d.id === 'scraper')?.data();
+        if (scraperDoc) {
+          scraperConfig = scraperDoc as any;
+        }
+      } catch (e) {
+        console.error("Error fetching system settings", e);
+      }
+
+      // 2. Determine which leagues to scrape. We'll scrape all active segment allowed sports, or all supported sports if none active
+      let sportsToScrape = SUPPORTED_LEAGUES;
+      const activeSegment = segments.find(s => {
+          const status = getSegmentStatus(s.startTime, s.endTime);
+          return status.label === 'Active' || status.label === 'Upcoming';
+      });
+      if (activeSegment && activeSegment.allowedSports && activeSegment.allowedSports.length > 0) {
+          sportsToScrape = activeSegment.allowedSports;
+      }
+
+      let totalSynced = 0;
+
+      for (const league of sportsToScrape) {
+         try {
+            // @ts-ignore
+            const result = await scrapeLeagueSchedules(league, false, scraperConfig);
+            const scrapedMatchups = result.data;
+
+            if (!scrapedMatchups || scrapedMatchups.length === 0) continue;
+
+            const existingSnap = await getDocs(query(collection(db, 'matchups'), where('league', '==', league)));
+            const existingMap = new Map<string, any>();
+            existingSnap.docs.forEach(d => {
+               const m = d.data();
+               existingMap.set(m.gameId, d);
+            });
+
+            let defaultActive = true;
+            try {
+               const settingsSnap = await getDocs(query(collection(db, 'leagueSettings')));
+               const leagueSetting = settingsSnap.docs.find(d => d.id === league)?.data();
+               if (leagueSetting && typeof leagueSetting.active === 'boolean') {
+                  defaultActive = leagueSetting.active;
+               }
+            } catch (e) {}
+
+            let batch = writeBatch(db);
+            let opCount = 0;
+
+            for (const scrapedMatchup of scrapedMatchups) {
+                // Only process games that have BOTH ML home and away
+                const hasML = scrapedMatchup.metadata?.mlHome !== undefined && scrapedMatchup.metadata?.mlHome !== null &&
+                              scrapedMatchup.metadata?.mlAway !== undefined && scrapedMatchup.metadata?.mlAway !== null;
+
+                if (!hasML) continue;
+
+                const gameId = scrapedMatchup.gameId;
+                if (pickedGameIds.has(gameId)) continue; // Do not update picked games
+
+                const existingDoc = existingMap.get(gameId);
+
+                if (existingDoc) {
+                    // Since we're syncing just for eligible ML, update if ML changed
+                    const existingData = existingDoc.data();
+                    batch.update(doc(db, 'matchups', existingDoc.id), {
+                        'metadata.mlHome': scrapedMatchup.metadata.mlHome,
+                        'metadata.mlAway': scrapedMatchup.metadata.mlAway,
+                        updatedAt: Date.now()
+                    });
+                    opCount++;
+                } else {
+                    const newDocRef = doc(db, 'matchups', gameId);
+                    batch.set(newDocRef, {
+                        ...scrapedMatchup,
+                        active: scrapedMatchup.active && defaultActive,
+                        updatedAt: Date.now(),
+                        createdAt: Date.now()
+                    });
+                    opCount++;
+                }
+                totalSynced++;
+
+                if (opCount >= 500) {
+                    await batch.commit();
+                    batch = writeBatch(db);
+                    opCount = 0;
+                }
+            }
+            if (opCount > 0) {
+                await batch.commit();
+            }
+         } catch (e) {
+             console.error(`Error syncing ${league}:`, e);
+         }
+      }
+      setSyncStatus({ type: 'success', message: `Successfully synced ${totalSynced} eligible games.` });
+    } catch (e) {
+      console.error("Error during manual sync:", e);
+      setSyncStatus({ type: 'error', message: 'Failed to sync eligible games.' });
+    } finally {
+      setIsSyncing(false);
+      setTimeout(() => setSyncStatus(null), 3000);
+    }
   };
 
   if (isLoading) {
@@ -375,10 +500,26 @@ export default function Link4AdminPage() {
 
         {/* Right Column: List */}
         <div className="xl:col-span-2 space-y-4">
-          <h4 className="text-lg text-zinc-200 font-medium mb-4 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-zinc-400" />
-            Segments List
-          </h4>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+            <h4 className="text-lg text-zinc-200 font-medium flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-zinc-400" />
+              Segments List
+            </h4>
+
+            <div className="flex items-center gap-3">
+               {syncStatus && (
+                 <span className={`text-xs font-medium ${syncStatus.type === 'success' ? 'text-green-500' : 'text-red-500'}`}>{syncStatus.message}</span>
+               )}
+               <button
+                 onClick={handleSyncEligible}
+                 disabled={isSyncing}
+                 className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+               >
+                 {isSyncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                 Sync Eligible Games
+               </button>
+            </div>
+          </div>
 
           {segments.length === 0 ? (
             <div className="bg-[#1a1a1a] border border-[#27272a] rounded-xl p-8 text-center">

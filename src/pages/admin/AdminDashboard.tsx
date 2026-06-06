@@ -304,7 +304,8 @@ function AdminMatchups() {
                      existingData.awayTeam?.id !== scrapedMatchup.awayTeam?.id ||
                      existingData.metadata?.overUnder !== scrapedMatchup.metadata?.overUnder ||
                      (existingData.type !== 'SPREAD' && existingData.metadata?.spread !== scrapedMatchup.metadata?.spread) ||
-                     existingData.metadata?.mlHome !== scrapedMatchup.metadata?.mlHome;
+                     existingData.metadata?.mlHome !== scrapedMatchup.metadata?.mlHome ||
+                     existingData.metadata?.mlAway !== scrapedMatchup.metadata?.mlAway;
 
                  if (existingDoc.id !== gameId) {
                    // Migrate to use gameId as the document ID
@@ -333,7 +334,8 @@ function AdminMatchups() {
                          overUnder: scrapedMatchup.metadata?.overUnder,
                          spread: existingData.type === 'SPREAD' ? existingData.metadata?.spread : scrapedMatchup.metadata?.spread,
                          network: scrapedMatchup.metadata?.network,
-                         mlHome: scrapedMatchup.metadata?.mlHome
+                         mlHome: scrapedMatchup.metadata?.mlHome,
+                         mlAway: scrapedMatchup.metadata?.mlAway
                      },
                      updatedAt: Date.now()
                    };
@@ -358,6 +360,7 @@ function AdminMatchups() {
                      'metadata.spread': existingData.type === 'SPREAD' ? existingData.metadata?.spread : scrapedMatchup.metadata?.spread,
                      'metadata.network': scrapedMatchup.metadata?.network,
                      'metadata.mlHome': scrapedMatchup.metadata?.mlHome,
+                     'metadata.mlAway': scrapedMatchup.metadata?.mlAway,
                      updatedAt: Date.now()
                    });
                    opCount++;
