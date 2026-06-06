@@ -907,6 +907,19 @@ function AdminEditMatchup() {
                 <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Type Details</label>
                 <input type="text" value={matchup.typeDetails || ''} onChange={(e) => handleChange('typeDetails', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
             </div>
+            {matchup.type === 'STATS' && (
+                <div className="space-y-2 col-span-2 grid grid-cols-3 gap-4">
+                    <div>
+                        <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Stat Category</label>
+                        <input type="text" value={matchup.metadata?.statCategory || ''} onChange={(e) => handleChange('metadata.statCategory', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+                    </div>
+                    <div>
+                        <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Stat Key</label>
+                        <input type="text" value={matchup.metadata?.statKey || ''} onChange={(e) => handleChange('metadata.statKey', e.target.value)} className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-zinc-700" />
+                    </div>
+
+                </div>
+            )}
             {matchup.type === 'SPREAD' && (
                 <div className="space-y-2">
                     <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Spread</label>
