@@ -16,6 +16,7 @@ interface MatchupCardProps {
   onShareMatchup: (gameId: string) => void;
   sharingMatchupId: string | null;
   isMyPick?: boolean;
+  isLink4?: boolean;
 }
 
 export const MatchupCard = React.memo(function MatchupCard({
@@ -29,7 +30,8 @@ export const MatchupCard = React.memo(function MatchupCard({
   onCancelPick,
   onShareMatchup,
   sharingMatchupId,
-  isMyPick = false
+  isMyPick = false,
+  isLink4 = false
 }: MatchupCardProps) {
   const hasPicked = !!pickData;
   const isPickDisabled = !user || hasPicked || hasActivePickAnywhere;
@@ -124,7 +126,7 @@ export const MatchupCard = React.memo(function MatchupCard({
                    {m.metadata.spread > 0 ? `-${m.metadata.spread}` : `+${Math.abs(m.metadata.spread)}`}
                  </div>
                )}
-               {(m.type === 'SCORE' || m.type === 'MONEYLINE') && m.metadata?.mlAway !== undefined && m.metadata?.mlAway !== null && (
+               {isLink4 && m.metadata?.mlAway !== undefined && m.metadata?.mlAway !== null && (
                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#1f1f22] text-zinc-300 text-[11px] font-bold px-2 py-0.5 rounded-md border border-[#3f3f46] shadow-sm">
                    {m.metadata.mlAway > 0 ? `+${m.metadata.mlAway}` : m.metadata.mlAway}
                  </div>
@@ -263,7 +265,7 @@ export const MatchupCard = React.memo(function MatchupCard({
                    {m.metadata.spread > 0 ? `+${m.metadata.spread}` : `-${Math.abs(m.metadata.spread)}`}
                  </div>
                )}
-               {(m.type === 'SCORE' || m.type === 'MONEYLINE') && m.metadata?.mlHome !== undefined && m.metadata?.mlHome !== null && (
+               {isLink4 && m.metadata?.mlHome !== undefined && m.metadata?.mlHome !== null && (
                  <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#1f1f22] text-zinc-300 text-[11px] font-bold px-2 py-0.5 rounded-md border border-[#3f3f46] shadow-sm">
                    {m.metadata.mlHome > 0 ? `+${m.metadata.mlHome}` : m.metadata.mlHome}
                  </div>
