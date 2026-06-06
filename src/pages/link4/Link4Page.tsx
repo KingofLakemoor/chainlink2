@@ -306,7 +306,6 @@ export default function Link4Page() {
   };
 
   const availableMatchups = allMatchups.filter(m => {
-    if (!m.active) return false;
     if (m.metadata?.mlHome === undefined || m.metadata?.mlHome === null || m.metadata?.mlAway === undefined || m.metadata?.mlAway === null) return false;
     if (allowedSports.length > 0 && !allowedSports.includes(m.league)) return false;
     if (m.status !== 'STATUS_SCHEDULED') return false;
