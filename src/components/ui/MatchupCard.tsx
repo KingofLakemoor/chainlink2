@@ -309,7 +309,7 @@ export const MatchupCard = React.memo(function MatchupCard({
 
            {hasPicked ? (
               pickData?.pick?.id === m.awayTeam.id || pickData?.pick?.id === m.homeTeam.id || (m.type === 'OVER_UNDER' && (pickData?.pick?.id === 'OVER' || pickData?.pick?.id === 'UNDER')) ? (
-                isScheduled ? (
+                isScheduled || (m.league === 'PGA' && m.status === 'STATUS_IN_PROGRESS' && (m.statusDesc === 'In Progress' || m.statusDesc === 'Delayed')) ? (
                   <button onClick={() => onCancelPick(m)} className="text-xs font-bold text-red-500 uppercase tracking-wide flex items-center gap-1 hover:text-red-400">
                      <X className="w-3 h-3" /> Cancel
                   </button>

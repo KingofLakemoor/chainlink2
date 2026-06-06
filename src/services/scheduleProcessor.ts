@@ -198,6 +198,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
                 if (minThru > 0) {
                   currentThruDesc = `THRU ${minThru}`;
+                } else if (data.startTime && Date.now() > data.startTime + 15 * 60 * 1000) {
+                  currentThruDesc = 'Delayed';
                 }
               }
 
