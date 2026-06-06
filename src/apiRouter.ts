@@ -216,8 +216,10 @@ apiRouter.post("/picks/cancel-pick", async (req, res) => {
       if (!matchupDoc.exists) throw new Error("Matchup not found");
 
       const matchup = matchupDoc.data()!;
-      if (!matchup.active) throw new Error("Matchup is locked");
-      if (matchup.status !== 'STATUS_SCHEDULED' && matchup.status !== 'STATUS_POSTPONED') {
+      const isCancelablePGA = matchup.league === 'PGA' && matchup.status === 'STATUS_IN_PROGRESS' && matchup.statusDesc === 'In Progress';
+
+      if (!matchup.active && !isCancelablePGA) throw new Error("Matchup is locked");
+      if (matchup.status !== 'STATUS_SCHEDULED' && matchup.status !== 'STATUS_POSTPONED' && !isCancelablePGA) {
         throw new Error("Matchup has already started and cannot be cancelled");
       }
 
