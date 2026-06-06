@@ -291,8 +291,8 @@ export default function Link4Page() {
       await setDoc(doc(db, 'link4Picks', `${activeSegmentId}_${user.uid}`), {
         segmentId: activeSegmentId,
         userId: user.uid,
-        username: user.username || 'Anonymous',
-        avatarUrl: user.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
+        username: (user as any).username || 'Anonymous',
+        avatarUrl: (user as any).avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
         picks: picks,
         submittedAt: new Date().toISOString()
       });
