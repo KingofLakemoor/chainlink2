@@ -412,30 +412,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
             threshold = Math.abs(scraperConfig.sportOverrides[league]);
           }
 
-          if (mlHome) {
-            const mlHomeNum = parseInt(mlHome, 10);
-            if (!isNaN(mlHomeNum) && (mlHomeNum <= -threshold || mlHomeNum >= threshold)) {
-              active = false;
-            }
-          }
-
           const details = competition.odds?.[0]?.details;
-          if (details && details !== "EVEN") {
-            const match = details.match(/([+-]?\d+)/);
-            if (match) {
-              const detailsNum = parseInt(match[0], 10);
-              if (!isNaN(detailsNum) && (detailsNum <= -threshold || detailsNum >= threshold)) {
-                active = false;
-              }
-            }
-          }
-
-          if (mlAway) {
-            const mlAwayNum = parseInt(mlAway, 10);
-            if (!isNaN(mlAwayNum) && (mlAwayNum <= -threshold || mlAwayNum >= threshold)) {
-              active = false;
-            }
-          }
 
           const homeScore = parseFloat(home.score !== undefined && home.score !== null && home.score !== "" ? home.score : "0");
           const awayScore = parseFloat(away.score !== undefined && away.score !== null && away.score !== "" ? away.score : "0");

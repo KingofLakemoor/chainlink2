@@ -531,6 +531,7 @@ export default function Link4Page() {
                   onShareMatchup={() => {}}
                   sharingMatchupId={null}
                   isMyPick={false}
+                  isLink4={true}
                 />
               ))}
               {availableMatchups.length === 0 && (
