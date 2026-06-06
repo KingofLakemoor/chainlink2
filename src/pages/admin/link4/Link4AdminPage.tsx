@@ -200,9 +200,12 @@ export default function Link4AdminPage() {
       const picksSnap = await getDocs(collection(db, 'link4Picks'));
       const pickedGameIds = new Set<string>();
       picksSnap.docs.forEach(d => {
-         const picks = d.data().picks || [];
+         const data = d.data();
+         const picks = Array.isArray(data.picks) ? data.picks : [];
          picks.forEach((p: any) => {
-            if (p?.id && p.id.startsWith('pick-')) {
+            if (p?.matchupId) {
+               pickedGameIds.add(p.matchupId);
+            } else if (p?.id && p.id.startsWith('pick-')) {
                pickedGameIds.add(p.id.replace('pick-', ''));
             }
          });
@@ -220,12 +223,12 @@ export default function Link4AdminPage() {
       }
 
       // 2. Determine which leagues to scrape. We'll scrape all active segment allowed sports, or all supported sports if none active
-      let sportsToScrape = SUPPORTED_LEAGUES;
+      let sportsToScrape: string[] | readonly string[] = SUPPORTED_LEAGUES;
       const activeSegment = segments.find(s => {
           const status = getSegmentStatus(s.startTime, s.endTime);
           return status.label === 'Active' || status.label === 'Upcoming';
       });
-      if (activeSegment && activeSegment.allowedSports && activeSegment.allowedSports.length > 0) {
+      if (activeSegment && Array.isArray(activeSegment.allowedSports) && activeSegment.allowedSports.length > 0) {
           sportsToScrape = activeSegment.allowedSports;
       }
 
