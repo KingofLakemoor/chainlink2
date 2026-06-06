@@ -1,0 +1,397 @@
+{
+  "id": "10505",
+  "uid": "s:1100~l:1106~a:10505",
+  "type": "athlete",
+  "order": 1,
+  "athlete": {
+    "fullName": "J.T. Poston",
+    "displayName": "J.T. Poston",
+    "shortName": "J.T. Poston",
+    "flag": {
+      "href": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
+      "alt": "USA",
+      "rel": [
+        "country-flag"
+      ]
+    }
+  },
+  "score": "-9",
+  "linescores": [
+    {
+      "value": 70,
+      "displayValue": "-2",
+      "period": 1,
+      "linescores": [
+        {
+          "value": 4,
+          "displayValue": "4",
+          "period": 1,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 3,
+          "displayValue": "3",
+          "period": 2,
+          "scoreType": {
+            "displayValue": "-1"
+          }
+        },
+        {
+          "value": 3,
+          "displayValue": "3",
+          "period": 3,
+          "scoreType": {
+            "displayValue": "-1"
+          }
+        },
+        {
+          "value": 2,
+          "displayValue": "2",
+          "period": 4,
+          "scoreType": {
+            "displayValue": "-1"
+          }
+        },
+        {
+          "value": 5,
+          "displayValue": "5",
+          "period": 5,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 4,
+          "displayValue": "4",
+          "period": 6,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 5,
+          "displayValue": "5",
+          "period": 7,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 3,
+          "displayValue": "3",
+          "period": 8,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 4,
+          "displayValue": "4",
+          "period": 9,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 4,
+          "displayValue": "4",
+          "period": 10,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 5,
+          "displayValue": "5",
+          "period": 11,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 3,
+          "displayValue": "3",
+          "period": 12,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 4,
+          "displayValue": "4",
+          "period": 13,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 4,
+          "displayValue": "4",
+          "period": 14,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 5,
+          "displayValue": "5",
+          "period": 15,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 3,
+          "displayValue": "3",
+          "period": 16,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 5,
+          "displayValue": "5",
+          "period": 17,
+          "scoreType": {
+            "displayValue": "+1"
+          }
+        },
+        {
+          "value": 4,
+          "displayValue": "4",
+          "period": 18,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        }
+      ],
+      "statistics": {
+        "categories": [
+          {
+            "stats": [
+              {
+                "value": 3,
+                "displayValue": "3"
+              },
+              {
+                "value": 1,
+                "displayValue": "1"
+              },
+              {
+                "value": 0,
+                "displayValue": "0.0"
+              },
+              {
+                "value": 0,
+                "displayValue": "0"
+              },
+              {
+                "value": 0,
+                "displayValue": "0"
+              },
+              {
+                "value": 14,
+                "displayValue": "14"
+              },
+              {
+                "displayValue": "Thu Jun 04 08:25:00 PDT 2026"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "value": 65,
+      "displayValue": "-7",
+      "period": 2,
+      "linescores": [
+        {
+          "value": 3,
+          "displayValue": "3",
+          "period": 1,
+          "scoreType": {
+            "displayValue": "-1"
+          }
+        },
+        {
+          "value": 3,
+          "displayValue": "3",
+          "period": 2,
+          "scoreType": {
+            "displayValue": "-1"
+          }
+        },
+        {
+          "value": 4,
+          "displayValue": "4",
+          "period": 3,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 2,
+          "displayValue": "2",
+          "period": 4,
+          "scoreType": {
+            "displayValue": "-1"
+          }
+        },
+        {
+          "value": 4,
+          "displayValue": "4",
+          "period": 5,
+          "scoreType": {
+            "displayValue": "-1"
+          }
+        },
+        {
+          "value": 5,
+          "displayValue": "5",
+          "period": 6,
+          "scoreType": {
+            "displayValue": "+1"
+          }
+        },
+        {
+          "value": 4,
+          "displayValue": "4",
+          "period": 7,
+          "scoreType": {
+            "displayValue": "-1"
+          }
+        },
+        {
+          "value": 2,
+          "displayValue": "2",
+          "period": 8,
+          "scoreType": {
+            "displayValue": "-1"
+          }
+        },
+        {
+          "value": 4,
+          "displayValue": "4",
+          "period": 9,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 4,
+          "displayValue": "4",
+          "period": 10,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 5,
+          "displayValue": "5",
+          "period": 11,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 3,
+          "displayValue": "3",
+          "period": 12,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 3,
+          "displayValue": "3",
+          "period": 13,
+          "scoreType": {
+            "displayValue": "-1"
+          }
+        },
+        {
+          "value": 4,
+          "displayValue": "4",
+          "period": 14,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 5,
+          "displayValue": "5",
+          "period": 15,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 3,
+          "displayValue": "3",
+          "period": 16,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        },
+        {
+          "value": 3,
+          "displayValue": "3",
+          "period": 17,
+          "scoreType": {
+            "displayValue": "-1"
+          }
+        },
+        {
+          "value": 4,
+          "displayValue": "4",
+          "period": 18,
+          "scoreType": {
+            "displayValue": "E"
+          }
+        }
+      ],
+      "statistics": {
+        "categories": [
+          {
+            "stats": [
+              {
+                "value": 8,
+                "displayValue": "8"
+              },
+              {
+                "value": 1,
+                "displayValue": "1"
+              },
+              {
+                "value": 0,
+                "displayValue": "0.0"
+              },
+              {
+                "value": 0,
+                "displayValue": "0"
+              },
+              {
+                "value": 0,
+                "displayValue": "0"
+              },
+              {
+                "value": 9,
+                "displayValue": "9"
+              },
+              {
+                "displayValue": "Fri Jun 05 11:40:00 PDT 2026"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "period": 3
+    }
+  ],
+  "statistics": []
+}

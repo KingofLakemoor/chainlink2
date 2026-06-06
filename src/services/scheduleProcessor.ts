@@ -64,7 +64,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               const period = data.metadata?.period || 1;
               const holes = data.metadata?.holes || 18;
               const isRoundScore = data.metadata?.matchupType === 'ROUND_SCORE';
-              const isThruHoles = data.metadata?.matchupType === 'THRU_HOLES';
+              const isThruHolesMatchup = ['THRU_HOLES', 'BIRDIES_THRU_HOLES', 'EAGLES_THRU_HOLES', 'PARS_THRU_HOLES', 'BOGEYS_THRU_HOLES'].includes(data.metadata?.matchupType);
+              const matchupType = data.metadata?.matchupType;
 
               let homeScore = 0;
               let awayScore = 0;
@@ -85,12 +86,40 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                  return isNaN(parsed) ? 0 : parsed;
               };
 
-              if (isRoundScore || isThruHoles) {
+              const parseGolfStatCount = (lsHoles: any[], targetHoles: number, statType: string) => {
+                 if (!lsHoles || lsHoles.length === 0) return 0;
+                 let count = 0;
+                 let holesProcessed = 0;
+                 for (const h of lsHoles) {
+                    if (holesProcessed >= targetHoles) break;
+                    if (h && h.scoreType && h.scoreType.displayValue) {
+                        const val = h.scoreType.displayValue;
+                        if (statType === 'BIRDIES_THRU_HOLES') {
+                            if (val === '-1' || val === '-2' || val === '-3') count++; // Birdie or better
+                        } else if (statType === 'EAGLES_THRU_HOLES') {
+                            if (val === '-2' || val === '-3') count++; // Eagle or better
+                        } else if (statType === 'PARS_THRU_HOLES') {
+                            if (val === 'E') count++; // Pars
+                        } else if (statType === 'BOGEYS_THRU_HOLES') {
+                            if (val === '+1' || val === '+2' || val === '+3' || val === '+4') count++; // Bogey or worse
+                        }
+                    }
+                    holesProcessed++;
+                 }
+                 return count;
+              };
+
+              if (isRoundScore || isThruHolesMatchup) {
                  const homeLs = homeComp.linescores?.find((ls: any) => ls.period === period);
                  const awayLs = awayComp.linescores?.find((ls: any) => ls.period === period);
 
-                 homeScore = homeLs ? parseGolfScore(homeLs.displayValue || homeLs.value) : 0;
-                 awayScore = awayLs ? parseGolfScore(awayLs.displayValue || awayLs.value) : 0;
+                 if (isThruHolesMatchup && matchupType !== 'THRU_HOLES') {
+                     homeScore = homeLs ? parseGolfStatCount(homeLs.holes, holes, matchupType) : 0;
+                     awayScore = awayLs ? parseGolfStatCount(awayLs.holes, holes, matchupType) : 0;
+                 } else {
+                     homeScore = homeLs ? parseGolfScore(homeLs.displayValue || homeLs.value) : 0;
+                     awayScore = awayLs ? parseGolfScore(awayLs.displayValue || awayLs.value) : 0;
+                 }
 
                  const now = Date.now();
                  homeStarted = !!(homeLs?.teeTime && new Date(homeLs.teeTime).getTime() <= now);
@@ -105,7 +134,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                  const awayCurrentRound = awayComp.status?.period || 1;
                  const isAwayRoundDone = awayComp.status?.type?.state === 'post' || awayCurrentRound > period || (awayCurrentRound === period && awayComp.status?.type?.completed);
 
-                 if (isThruHoles) {
+                 if (isThruHolesMatchup) {
                     if (isHomeRoundDone || (currentRound === period && (homeComp.status?.thru || 0) >= holes)) {
                         homeFinal = true;
                     }
@@ -131,14 +160,14 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               if (homeFrozenScore !== undefined) {
                  homeScore = homeFrozenScore;
                  homeFinal = true;
-              } else if (isThruHoles && homeFinal) {
+              } else if (isThruHolesMatchup && homeFinal) {
                  homeFrozenScore = homeScore;
               }
 
               if (awayFrozenScore !== undefined) {
                  awayScore = awayFrozenScore;
                  awayFinal = true;
-              } else if (isThruHoles && awayFinal) {
+              } else if (isThruHolesMatchup && awayFinal) {
                  awayFrozenScore = awayScore;
               }
 
@@ -173,7 +202,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               }
 
               let isMetadataChanged = false;
-              if (isThruHoles) {
+              if (isThruHolesMatchup) {
                   if (homeFrozenScore !== data.metadata?.homeFinalScore || awayFrozenScore !== data.metadata?.awayFinalScore) {
                       isMetadataChanged = true;
                   }
@@ -206,7 +235,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                   updatedAt: Date.now()
                 };
 
-                if (isThruHoles) {
+                if (isThruHolesMatchup) {
                     if (homeFrozenScore !== undefined) updateData.metadata.homeFinalScore = homeFrozenScore;
                     if (awayFrozenScore !== undefined) updateData.metadata.awayFinalScore = awayFrozenScore;
                 }
@@ -220,7 +249,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                   updatedAt: updateData.updatedAt
                 };
 
-                if (isThruHoles) {
+                if (isThruHolesMatchup) {
                     if (homeFrozenScore !== undefined) flattenedUpdate['metadata.homeFinalScore'] = homeFrozenScore;
                     if (awayFrozenScore !== undefined) flattenedUpdate['metadata.awayFinalScore'] = awayFrozenScore;
                 }
