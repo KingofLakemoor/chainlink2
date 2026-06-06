@@ -533,6 +533,28 @@ apiRouter.post("/admin/grade-matchup", validateAdmin, async (req, res) => {
   }
 });
 
+apiRouter.get("/external/check-premium", async (req, res) => {
+  if (!adminDb) return res.status(500).json({ success: false, error: "adminDb not configured" });
+  try {
+    const { email } = req.query;
+    if (!email || typeof email !== 'string') {
+      return res.status(400).json({ success: false, error: "Missing or invalid email parameter" });
+    }
+
+    const snap = await adminDb.collection('users').where('email', '==', email).limit(1).get();
+
+    if (snap.empty) {
+      return res.json({ success: true, isPremium: false });
+    }
+
+    const userDoc = snap.docs[0].data();
+    return res.json({ success: true, isPremium: !!userDoc.premium });
+  } catch (e: any) {
+    console.error("External check-premium error:", e);
+    return res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 apiRouter.post("/admin/matchups/external", async (req, res) => {
   if (!adminDb) return res.status(500).json({ error: "adminDb not configured" });
   try {
