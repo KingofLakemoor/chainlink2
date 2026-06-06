@@ -288,6 +288,69 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
           const newTitle = existingData.hasCustomTitle ? existingData.title : scrapedMatchup.title;
 
+          let homeScore = existingData.type === 'STATS' ? (existingData.homeTeam?.score ?? 0) : (scrapedMatchup.homeTeam?.score ?? existingData.homeTeam?.score ?? 0);
+          let awayScore = existingData.type === 'STATS' ? (existingData.awayTeam?.score ?? 0) : (scrapedMatchup.awayTeam?.score ?? existingData.awayTeam?.score ?? 0);
+          let newStatus = scrapedMatchup.status;
+          let newStatusDesc = scrapedMatchup.statusDesc;
+
+          if (existingData.type === 'STATS' && (league === 'NFL' || league === 'CFB')) {
+              try {
+                  const statCategory = existingData.metadata?.statCategory;
+                  const statKey = existingData.metadata?.statKey;
+                  if (statCategory && statKey) {
+                      const sportStr = league === 'NFL' ? 'nfl' : 'college-football';
+                      const summaryUrl = `https://site.api.espn.com/apis/site/v2/sports/football/${sportStr}/summary?event=${existingData.gameId}`;
+                      const summaryRes = await fetch(summaryUrl);
+                      const summaryData = await summaryRes.json();
+
+                      // We also might want to update status if ESPN says the game is final.
+                      const gameInfoStatus = summaryData.header?.competitions?.[0]?.status?.type?.name;
+                      if (gameInfoStatus) {
+                         // Simplify status mapping for STATS props
+                         if (gameInfoStatus.includes('FINAL')) {
+                             newStatus = 'STATUS_FINAL';
+                             newStatusDesc = summaryData.header?.competitions?.[0]?.status?.type?.shortDetail || 'Final';
+                         } else if (gameInfoStatus.includes('IN_PROGRESS') || gameInfoStatus === 'STATUS_HALFTIME') {
+                             newStatus = 'STATUS_IN_PROGRESS';
+                             newStatusDesc = summaryData.header?.competitions?.[0]?.status?.type?.shortDetail || 'In Progress';
+                         }
+                      }
+
+                      if (existingData.metadata?.period) {
+                          // Quarter-specific props are not supported currently because ESPN plays endpoint lacks participant IDs and relies on raw text parsing.
+                          // Fallback to full game stats.
+                      }
+
+                      if (summaryData.boxscore && summaryData.boxscore.players) {
+
+                          const homeId = existingData.homeTeam?.id;
+                          const awayId = existingData.awayTeam?.id;
+
+                          for (const p of summaryData.boxscore.players) {
+                              const statsList = p.statistics?.find((s: any) => s.name === statCategory);
+                              if (statsList) {
+                                  const keyIndex = statsList.keys?.indexOf(statKey);
+                                  if (keyIndex !== -1 && statsList.athletes) {
+                                      for (const a of statsList.athletes) {
+                                          if (String(a.athlete?.id) === homeId) {
+                                              const statVal = parseFloat(a.stats[keyIndex]);
+                                              if (!isNaN(statVal)) homeScore = statVal;
+                                          }
+                                          if (String(a.athlete?.id) === awayId) {
+                                              const statVal = parseFloat(a.stats[keyIndex]);
+                                              if (!isNaN(statVal)) awayScore = statVal;
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  }
+              } catch (e) {
+                  console.error('Error fetching/parsing STATS for matchup', existingData.gameId, e);
+              }
+          }
+
           let finalActive = existingData.active;
 
           if (!scoreboardOnly) {
@@ -308,10 +371,10 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
             }
           }
 
-          const needsUpdate = existingData.status !== scrapedMatchup.status || existingData.statusDesc !== scrapedMatchup.statusDesc ||
+          const needsUpdate = existingData.status !== newStatus || existingData.statusDesc !== newStatusDesc ||
               existingData.startTime !== scrapedMatchup.startTime ||
-              existingData.homeTeam?.score !== scrapedMatchup.homeTeam?.score ||
-              existingData.awayTeam?.score !== scrapedMatchup.awayTeam?.score ||
+              existingData.homeTeam?.score !== homeScore ||
+              existingData.awayTeam?.score !== awayScore ||
               existingData.title !== newTitle ||
               existingData.league !== scrapedMatchup.league ||
               existingData.homeTeam?.name !== scrapedMatchup.homeTeam?.name ||
@@ -334,22 +397,22 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               title: newTitle,
               league: scrapedMatchup.league,
               active: finalActive,
-              status: scrapedMatchup.status,
-              statusDesc: scrapedMatchup.statusDesc,
+              status: newStatus,
+              statusDesc: newStatusDesc,
               startTime: scrapedMatchup.startTime,
               homeTeam: {
                   ...(existingData.homeTeam || {}),
-                  id: scrapedMatchup.homeTeam?.id || existingData.homeTeam?.id,
-                  name: scrapedMatchup.homeTeam?.name || existingData.homeTeam?.name,
-                  image: scrapedMatchup.homeTeam?.image || existingData.homeTeam?.image,
-                  score: scrapedMatchup.homeTeam?.score ?? existingData.homeTeam?.score ?? 0
+                  id: existingData.type === 'STATS' ? existingData.homeTeam?.id : (scrapedMatchup.homeTeam?.id || existingData.homeTeam?.id),
+                  name: existingData.type === 'STATS' ? existingData.homeTeam?.name : (scrapedMatchup.homeTeam?.name || existingData.homeTeam?.name),
+                  image: existingData.type === 'STATS' ? existingData.homeTeam?.image : (scrapedMatchup.homeTeam?.image || existingData.homeTeam?.image),
+                  score: homeScore
               },
               awayTeam: {
                   ...(existingData.awayTeam || {}),
-                  id: scrapedMatchup.awayTeam?.id || existingData.awayTeam?.id,
-                  name: scrapedMatchup.awayTeam?.name || existingData.awayTeam?.name,
-                  image: scrapedMatchup.awayTeam?.image || existingData.awayTeam?.image,
-                  score: scrapedMatchup.awayTeam?.score ?? existingData.awayTeam?.score ?? 0
+                  id: existingData.type === 'STATS' ? existingData.awayTeam?.id : (scrapedMatchup.awayTeam?.id || existingData.awayTeam?.id),
+                  name: existingData.type === 'STATS' ? existingData.awayTeam?.name : (scrapedMatchup.awayTeam?.name || existingData.awayTeam?.name),
+                  image: existingData.type === 'STATS' ? existingData.awayTeam?.image : (scrapedMatchup.awayTeam?.image || existingData.awayTeam?.image),
+                  score: awayScore
               },
               metadata: {
                   ...(existingData.metadata || {}),
@@ -419,8 +482,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
             updateCount++;
 
             if (!updateData.abandoned &&
-               ((scrapedMatchup.status === 'STATUS_FINAL' && existingData.status !== 'STATUS_FINAL') ||
-                (scrapedMatchup.status === 'STATUS_POSTPONED' && existingData.status !== 'STATUS_POSTPONED'))) {
+               ((newStatus === 'STATUS_FINAL' && existingData.status !== 'STATUS_FINAL') ||
+                (newStatus === 'STATUS_POSTPONED' && existingData.status !== 'STATUS_POSTPONED'))) {
               matchupsToGrade.push({ ...existingData, ...updateData, gameId: scrapedMatchup.gameId, id: gameId });
             }
           }

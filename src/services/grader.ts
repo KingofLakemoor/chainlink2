@@ -101,6 +101,15 @@ export async function gradeSingleMatchup(matchup: any) {
     } else {
         isTie = true;
     }
+  } else if (matchup.type === 'STATS') {
+    if (homeScore === awayScore) {
+      isTie = true;
+    } else if (matchup.typeDetails === 'LESS_THAN') {
+      winnerId = homeScore < awayScore ? matchup.homeTeam.id : matchup.awayTeam.id;
+    } else {
+      // Default to GREATER_THAN logic
+      winnerId = homeScore > awayScore ? matchup.homeTeam.id : matchup.awayTeam.id;
+    }
   } else if (adjustedHomeScore === awayScore) {
     isTie = true;
   } else if (lowerScoreWins) {
