@@ -122,7 +122,8 @@ export default function Link4Page() {
         if (!snap.empty) {
           const data = snap.docs[0].data();
           if (data.picks) {
-             setPicks(data.picks);
+             const userPicks = Array.isArray(data.picks) ? data.picks : Object.values(data.picks);
+             setPicks(userPicks);
              setHasSubmitted(true);
           }
         }
@@ -150,7 +151,8 @@ export default function Link4Page() {
            let potentialScore = 0;
            let hasLoss = false;
 
-           const processedPicks = userPickData.picks.map((pick: any) => {
+           const rawPicks = Array.isArray(userPickData.picks) ? userPickData.picks : (userPickData.picks ? Object.values(userPickData.picks) : []);
+           const processedPicks = rawPicks.map((pick: any) => {
               const pickMatchup = allMatchups.find(m => m.gameId === pick.id.replace('pick-', ''));
               let status: 'PENDING' | 'WIN' | 'LOSS' | 'PUSH' | 'EMPTY' = 'PENDING';
 

@@ -254,5 +254,14 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
+
+    match /link4Picks/{pickId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && (
+        isAdmin() ||
+        incoming().userId == request.auth.uid
+      );
+      allow delete: if isAdmin();
+    }
   }
 }
