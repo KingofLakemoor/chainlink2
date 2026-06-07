@@ -282,8 +282,16 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
 
                   if (homeName.includes("TBD") || awayName.includes("TBD")) continue;
 
-                  const homeScore = homeCompetitor.linescores ? homeCompetitor.linescores.filter((ls: any) => ls.winner === true).length : 0;
-                  const awayScore = awayCompetitor.linescores ? awayCompetitor.linescores.filter((ls: any) => ls.winner === true).length : 0;
+                  let homeScore = homeCompetitor.linescores ? homeCompetitor.linescores.filter((ls: any) => ls.winner === true).length : 0;
+                  let awayScore = awayCompetitor.linescores ? awayCompetitor.linescores.filter((ls: any) => ls.winner === true).length : 0;
+
+                  if (comp.status?.type?.completed === true) {
+                      if (homeCompetitor.winner === true && homeScore <= awayScore) {
+                          homeScore = awayScore + 1;
+                      } else if (awayCompetitor.winner === true && awayScore <= homeScore) {
+                          awayScore = homeScore + 1;
+                      }
+                  }
 
                   const matchupGameId = `${tournamentId}_${comp.id}`;
                   if (processedGameIds.has(matchupGameId)) continue;
