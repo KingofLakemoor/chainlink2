@@ -419,7 +419,8 @@ export const monthlyShopRefresh = onSchedule({ schedule: "0 0 1 * *", timeoutSec
 });
 
 const app = express();
-app.use(cors({ origin: true }));
+const allowedOrigins = ['http://localhost:3000', 'https://chainlink-2-72590.firebaseapp.com'];
+app.use(cors({ origin: allowedOrigins }));
 
 // We need the raw body for the webhook endpoint to verify the Stripe signature
 app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
