@@ -560,7 +560,7 @@ apiRouter.get("/external/check-premium", async (req, res) => {
   }
 });
 
-apiRouter.post("/admin/matchups/external", async (req, res) => {
+apiRouter.post("/admin/matchups/external", validateAdmin, async (req, res) => {
   if (!adminDb) return res.status(500).json({ error: "adminDb not configured" });
   try {
     const { gameId, title, league, startTime, homeTeam, awayTeam, status, active } = req.body;
