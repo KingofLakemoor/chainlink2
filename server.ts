@@ -9,7 +9,13 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  app.use(cors({ origin: true }));
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'https://chainlink-2-72590.firebaseapp.com',
+    'https://chainlink.club602.com',
+    'https://ChainLink.club602.com'
+  ];
+  app.use(cors({ origin: allowedOrigins }));
 
   // We need the raw body for the webhook endpoint to verify the Stripe signature
   app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
