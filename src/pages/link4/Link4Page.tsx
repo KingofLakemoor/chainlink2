@@ -17,7 +17,7 @@ interface Link4LeaderboardPick {
   id: string;
   name?: string;
   sport?: string;
-  status: 'PENDING' | 'WIN' | 'LOSS' | 'PUSH' | 'EMPTY';
+  status: 'PENDING' | 'WIN' | 'LOSS' | 'PUSH' | 'EMPTY' | 'CANCELLED';
 }
 
 interface Link4LeaderboardEntry {
@@ -27,6 +27,7 @@ interface Link4LeaderboardEntry {
   picks: Link4LeaderboardPick[];
   score: number;
   potentialScore: number;
+  hasLoss: boolean;
 }
 
 
@@ -146,46 +147,50 @@ export default function Link4Page() {
 
         const leaderboardEntries: Link4LeaderboardEntry[] = [];
 
+
         for (const userPickData of allUserPicks) {
            let score = 0;
            let potentialScore = 0;
-           let hasLoss = false;
+           let hasLoss = userPickData.hasLoss === true;
 
            const rawPicks = Array.isArray(userPickData.picks) ? userPickData.picks : (userPickData.picks ? Object.values(userPickData.picks) : []);
            const processedPicks = rawPicks.map((pick: any) => {
               const pickMatchup = allMatchups.find(m => m.gameId === pick.id.replace('pick-', ''));
-              let status: 'PENDING' | 'WIN' | 'LOSS' | 'PUSH' | 'EMPTY' = 'PENDING';
+              let status = pick.status || 'PENDING';
 
-              if (!pickMatchup || pickMatchup.status === 'STATUS_SCHEDULED' || pickMatchup.status === 'STATUS_IN_PROGRESS') {
-                 status = 'PENDING';
-              } else if (pickMatchup.status === 'STATUS_FINAL') {
-                 // Determine win/loss
-                 const homeScore = pickMatchup.homeTeam.score;
-                 const awayScore = pickMatchup.awayTeam.score;
-                 let won = false;
-                 let isPush = false;
+              // If backend hasn't graded it yet, do a local calculation for display
+              if (!pick.status || pick.status === 'PENDING') {
+                if (!pickMatchup || pickMatchup.status === 'STATUS_SCHEDULED' || pickMatchup.status === 'STATUS_IN_PROGRESS') {
+                   status = 'PENDING';
+                } else if (pickMatchup.status === 'STATUS_FINAL') {
+                   // Determine win/loss locally to update display instantly before grader runs
+                   const homeScore = pickMatchup.homeTeam.score;
+                   const awayScore = pickMatchup.awayTeam.score;
+                   let won = false;
+                   let isPush = false;
 
-                 if (homeScore === awayScore) {
-                    isPush = true;
-                    status = 'PUSH';
-                 } else {
-                    const pickedHome = pick.name === pickMatchup.homeTeam.name;
-                    if (pickedHome && homeScore > awayScore) won = true;
-                    if (!pickedHome && awayScore > homeScore) won = true;
-                    status = won ? 'WIN' : 'LOSS';
-                 }
+                   if (homeScore === awayScore) {
+                      isPush = true;
+                      status = 'PUSH';
+                   } else {
+                      const pickedHome = pick.name === pickMatchup.homeTeam.name;
+                      if (pickedHome && homeScore > awayScore) won = true;
+                      if (!pickedHome && awayScore > homeScore) won = true;
+                      status = won ? 'WIN' : 'LOSS';
+                   }
 
-                 if (status === 'LOSS') {
-                    hasLoss = true;
-                 }
+                   if (status === 'LOSS') {
+                      hasLoss = true;
+                   }
+                }
+              }
 
-                 if (status === 'WIN') {
-                    // Add Moneyline logic for calculating score
-                    const pickedHome = pick.name === pickMatchup.homeTeam.name;
-                    const ml = pickedHome ? pickMatchup.metadata?.mlHome : pickMatchup.metadata?.mlAway;
-                    if (ml !== undefined && ml !== null) {
-                       score += ml;
-                    }
+              if (status === 'WIN' && pickMatchup) {
+                 // Add Moneyline logic for calculating score
+                 const pickedHome = pick.name === pickMatchup.homeTeam.name;
+                 const ml = pickedHome ? pickMatchup.metadata?.mlHome : pickMatchup.metadata?.mlAway;
+                 if (ml !== undefined && ml !== null) {
+                    score += ml;
                  }
               }
 
@@ -213,7 +218,11 @@ export default function Link4Page() {
               }
            });
 
+           // If there is any loss, cancel the remaining pending picks locally for display
            if (hasLoss) {
+              processedPicks.forEach((p: any) => {
+                 if (p.status === 'PENDING') p.status = 'CANCELLED';
+              });
               score = -99999;
            }
 
@@ -223,13 +232,19 @@ export default function Link4Page() {
               avatarUrl: userPickData.avatarUrl,
               picks: processedPicks,
               score,
-              potentialScore: hasLoss ? -99999 : score + potentialScore
+              potentialScore: hasLoss ? -99999 : score + potentialScore,
+              hasLoss
            });
         }
 
-        // Sort Leaderboard
-        leaderboardEntries.sort((a, b) => b.score - a.score);
+        // Sort Leaderboard: score descending, but keep losses at the bottom
+        leaderboardEntries.sort((a, b) => {
+           if (a.hasLoss && !b.hasLoss) return 1;
+           if (!a.hasLoss && b.hasLoss) return -1;
+           return b.score - a.score;
+        });
         setLeaderboardData(leaderboardEntries);
+
     });
 
     return () => unsubPicks();
@@ -290,18 +305,30 @@ export default function Link4Page() {
 
     setIsSubmitting(true);
     try {
-      await setDoc(doc(db, 'link4Picks', `${activeSegmentId}_${user.uid}`), {
-        segmentId: activeSegmentId,
-        userId: user.uid,
-        username: (user as any).username || 'Anonymous',
-        avatarUrl: (user as any).avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
-        picks: picks,
-        submittedAt: new Date().toISOString()
+      const idToken = await user.getIdToken();
+      const response = await fetch('/api/link4/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({
+          segmentId: activeSegmentId,
+          picks: picks,
+          username: (user as any).username || 'Anonymous',
+          avatarUrl: (user as any).avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`
+        })
       });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to submit picks');
+      }
+
       setHasSubmitted(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting Link4 picks:', error);
-      alert('Failed to submit picks. Please try again.');
+      alert(error.message || 'Failed to submit picks. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -580,6 +607,15 @@ export default function Link4Page() {
                         <div key={pIdx} className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-zinc-700 bg-zinc-800/50 flex flex-col items-center justify-center shrink-0">
                           <Lock className="w-4 h-4 text-zinc-500 mb-1" />
                           <span className="text-[10px] font-bold text-zinc-500 uppercase">Pick In</span>
+                        </div>
+                      );
+                    }
+
+                    if (pick.status === 'CANCELLED') {
+                      return (
+                        <div key={pIdx} className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-red-500/20 bg-red-500/5 flex flex-col items-center justify-center p-1 text-center shrink-0 opacity-50">
+                          <div className="text-[9px] sm:text-[10px] text-zinc-500 font-bold mb-0.5 truncate w-full px-1">{pick.sport}</div>
+                          <div className="text-xs sm:text-sm font-bold truncate w-full px-1 line-through text-zinc-500">{pick.name}</div>
                         </div>
                       );
                     }

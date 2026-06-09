@@ -1,7 +1,7 @@
+import { Save, Loader2, Calendar, Plus, Edit2, Trash2, Clock, PlayCircle, Link as LinkIcon, Palette, Image as ImageIcon, RefreshCw, Coins } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { collection, doc, getDocs, setDoc, deleteDoc, query, orderBy, writeBatch, where } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
-import { Save, Loader2, Calendar, Plus, Edit2, Trash2, Clock, PlayCircle, Link as LinkIcon, Palette, Image as ImageIcon, RefreshCw } from 'lucide-react';
+import { db, auth } from '../../../lib/firebase';
 import { SUPPORTED_LEAGUES, scrapeLeagueSchedules } from '../../../services/espnScraper';
 
 interface Link4SegmentTheme {
@@ -20,6 +20,7 @@ interface Link4Segment {
   theme: Link4SegmentTheme;
   createdAt: number;
   updatedAt: number;
+  payoutComplete?: boolean;
 }
 
 const SPORTS = SUPPORTED_LEAGUES.map(league => ({ id: league, label: league }));
@@ -190,6 +191,32 @@ export default function Link4AdminPage() {
     if (now < startTime) return { label: 'Upcoming', color: 'text-blue-400 border-blue-400/30 bg-blue-400/10' };
     if (now >= startTime && now <= endTime) return { label: 'Active', color: 'text-green-400 border-green-400/30 bg-green-400/10' };
     return { label: 'Completed', color: 'text-zinc-500 border-zinc-700 bg-zinc-800' };
+  };
+
+
+  const handlePayout = async (segmentId: string) => {
+    if (!confirm('Are you sure you want to payout this segment? This action cannot be undone.')) return;
+    setPayoutLoading(segmentId);
+    try {
+      const response = await fetch('/api/admin/link4/payout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
+        },
+        body: JSON.stringify({ segmentId })
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Payout failed');
+      }
+      alert('Payout successful!');
+    } catch (e: any) {
+      console.error('Payout error:', e);
+      alert(e.message);
+    } finally {
+      setPayoutLoading(null);
+    }
   };
 
   const handleSyncEligible = async () => {

@@ -2,6 +2,7 @@ import express from 'express';
 import { adminAuth, adminDb } from './lib/firebase-admin.js';
 import { scrapeLeagueSchedules } from './services/scheduleProcessor.js';
 import { gradeMatchups } from './services/grader.js';
+import { gradeLink4Matchups } from './services/link4Grader.js';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
@@ -192,6 +193,58 @@ apiRouter.post('/stripe/webhook', express.raw({type: 'application/json'}), async
   res.send();
 });
 
+
+apiRouter.post("/link4/submit", async (req, res) => {
+  try {
+    const { segmentId, picks, username, avatarUrl } = req.body;
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const idToken = authHeader.split('Bearer ')[1];
+    if (!adminAuth || !adminDb) return res.status(500).json({ success: false, error: "admin tools not initialized" });
+
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    await adminDb.runTransaction(async (transaction: any) => {
+      const userRef = adminDb.collection('users').doc(uid);
+      const userDoc = await transaction.get(userRef);
+      if (!userDoc.exists) throw new Error("User not found");
+
+      const userData = userDoc.data();
+      const currentLinks = userData.links || 0;
+      if (currentLinks < 10) {
+        throw new Error("Not enough links. Link4 requires 10 links to enter.");
+      }
+
+      const pickRef = adminDb.collection('link4Picks').doc(`${segmentId}_${uid}`);
+      const pickDoc = await transaction.get(pickRef);
+      if (pickDoc.exists) {
+        throw new Error("You have already submitted picks for this segment.");
+      }
+
+      transaction.update(userRef, { links: currentLinks - 10 });
+
+      transaction.set(pickRef, {
+        segmentId,
+        userId: uid,
+        username: username || 'Anonymous',
+        avatarUrl: avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${uid}`,
+        picks,
+        hasLoss: false,
+        submittedAt: Date.now()
+      });
+    });
+
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Error submitting Link4 picks:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 apiRouter.post("/picks/cancel-pick", async (req, res) => {
   try {
     const { matchupId } = req.body;
@@ -320,6 +373,102 @@ apiRouter.post("/picks/make-pick", async (req, res) => {
     res.json({ success: true });
   } catch (e: any) {
     console.error("Make pick error:", e.message, e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+
+apiRouter.post("/admin/link4/payout", validateAdmin, async (req, res) => {
+  try {
+    const { segmentId } = req.body;
+    if (!adminDb) return res.status(500).json({ success: false, error: 'admin tools not initialized' });
+
+    await adminDb.runTransaction(async (transaction: any) => {
+      const segmentRef = adminDb.collection('link4Segments').doc(segmentId);
+      const segmentDoc = await transaction.get(segmentRef);
+
+      if (!segmentDoc.exists) throw new Error("Segment not found");
+      if (segmentDoc.data().payoutComplete) throw new Error("Payout already completed for this segment");
+
+      const picksSnap = await transaction.get(adminDb.collection('link4Picks').where('segmentId', '==', segmentId));
+      if (picksSnap.empty) {
+         transaction.update(segmentRef, { payoutComplete: true, updatedAt: Date.now() });
+         return; // no one played
+      }
+
+      const allPicks = picksSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
+      const totalPot = allPicks.length * 10;
+      const payoutAmount = Math.floor(totalPot * 0.60);
+
+      // Find the winner
+      let highestScore = -Infinity;
+      let winnerId = null;
+
+      for (const entry of allPicks) {
+         if (entry.hasLoss) continue; // Eliminated
+
+         let wins = 0;
+         let score = 0;
+         let stillPending = false;
+
+         const rawPicks = Array.isArray(entry.picks) ? entry.picks : (entry.picks ? Object.values(entry.picks) : []);
+
+         // Assuming gradeLink4Matchups has already ran and marked statuses.
+         // We only score completed picks. If they have a pending pick, they can't win yet unless we force grade.
+         for (const pick of rawPicks as any[]) {
+            if (pick.status === 'WIN') {
+               wins++;
+               // To compute ML score, we actually need the matchup metadata which was done locally in Link4Page.
+               // For a robust backend payout, we should retrieve the matchup documents.
+               const matchupDoc = await transaction.get(adminDb.collection('matchups').doc(pick.id.replace('pick-', '')));
+               if (matchupDoc.exists) {
+                 const matchup = matchupDoc.data();
+                 const pickedHome = pick.name === matchup.homeTeam?.name;
+                 const ml = pickedHome ? matchup.metadata?.mlHome : matchup.metadata?.mlAway;
+                 if (ml !== undefined && ml !== null) {
+                    score += ml;
+                 }
+               }
+            } else if (pick.status === 'PENDING') {
+               stillPending = true;
+            }
+         }
+
+         if (wins === 4 && !stillPending) {
+            if (score > highestScore) {
+               highestScore = score;
+               winnerId = entry.userId;
+            }
+         }
+      }
+
+      if (winnerId) {
+         const userRef = adminDb.collection('users').doc(winnerId);
+         const userDoc = await transaction.get(userRef);
+         if (userDoc.exists) {
+            const userData = userDoc.data();
+            transaction.update(userRef, { links: (userData.links || 0) + payoutAmount });
+
+            // Send notification
+            const notificationsRef = adminDb.collection('notifications').doc();
+            transaction.set(notificationsRef, {
+              title: 'Link4 Winner! 🎉',
+              body: `You won the Link4 Segment! ${payoutAmount} links have been added to your account.`,
+              audience: 'USER',
+              targetUserId: winnerId,
+              status: 'PENDING',
+              scheduledTime: Date.now(),
+              createdAt: Date.now()
+            });
+         }
+      }
+
+      transaction.update(segmentRef, { payoutComplete: true, updatedAt: Date.now() });
+    });
+
+    res.json({ success: true });
+  } catch (e: any) {
+    console.error('Link4 payout error:', e);
     res.status(500).json({ success: false, error: e.message });
   }
 });
@@ -526,6 +675,7 @@ apiRouter.post("/admin/grade-matchup", validateAdmin, async (req, res) => {
 
     const matchup = snap.docs[0].data();
     await gradeMatchups([{ ...matchup, status: 'STATUS_FINAL' }]); // Force grade
+    await gradeLink4Matchups([{ ...matchup, status: 'STATUS_FINAL' }]);
     res.json({ success: true });
   } catch (e: any) {
     console.error("Grade matchup error:", e.message, e);
@@ -613,6 +763,7 @@ apiRouter.post("/admin/matchups/external", async (req, res) => {
 
     if (matchupData.status === 'STATUS_FINAL' || matchupData.status === 'STATUS_POSTPONED') {
       await gradeMatchups([matchupData]);
+      await gradeLink4Matchups([matchupData]);
     }
 
     res.json({ success: true, message: "Matchup synced successfully", matchup: matchupData });
