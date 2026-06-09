@@ -67,6 +67,7 @@ export default function LeaderboardsPage() {
   const [selectedMonth, setSelectedMonth] = useState('current'); // current by default
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
   const [inventoryItems, setInventoryItems] = useState<any[]>([]);
+  const [animateCosmetics, setAnimateCosmetics] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -231,6 +232,16 @@ export default function LeaderboardsPage() {
     fetchData();
   }, [selectedMonth]);
 
+  // Stagger cosmetics animations to improve initial paint performance
+  useEffect(() => {
+    if (!loading && leaderboardData.length > 0) {
+      const timer = setTimeout(() => {
+        setAnimateCosmetics(true);
+      }, 500); // 500ms delay after data is loaded
+      return () => clearTimeout(timer);
+    }
+  }, [loading, leaderboardData]);
+
   // Calculate top performers
   const topCurrentChain = leaderboardData.length > 0 ? [...leaderboardData].sort((a, b) => b.currentChain - a.currentChain)[0] : null;
   const topWins = leaderboardData.length > 0 ? [...leaderboardData].sort((a, b) => (b.stats?.wins || 0) - (a.stats?.wins || 0))[0] : null;
@@ -318,7 +329,7 @@ export default function LeaderboardsPage() {
       <div className="bg-[#121212] border border-zinc-800 rounded-xl relative overflow-hidden group min-h-[220px] flex flex-col">
          {BannerComponent ? (
             <div className="absolute inset-0 z-0">
-               <BannerComponent isStatic={true} />
+               <BannerComponent isStatic={!animateCosmetics} />
             </div>
          ) : (
             <div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5 pointer-events-none"></div>
@@ -331,7 +342,7 @@ export default function LeaderboardsPage() {
             <div className="relative mb-3">
               {RingComponent && (
                  <div className="absolute inset-0 z-0 transform scale-125 pointer-events-none rounded-full overflow-hidden">
-                    <RingComponent isStatic={true} />
+                    <RingComponent isStatic={!animateCosmetics} />
                  </div>
               )}
                <img loading="lazy"
@@ -344,7 +355,7 @@ export default function LeaderboardsPage() {
             <div className="mt-1">
               {TitleComponent ? (
                  <div className="mb-1 flex justify-center">
-                    <TitleComponent isStatic={true} />
+                    <TitleComponent isStatic={!animateCosmetics} />
                  </div>
               ) : titleItem ? (
                  <div className="mb-1 flex justify-center">
@@ -499,7 +510,7 @@ export default function LeaderboardsPage() {
                             if (!RingComponent) return null;
                             return (
                               <div className="absolute inset-0 z-0 transform scale-125 pointer-events-none rounded-full overflow-hidden">
-                                <RingComponent isStatic={true} />
+                                <RingComponent isStatic={!animateCosmetics} />
                               </div>
                             )
                           })()}
@@ -523,7 +534,7 @@ export default function LeaderboardsPage() {
                              if (TitleComponent) {
                                return (
                                  <div className="mt-1 transform scale-75 origin-left">
-                                    <TitleComponent isStatic={true} />
+                                    <TitleComponent isStatic={!animateCosmetics} />
                                  </div>
                                )
                              }
