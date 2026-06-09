@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { db } from '../../lib/firebase';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, documentId } from 'firebase/firestore';
 import { Button } from '../../components/ui/button';
 import { cn } from '../../lib/utils';
 import { Trophy, Download, Medal, Flame, CheckCircle2, Percent, Users } from 'lucide-react';
@@ -111,18 +111,32 @@ export default function LeaderboardsPage() {
 
         // Fetch pending picks and all matchups to determine next pick
         const pendingPicksSnap = await getDocs(query(collection(db, 'picks'), where('status', '==', 'PENDING')));
-        const matchupsSnap = await getDocs(collection(db, 'matchups'));
-
-        const matchupsMap = new Map();
-        matchupsSnap.docs.forEach(doc => {
-            matchupsMap.set(doc.id, doc.data());
-        });
 
         const activePicksMap = new Map();
+        const pendingMatchupIds = new Set<string>();
+
         pendingPicksSnap.docs.forEach(doc => {
-            const pick = doc.data();
+            const pick = doc.data() as any;
             activePicksMap.set(pick.userId, pick);
+            if (pick.matchupId) {
+               pendingMatchupIds.add(pick.matchupId);
+            }
         });
+
+        const matchupsMap = new Map();
+        const matchupIdsArray = Array.from(pendingMatchupIds);
+
+        const chunkSize = 30;
+        for (let i = 0; i < matchupIdsArray.length; i += chunkSize) {
+            const chunk = matchupIdsArray.slice(i, i + chunkSize);
+            if (chunk.length > 0) {
+                const matchupsQuery = query(collection(db, 'matchups'), where(documentId(), 'in', chunk));
+                const chunkSnap = await getDocs(matchupsQuery);
+                chunkSnap.docs.forEach(doc => {
+                    matchupsMap.set(doc.id, doc.data());
+                });
+            }
+        }
 
         const chainsMap = new Map();
         chainsSnap.docs.forEach(doc => {
@@ -304,7 +318,7 @@ export default function LeaderboardsPage() {
       <div className="bg-[#121212] border border-zinc-800 rounded-xl relative overflow-hidden group min-h-[220px] flex flex-col">
          {BannerComponent ? (
             <div className="absolute inset-0 z-0">
-               <BannerComponent isStatic={false} />
+               <BannerComponent isStatic={true} />
             </div>
          ) : (
             <div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5 pointer-events-none"></div>
@@ -317,7 +331,7 @@ export default function LeaderboardsPage() {
             <div className="relative mb-3">
               {RingComponent && (
                  <div className="absolute inset-0 z-0 transform scale-125 pointer-events-none rounded-full overflow-hidden">
-                    <RingComponent isStatic={false} />
+                    <RingComponent isStatic={true} />
                  </div>
               )}
                <img loading="lazy"
@@ -330,7 +344,7 @@ export default function LeaderboardsPage() {
             <div className="mt-1">
               {TitleComponent ? (
                  <div className="mb-1 flex justify-center">
-                    <TitleComponent isStatic={false} />
+                    <TitleComponent isStatic={true} />
                  </div>
               ) : titleItem ? (
                  <div className="mb-1 flex justify-center">
