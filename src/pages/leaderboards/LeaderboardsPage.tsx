@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { db } from '../../lib/firebase';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, documentId } from 'firebase/firestore';
 import { Button } from '../../components/ui/button';
 import { cn } from '../../lib/utils';
 import { Trophy, Download, Medal, Flame, CheckCircle2, Percent, Users } from 'lucide-react';
@@ -67,6 +67,7 @@ export default function LeaderboardsPage() {
   const [selectedMonth, setSelectedMonth] = useState('current'); // current by default
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
   const [inventoryItems, setInventoryItems] = useState<any[]>([]);
+  const [animateCosmetics, setAnimateCosmetics] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -111,18 +112,32 @@ export default function LeaderboardsPage() {
 
         // Fetch pending picks and all matchups to determine next pick
         const pendingPicksSnap = await getDocs(query(collection(db, 'picks'), where('status', '==', 'PENDING')));
-        const matchupsSnap = await getDocs(collection(db, 'matchups'));
-
-        const matchupsMap = new Map();
-        matchupsSnap.docs.forEach(doc => {
-            matchupsMap.set(doc.id, doc.data());
-        });
 
         const activePicksMap = new Map();
+        const pendingMatchupIds = new Set<string>();
+
         pendingPicksSnap.docs.forEach(doc => {
-            const pick = doc.data();
+            const pick = doc.data() as any;
             activePicksMap.set(pick.userId, pick);
+            if (pick.matchupId) {
+               pendingMatchupIds.add(pick.matchupId);
+            }
         });
+
+        const matchupsMap = new Map();
+        const matchupIdsArray = Array.from(pendingMatchupIds);
+
+        const chunkSize = 30;
+        for (let i = 0; i < matchupIdsArray.length; i += chunkSize) {
+            const chunk = matchupIdsArray.slice(i, i + chunkSize);
+            if (chunk.length > 0) {
+                const matchupsQuery = query(collection(db, 'matchups'), where(documentId(), 'in', chunk));
+                const chunkSnap = await getDocs(matchupsQuery);
+                chunkSnap.docs.forEach(doc => {
+                    matchupsMap.set(doc.id, doc.data());
+                });
+            }
+        }
 
         const chainsMap = new Map();
         chainsSnap.docs.forEach(doc => {
@@ -217,6 +232,16 @@ export default function LeaderboardsPage() {
     fetchData();
   }, [selectedMonth]);
 
+  // Stagger cosmetics animations to improve initial paint performance
+  useEffect(() => {
+    if (!loading && leaderboardData.length > 0) {
+      const timer = setTimeout(() => {
+        setAnimateCosmetics(true);
+      }, 500); // 500ms delay after data is loaded
+      return () => clearTimeout(timer);
+    }
+  }, [loading, leaderboardData]);
+
   // Calculate top performers
   const topCurrentChain = leaderboardData.length > 0 ? [...leaderboardData].sort((a, b) => b.currentChain - a.currentChain)[0] : null;
   const topWins = leaderboardData.length > 0 ? [...leaderboardData].sort((a, b) => (b.stats?.wins || 0) - (a.stats?.wins || 0))[0] : null;
@@ -304,7 +329,7 @@ export default function LeaderboardsPage() {
       <div className="bg-[#121212] border border-zinc-800 rounded-xl relative overflow-hidden group min-h-[220px] flex flex-col">
          {BannerComponent ? (
             <div className="absolute inset-0 z-0">
-               <BannerComponent isStatic={false} />
+               <BannerComponent isStatic={!animateCosmetics} />
             </div>
          ) : (
             <div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5 pointer-events-none"></div>
@@ -317,7 +342,7 @@ export default function LeaderboardsPage() {
             <div className="relative mb-3">
               {RingComponent && (
                  <div className="absolute inset-0 z-0 transform scale-125 pointer-events-none rounded-full overflow-hidden">
-                    <RingComponent isStatic={false} />
+                    <RingComponent isStatic={!animateCosmetics} />
                  </div>
               )}
                <img loading="lazy"
@@ -330,7 +355,7 @@ export default function LeaderboardsPage() {
             <div className="mt-1">
               {TitleComponent ? (
                  <div className="mb-1 flex justify-center">
-                    <TitleComponent isStatic={false} />
+                    <TitleComponent isStatic={!animateCosmetics} />
                  </div>
               ) : titleItem ? (
                  <div className="mb-1 flex justify-center">
@@ -485,7 +510,7 @@ export default function LeaderboardsPage() {
                             if (!RingComponent) return null;
                             return (
                               <div className="absolute inset-0 z-0 transform scale-125 pointer-events-none rounded-full overflow-hidden">
-                                <RingComponent isStatic={true} />
+                                <RingComponent isStatic={!animateCosmetics} />
                               </div>
                             )
                           })()}
@@ -509,7 +534,7 @@ export default function LeaderboardsPage() {
                              if (TitleComponent) {
                                return (
                                  <div className="mt-1 transform scale-75 origin-left">
-                                    <TitleComponent isStatic={true} />
+                                    <TitleComponent isStatic={!animateCosmetics} />
                                  </div>
                                )
                              }
