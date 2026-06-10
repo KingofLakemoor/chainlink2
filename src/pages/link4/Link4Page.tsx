@@ -41,6 +41,7 @@ interface Link4Pick {
 export default function Link4Page() {
   const { user } = useAuth();
   const [activeSegmentId, setActiveSegmentId] = useState<string | null>(null);
+  const [isLoadingSegment, setIsLoadingSegment] = useState(true);
   const [endTime, setEndTime] = useState<string>('');
   const [allowedSports, setAllowedSports] = useState<string[]>([]);
   const [theme, setTheme] = useState<Link4SegmentTheme>({});
@@ -111,6 +112,8 @@ export default function Link4Page() {
         }
       } catch (error) {
         console.error('Error fetching active Link4 segment:', error);
+      } finally {
+        setIsLoadingSegment(false);
       }
     };
     fetchActiveSegment();
@@ -220,7 +223,7 @@ export default function Link4Page() {
            });
 
            // Pad to 4 for UI
-           while (processedPicks.length < 4) processedPicks.push({ status: 'EMPTY' });
+           while (processedPicks.length < 4) processedPicks.push({ status: 'EMPTY' } as any);
 
            // Calculate potential score by assuming PENDING games are WINs
            processedPicks.forEach((pick: any) => {
@@ -381,6 +384,26 @@ export default function Link4Page() {
 
     return true;
   });
+
+  if (isLoadingSegment) {
+    return (
+      <div className="flex-1 p-6 md:p-8 w-full pt-20 md:pt-8 flex items-center justify-center">
+        <div className="text-zinc-500 font-bold text-xl animate-pulse">Loading Link4...</div>
+      </div>
+    );
+  }
+
+  if (!activeSegmentId) {
+    return (
+      <div className="flex-1 p-6 md:p-8 w-full pt-20 md:pt-8 flex items-center justify-center">
+        <div className="bg-[#1a1a1a] border border-[#27272a] rounded-xl p-8 max-w-md w-full text-center">
+          <Grid className="w-12 h-12 mx-auto mb-4 text-zinc-600" />
+          <h2 className="text-2xl font-bold text-white mb-2 uppercase tracking-tight">Link4</h2>
+          <p className="text-zinc-400 font-medium">Next segment coming soon</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 p-6 md:p-8 w-full pt-20 md:pt-8 overflow-hidden">
