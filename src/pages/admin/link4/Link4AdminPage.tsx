@@ -21,6 +21,7 @@ interface Link4Segment {
   createdAt: number;
   updatedAt: number;
   payoutComplete?: boolean;
+  cost: number;
 }
 
 const SPORTS = SUPPORTED_LEAGUES.map(league => ({ id: league, label: league }));

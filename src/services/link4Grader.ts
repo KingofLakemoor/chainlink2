@@ -118,8 +118,9 @@ export async function payoutLink4Segment(segmentId: string) {
        return; // no one played
     }
 
+    const segmentCost = segmentDoc.data().cost ?? 10;
     const allPicks = picksSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
-    const totalPot = allPicks.length * 10;
+    const totalPot = allPicks.length * segmentCost;
     const payoutAmount = Math.floor(totalPot * 0.60);
 
     // Find the winner

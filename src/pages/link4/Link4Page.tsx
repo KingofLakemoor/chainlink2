@@ -46,6 +46,9 @@ export default function Link4Page() {
   const [theme, setTheme] = useState<Link4SegmentTheme>({});
   const [picks, setPicks] = useState<(Link4Pick | null)[]>([null, null, null, null]);
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+  const [segmentCost, setSegmentCost] = useState(10);
+  const [savedPicksCount, setSavedPicksCount] = useState(0);
+  const [hasLoss, setHasLoss] = useState(false);
 
   const [leaderboardData, setLeaderboardData] = useState<Link4LeaderboardEntry[]>([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -104,6 +107,7 @@ export default function Link4Page() {
           if (activeSegment.endTime) setEndTime(activeSegment.endTime);
           if (activeSegment.allowedSports) setAllowedSports(activeSegment.allowedSports);
           if (activeSegment.theme) setTheme(activeSegment.theme);
+          if (activeSegment.cost !== undefined) setSegmentCost(activeSegment.cost);
         }
       } catch (error) {
         console.error('Error fetching active Link4 segment:', error);
@@ -124,8 +128,21 @@ export default function Link4Page() {
           const data = snap.docs[0].data();
           if (data.picks) {
              const userPicks = Array.isArray(data.picks) ? data.picks : Object.values(data.picks);
-             setPicks(userPicks);
-             setHasSubmitted(true);
+
+             // Check if user has loss
+             if (data.hasLoss) {
+               setHasLoss(true);
+             }
+
+             // Pad picks up to 4
+             const paddedPicks = [...userPicks];
+             while (paddedPicks.length < 4) paddedPicks.push(null);
+
+             setPicks(paddedPicks as (Link4Pick | null)[]);
+             setSavedPicksCount(userPicks.length);
+             if (userPicks.length >= 4) {
+                setHasSubmitted(true);
+             }
           }
         }
       } catch (error) {
@@ -202,6 +219,9 @@ export default function Link4Page() {
               };
            });
 
+           // Pad to 4 for UI
+           while (processedPicks.length < 4) processedPicks.push({ status: 'EMPTY' });
+
            // Calculate potential score by assuming PENDING games are WINs
            processedPicks.forEach((pick: any) => {
               if (pick.status === 'PENDING') {
@@ -273,20 +293,28 @@ export default function Link4Page() {
   }, [endTime]);
 
   const clearPicks = () => {
-    if (hasSubmitted) return;
-    setPicks([null, null, null, null]);
+    if (hasSubmitted || hasLoss) return;
+    // Only clear the unsaved draft pick, keep saved ones
+    const newPicks = [...picks];
+    for(let i = savedPicksCount; i < 4; i++) {
+        newPicks[i] = null;
+    }
+    setPicks(newPicks);
   };
 
   const nextPickIndex = picks.findIndex(p => p === null);
+  // Unsaved pick count
+  const unsavedPicksCount = picks.filter(p => p !== null).length - savedPicksCount;
 
   const handleSlotClick = (index: number) => {
+    if (hasLoss) return;
     if (index === nextPickIndex) {
       setIsSelectingPick(true);
     }
   };
 
   const handleMakePick = (matchup: any, team: any) => {
-    if (nextPickIndex === -1 || hasSubmitted) return;
+    if (nextPickIndex === -1 || hasSubmitted || hasLoss) return;
 
     const newPicks = [...picks];
     newPicks[nextPickIndex] = {
@@ -301,7 +329,7 @@ export default function Link4Page() {
 
   const handleSubmitPicks = async () => {
     if (!user || !activeSegmentId) return;
-    if (picks.some(p => p === null)) return;
+    if (unsavedPicksCount === 0) return;
 
     setIsSubmitting(true);
     try {
@@ -325,7 +353,10 @@ export default function Link4Page() {
         throw new Error(data.error || 'Failed to submit picks');
       }
 
-      setHasSubmitted(true);
+      setSavedPicksCount(picks.filter(p => p !== null).length);
+      if (picks.filter(p => p !== null).length >= 4) {
+         setHasSubmitted(true);
+      }
     } catch (error: any) {
       console.error('Error submitting Link4 picks:', error);
       alert(error.message || 'Failed to submit picks. Please try again.');
@@ -339,7 +370,7 @@ export default function Link4Page() {
     if (allowedSports.length > 0 && !allowedSports.includes(m.league)) return false;
     if (m.status !== 'STATUS_SCHEDULED') return false;
 
-    if (nextPickIndex > 0) {
+    if (nextPickIndex > 0 && picks[nextPickIndex - 1]) {
       const prevPick = picks[nextPickIndex - 1];
       if (prevPick?.startTime && m.startTime) {
         if (new Date(m.startTime).getTime() <= new Date(prevPick.startTime).getTime()) {
@@ -364,7 +395,7 @@ export default function Link4Page() {
             Link4
           </h1>
           <p className="text-zinc-400 text-lg">
-            Connect four to win! Play Link4 and earn links.
+            Connect four to win! Play Link4 and earn links. Entry: {segmentCost} links.
             {theme.sponsorName && (
               <span className="block mt-1 text-sm">
                 Presented by{' '}
@@ -502,25 +533,41 @@ export default function Link4Page() {
             })}
           </div>
 
-          {nextPickIndex === -1 && !hasSubmitted && (
+
+          {savedPicksCount > 0 && savedPicksCount < 4 && !hasLoss && unsavedPicksCount === 0 && (
+            <div className="mt-8 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl text-center">
+              <h3 className="text-lg font-bold text-white mb-2">Picks Saved!</h3>
+              <p className="text-blue-400">You can make the rest of your picks now, or come back any time before the segment ends.</p>
+            </div>
+          )}
+
+          {unsavedPicksCount > 0 && !hasLoss && (
             <div className="mt-8 p-4 bg-zinc-900 border border-zinc-800 rounded-xl text-center">
               <h3 className="text-lg font-bold text-white mb-2">Ready to Submit?</h3>
-              <p className="text-zinc-400 mb-4">Once you submit, your picks are locked for this Link4 segment.</p>
+              <p className="text-zinc-400 mb-4">Once you submit, your pick is locked for this Link4 segment.</p>
               <button
                 onClick={handleSubmitPicks}
                 disabled={isSubmitting}
                 className="px-6 py-2 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold rounded-lg transition-colors"
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Picks'}
+                {isSubmitting ? 'Submitting...' : `Lock Pick ${picks.filter(p => p !== null).length} ${savedPicksCount === 0 ? `(Costs ${segmentCost} Links)` : ''}`}
               </button>
             </div>
           )}
 
-          {hasSubmitted && (
+          {hasSubmitted && !hasLoss && (
             <div className="mt-8 p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-center">
               <Trophy className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-              <h3 className="text-lg font-bold text-white">Picks Submitted!</h3>
-              <p className="text-zinc-400">Good luck! You've completed your Link4 selection.</p>
+              <h3 className="text-lg font-bold text-white">Picks Complete!</h3>
+              <p className="text-zinc-400">Good luck! You've filled out your entire Link4 selection.</p>
+            </div>
+          )}
+
+          {hasLoss && (
+            <div className="mt-8 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-center">
+              <X className="w-8 h-8 text-red-500 mx-auto mb-2" />
+              <h3 className="text-lg font-bold text-white">Eliminated</h3>
+              <p className="text-red-400">You lost a pick and have been eliminated from this segment.</p>
             </div>
           )}
         </div>
