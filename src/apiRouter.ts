@@ -11,6 +11,79 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
 
 export const apiRouter = express.Router();
 
+apiRouter.get("/users/check-username", async (req, res) => {
+  try {
+    const { username } = req.query;
+    if (!username || typeof username !== 'string') {
+      return res.json({ exists: false });
+    }
+    const snap = await adminDb.collection('users').where('username', '==', username).limit(1).get();
+    return res.json({ exists: !snap.empty });
+  } catch (error) {
+    console.error('Error checking username', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+apiRouter.get("/users/public", async (req, res) => {
+  try {
+    const { uids } = req.query;
+    let snap;
+    if (uids && typeof uids === 'string') {
+      const uidList = uids.split(',').slice(0, 50); // limit to avoid massive queries
+      if (uidList.length === 0) return res.json({ users: [] });
+      const refs = uidList.map(uid => adminDb.collection('users').doc(uid));
+      snap = await adminDb.getAll(...refs);
+    } else {
+      snap = await adminDb.collection('users').get();
+    }
+
+    const docs = Array.isArray(snap) ? snap : snap.docs;
+    const users = docs.map(doc => {
+      if (!doc.exists) return null;
+      const data = doc.data();
+      if (!data) return null;
+
+      return {
+        id: doc.id,
+        username: data.username,
+        name: data.name,
+        image: data.image,
+        stats: data.stats,
+        allTimeStats: data.allTimeStats,
+        allTimeBest: data.allTimeBest,
+        historicalStats: data.historicalStats,
+        equippedCosmetics: data.equippedCosmetics,
+        role: data.role,
+        status: data.status,
+        createdAt: data.createdAt,
+      };
+    }).filter(Boolean);
+
+    return res.json({ users });
+  } catch (error) {
+    console.error('Error fetching public users', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+apiRouter.post("/referral/increment", async (req, res) => {
+  try {
+    const { referrerId } = req.body;
+    if (!referrerId || typeof referrerId !== 'string') {
+      return res.status(400).json({ success: false });
+    }
+    const { FieldValue } = await import('firebase-admin/firestore');
+    await adminDb.collection('users').doc(referrerId).update({
+      referralsCount: FieldValue.increment(1)
+    });
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Error incrementing referral', error);
+    return res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
 const validateAdmin = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
   try {
     const authHeader = req.headers.authorization;

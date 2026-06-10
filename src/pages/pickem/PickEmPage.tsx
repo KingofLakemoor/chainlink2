@@ -141,19 +141,17 @@ export default function PickEmPage() {
           // For simplicity and safety, we'll fetch the users directly or query if small
           const usersMap: Record<string, any> = {};
 
-          // Firebase 'in' max is 10. If we have > 10, batching is needed.
-          // To be safe for potentially many participants, we will fetch users individually for now
-          // or all at once and map. Given this is a demo, let's try an all-users approach if no index exists,
-          // or chunking. Let's do a simple Promise.all for users.
-
-          const userPromises = participantIds.map(uid => getDoc(doc(db, 'users', uid)));
-          const userDocs = await Promise.all(userPromises);
-
-          userDocs.forEach(ud => {
-            if (ud.exists()) {
-               usersMap[ud.id] = ud.data();
-            }
-          });
+          // Fetch public user profiles via API endpoint to avoid permission denied errors
+          const res = await fetch(`/api/users/public?uids=${participantIds.join(',')}`);
+          if (res.ok) {
+            const data = await res.json();
+            const usersList = data.users || [];
+            usersList.forEach((u: any) => {
+               usersMap[u.id] = u;
+            });
+          } else {
+            console.warn("Failed to fetch participant user details for Pick Em leaderboard.");
+          }
 
           const formattedLeaderboard = participantIds.map(uid => ({
              uid,

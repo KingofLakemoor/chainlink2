@@ -30,7 +30,7 @@ service cloud.firestore {
                data.createdAt is number;
       }
 
-      allow read: if isSignedIn(); // allow all users to read so that leaderboard works
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
 
       allow create: if isSignedIn() && request.auth.uid == userId && isValidId(userId) &&
                     isValidUser(incoming()) && incoming().role == 'USER';

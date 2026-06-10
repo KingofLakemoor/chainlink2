@@ -100,9 +100,10 @@ export default function ProfilePage() {
 
       // Check if username is taken (if it changed)
       if (newUsername !== profile?.username) {
-        const usernameQuery = query(collection(db, 'users'), where('username', '==', newUsername));
-        const usernameDocs = await getDocs(usernameQuery);
-        if (!usernameDocs.empty) {
+        const res = await fetch(`/api/users/check-username?username=${encodeURIComponent(newUsername)}`);
+        if (!res.ok) throw new Error("Failed to check username availability.");
+        const data = await res.json();
+        if (data.exists) {
           throw new Error("Username is already taken.");
         }
       }
