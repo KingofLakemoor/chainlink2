@@ -570,11 +570,18 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
         await gradeLink4Matchups(matchupsToGrade);
 
         const pickemMatchupsToGrade: any[] = [];
-        for (const matchup of matchupsToGrade) {
+        const uniqueGameIds = Array.from(new Set(matchupsToGrade.map(m => m.gameId))).filter(Boolean);
+        const matchupMap = new Map(matchupsToGrade.map(m => [m.gameId, m]));
+
+        for (let i = 0; i < uniqueGameIds.length; i += 30) {
+          const chunk = uniqueGameIds.slice(i, i + 30);
           try {
-            const pickemSnaps = await adminDb.collection('pickemMatchups').where('gameId', '==', matchup.gameId).get();
+            const pickemSnaps = await adminDb.collection('pickemMatchups').where('gameId', 'in', chunk).get();
             for (const doc of pickemSnaps.docs) {
               const pData = doc.data();
+              const matchup = matchupMap.get(pData.gameId);
+              if (!matchup) continue;
+
               // Sync standard matchup score and status into the pickem matchup
               const updateData = {
                 status: matchup.status,
@@ -595,7 +602,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               });
             }
           } catch (err) {
-            console.error(`[Sync] Error syncing pickem matchup for game ${matchup.gameId}:`, err);
+            console.error(`[Sync] Error syncing pickem matchup chunk:`, err);
           }
         }
 
