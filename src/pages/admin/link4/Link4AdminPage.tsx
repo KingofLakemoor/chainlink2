@@ -29,6 +29,7 @@ const SPORTS = SUPPORTED_LEAGUES.map(league => ({ id: league, label: league }));
 export default function Link4AdminPage() {
   const [segments, setSegments] = useState<Link4Segment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [payoutLoading, setPayoutLoading] = useState<string | null>(null);
 
   // Form State
   const [isEditing, setIsEditing] = useState(false);
