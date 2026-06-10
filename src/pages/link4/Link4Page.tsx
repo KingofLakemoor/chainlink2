@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Clock, Trophy, Lock } from 'lucide-react';
+import { Grid, Clock, Trophy, Lock, X } from 'lucide-react';
 import { collection, query, where, getDocs, orderBy, limit, doc, setDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { MatchupCard } from '../../components/ui/MatchupCard';
@@ -17,7 +17,7 @@ interface Link4LeaderboardPick {
   id: string;
   name?: string;
   sport?: string;
-  status: 'PENDING' | 'WIN' | 'LOSS' | 'PUSH' | 'EMPTY';
+  status: 'PENDING' | 'WIN' | 'LOSS' | 'PUSH' | 'EMPTY' | 'CANCELLED';
 }
 
 interface Link4LeaderboardEntry {
@@ -27,6 +27,7 @@ interface Link4LeaderboardEntry {
   picks: Link4LeaderboardPick[];
   score: number;
   potentialScore: number;
+  hasLoss: boolean;
 }
 
 
@@ -45,6 +46,9 @@ export default function Link4Page() {
   const [theme, setTheme] = useState<Link4SegmentTheme>({});
   const [picks, setPicks] = useState<(Link4Pick | null)[]>([null, null, null, null]);
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+  const [segmentCost, setSegmentCost] = useState(10);
+  const [savedPicksCount, setSavedPicksCount] = useState(0);
+  const [hasLoss, setHasLoss] = useState(false);
 
   const [leaderboardData, setLeaderboardData] = useState<Link4LeaderboardEntry[]>([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -103,6 +107,7 @@ export default function Link4Page() {
           if (activeSegment.endTime) setEndTime(activeSegment.endTime);
           if (activeSegment.allowedSports) setAllowedSports(activeSegment.allowedSports);
           if (activeSegment.theme) setTheme(activeSegment.theme);
+          if (activeSegment.cost !== undefined) setSegmentCost(activeSegment.cost);
         }
       } catch (error) {
         console.error('Error fetching active Link4 segment:', error);
@@ -123,8 +128,21 @@ export default function Link4Page() {
           const data = snap.docs[0].data();
           if (data.picks) {
              const userPicks = Array.isArray(data.picks) ? data.picks : Object.values(data.picks);
-             setPicks(userPicks);
-             setHasSubmitted(true);
+
+             // Check if user has loss
+             if (data.hasLoss) {
+               setHasLoss(true);
+             }
+
+             // Pad picks up to 4
+             const paddedPicks = [...userPicks];
+             while (paddedPicks.length < 4) paddedPicks.push(null);
+
+             setPicks(paddedPicks as (Link4Pick | null)[]);
+             setSavedPicksCount(userPicks.length);
+             if (userPicks.length >= 4) {
+                setHasSubmitted(true);
+             }
           }
         }
       } catch (error) {
@@ -146,46 +164,50 @@ export default function Link4Page() {
 
         const leaderboardEntries: Link4LeaderboardEntry[] = [];
 
+
         for (const userPickData of allUserPicks) {
            let score = 0;
            let potentialScore = 0;
-           let hasLoss = false;
+           let hasLoss = userPickData.hasLoss === true;
 
            const rawPicks = Array.isArray(userPickData.picks) ? userPickData.picks : (userPickData.picks ? Object.values(userPickData.picks) : []);
            const processedPicks = rawPicks.map((pick: any) => {
               const pickMatchup = allMatchups.find(m => m.gameId === pick.id.replace('pick-', ''));
-              let status: 'PENDING' | 'WIN' | 'LOSS' | 'PUSH' | 'EMPTY' = 'PENDING';
+              let status = pick.status || 'PENDING';
 
-              if (!pickMatchup || pickMatchup.status === 'STATUS_SCHEDULED' || pickMatchup.status === 'STATUS_IN_PROGRESS') {
-                 status = 'PENDING';
-              } else if (pickMatchup.status === 'STATUS_FINAL') {
-                 // Determine win/loss
-                 const homeScore = pickMatchup.homeTeam.score;
-                 const awayScore = pickMatchup.awayTeam.score;
-                 let won = false;
-                 let isPush = false;
+              // If backend hasn't graded it yet, do a local calculation for display
+              if (!pick.status || pick.status === 'PENDING') {
+                if (!pickMatchup || pickMatchup.status === 'STATUS_SCHEDULED' || pickMatchup.status === 'STATUS_IN_PROGRESS') {
+                   status = 'PENDING';
+                } else if (pickMatchup.status === 'STATUS_FINAL') {
+                   // Determine win/loss locally to update display instantly before grader runs
+                   const homeScore = pickMatchup.homeTeam.score;
+                   const awayScore = pickMatchup.awayTeam.score;
+                   let won = false;
+                   let isPush = false;
 
-                 if (homeScore === awayScore) {
-                    isPush = true;
-                    status = 'PUSH';
-                 } else {
-                    const pickedHome = pick.name === pickMatchup.homeTeam.name;
-                    if (pickedHome && homeScore > awayScore) won = true;
-                    if (!pickedHome && awayScore > homeScore) won = true;
-                    status = won ? 'WIN' : 'LOSS';
-                 }
+                   if (homeScore === awayScore) {
+                      isPush = true;
+                      status = 'PUSH';
+                   } else {
+                      const pickedHome = pick.name === pickMatchup.homeTeam.name;
+                      if (pickedHome && homeScore > awayScore) won = true;
+                      if (!pickedHome && awayScore > homeScore) won = true;
+                      status = won ? 'WIN' : 'LOSS';
+                   }
 
-                 if (status === 'LOSS') {
-                    hasLoss = true;
-                 }
+                   if (status === 'LOSS') {
+                      hasLoss = true;
+                   }
+                }
+              }
 
-                 if (status === 'WIN') {
-                    // Add Moneyline logic for calculating score
-                    const pickedHome = pick.name === pickMatchup.homeTeam.name;
-                    const ml = pickedHome ? pickMatchup.metadata?.mlHome : pickMatchup.metadata?.mlAway;
-                    if (ml !== undefined && ml !== null) {
-                       score += ml;
-                    }
+              if (status === 'WIN' && pickMatchup) {
+                 // Add Moneyline logic for calculating score
+                 const pickedHome = pick.name === pickMatchup.homeTeam.name;
+                 const ml = pickedHome ? pickMatchup.metadata?.mlHome : pickMatchup.metadata?.mlAway;
+                 if (ml !== undefined && ml !== null) {
+                    score += ml;
                  }
               }
 
@@ -196,6 +218,9 @@ export default function Link4Page() {
                  status
               };
            });
+
+           // Pad to 4 for UI
+           while (processedPicks.length < 4) processedPicks.push({ status: 'EMPTY' });
 
            // Calculate potential score by assuming PENDING games are WINs
            processedPicks.forEach((pick: any) => {
@@ -213,7 +238,11 @@ export default function Link4Page() {
               }
            });
 
+           // If there is any loss, cancel the remaining pending picks locally for display
            if (hasLoss) {
+              processedPicks.forEach((p: any) => {
+                 if (p.status === 'PENDING') p.status = 'CANCELLED';
+              });
               score = -99999;
            }
 
@@ -223,13 +252,19 @@ export default function Link4Page() {
               avatarUrl: userPickData.avatarUrl,
               picks: processedPicks,
               score,
-              potentialScore: hasLoss ? -99999 : score + potentialScore
+              potentialScore: hasLoss ? -99999 : score + potentialScore,
+              hasLoss
            });
         }
 
-        // Sort Leaderboard
-        leaderboardEntries.sort((a, b) => b.score - a.score);
+        // Sort Leaderboard: score descending, but keep losses at the bottom
+        leaderboardEntries.sort((a, b) => {
+           if (a.hasLoss && !b.hasLoss) return 1;
+           if (!a.hasLoss && b.hasLoss) return -1;
+           return b.score - a.score;
+        });
         setLeaderboardData(leaderboardEntries);
+
     });
 
     return () => unsubPicks();
@@ -258,20 +293,28 @@ export default function Link4Page() {
   }, [endTime]);
 
   const clearPicks = () => {
-    if (hasSubmitted) return;
-    setPicks([null, null, null, null]);
+    if (hasSubmitted || hasLoss) return;
+    // Only clear the unsaved draft pick, keep saved ones
+    const newPicks = [...picks];
+    for(let i = savedPicksCount; i < 4; i++) {
+        newPicks[i] = null;
+    }
+    setPicks(newPicks);
   };
 
   const nextPickIndex = picks.findIndex(p => p === null);
+  // Unsaved pick count
+  const unsavedPicksCount = picks.filter(p => p !== null).length - savedPicksCount;
 
   const handleSlotClick = (index: number) => {
+    if (hasLoss) return;
     if (index === nextPickIndex) {
       setIsSelectingPick(true);
     }
   };
 
   const handleMakePick = (matchup: any, team: any) => {
-    if (nextPickIndex === -1 || hasSubmitted) return;
+    if (nextPickIndex === -1 || hasSubmitted || hasLoss) return;
 
     const newPicks = [...picks];
     newPicks[nextPickIndex] = {
@@ -286,22 +329,37 @@ export default function Link4Page() {
 
   const handleSubmitPicks = async () => {
     if (!user || !activeSegmentId) return;
-    if (picks.some(p => p === null)) return;
+    if (unsavedPicksCount === 0) return;
 
     setIsSubmitting(true);
     try {
-      await setDoc(doc(db, 'link4Picks', `${activeSegmentId}_${user.uid}`), {
-        segmentId: activeSegmentId,
-        userId: user.uid,
-        username: (user as any).username || 'Anonymous',
-        avatarUrl: (user as any).avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`,
-        picks: picks,
-        submittedAt: new Date().toISOString()
+      const idToken = await user.getIdToken();
+      const response = await fetch('/api/link4/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({
+          segmentId: activeSegmentId,
+          picks: picks,
+          username: (user as any).username || 'Anonymous',
+          avatarUrl: (user as any).avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`
+        })
       });
-      setHasSubmitted(true);
-    } catch (error) {
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to submit picks');
+      }
+
+      setSavedPicksCount(picks.filter(p => p !== null).length);
+      if (picks.filter(p => p !== null).length >= 4) {
+         setHasSubmitted(true);
+      }
+    } catch (error: any) {
       console.error('Error submitting Link4 picks:', error);
-      alert('Failed to submit picks. Please try again.');
+      alert(error.message || 'Failed to submit picks. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -312,7 +370,7 @@ export default function Link4Page() {
     if (allowedSports.length > 0 && !allowedSports.includes(m.league)) return false;
     if (m.status !== 'STATUS_SCHEDULED') return false;
 
-    if (nextPickIndex > 0) {
+    if (nextPickIndex > 0 && picks[nextPickIndex - 1]) {
       const prevPick = picks[nextPickIndex - 1];
       if (prevPick?.startTime && m.startTime) {
         if (new Date(m.startTime).getTime() <= new Date(prevPick.startTime).getTime()) {
@@ -337,7 +395,7 @@ export default function Link4Page() {
             Link4
           </h1>
           <p className="text-zinc-400 text-lg">
-            Connect four to win! Play Link4 and earn links.
+            Connect four to win! Play Link4 and earn links. Entry: {segmentCost} links.
             {theme.sponsorName && (
               <span className="block mt-1 text-sm">
                 Presented by{' '}
@@ -475,25 +533,41 @@ export default function Link4Page() {
             })}
           </div>
 
-          {nextPickIndex === -1 && !hasSubmitted && (
+
+          {savedPicksCount > 0 && savedPicksCount < 4 && !hasLoss && unsavedPicksCount === 0 && (
+            <div className="mt-8 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl text-center">
+              <h3 className="text-lg font-bold text-white mb-2">Picks Saved!</h3>
+              <p className="text-blue-400">You can make the rest of your picks now, or come back any time before the segment ends.</p>
+            </div>
+          )}
+
+          {unsavedPicksCount > 0 && !hasLoss && (
             <div className="mt-8 p-4 bg-zinc-900 border border-zinc-800 rounded-xl text-center">
               <h3 className="text-lg font-bold text-white mb-2">Ready to Submit?</h3>
-              <p className="text-zinc-400 mb-4">Once you submit, your picks are locked for this Link4 segment.</p>
+              <p className="text-zinc-400 mb-4">Once you submit, your pick is locked for this Link4 segment.</p>
               <button
                 onClick={handleSubmitPicks}
                 disabled={isSubmitting}
                 className="px-6 py-2 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold rounded-lg transition-colors"
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Picks'}
+                {isSubmitting ? 'Submitting...' : `Lock Pick ${picks.filter(p => p !== null).length} ${savedPicksCount === 0 ? `(Costs ${segmentCost} Links)` : ''}`}
               </button>
             </div>
           )}
 
-          {hasSubmitted && (
+          {hasSubmitted && !hasLoss && (
             <div className="mt-8 p-4 bg-green-500/10 border border-green-500/30 rounded-xl text-center">
               <Trophy className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-              <h3 className="text-lg font-bold text-white">Picks Submitted!</h3>
-              <p className="text-zinc-400">Good luck! You've completed your Link4 selection.</p>
+              <h3 className="text-lg font-bold text-white">Picks Complete!</h3>
+              <p className="text-zinc-400">Good luck! You've filled out your entire Link4 selection.</p>
+            </div>
+          )}
+
+          {hasLoss && (
+            <div className="mt-8 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-center">
+              <X className="w-8 h-8 text-red-500 mx-auto mb-2" />
+              <h3 className="text-lg font-bold text-white">Eliminated</h3>
+              <p className="text-red-400">You lost a pick and have been eliminated from this segment.</p>
             </div>
           )}
         </div>
@@ -553,13 +627,18 @@ export default function Link4Page() {
 
           <div className="space-y-4">
             {leaderboardData.map((entry, index) => (
-              <div key={entry.userId} className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl bg-[#121212] border border-zinc-800">
+              <div key={entry.userId} className={`flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl border ${entry.hasLoss ? 'bg-[#121212] border-zinc-900 opacity-50 grayscale' : 'bg-[#121212] border-zinc-800'}`}>
 
                 {/* Rank & User Info */}
                 <div className="flex items-center gap-4 min-w-[200px] w-full sm:w-auto">
                   <div className="text-xl font-black text-zinc-500 w-8 text-center">#{index + 1}</div>
-                  <div className="w-10 h-10 rounded-full bg-zinc-800 border-2 border-zinc-700 overflow-hidden shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-zinc-800 border-2 border-zinc-700 overflow-hidden shrink-0 relative">
                     <img src={entry.avatarUrl} alt={entry.username} className="w-full h-full object-cover" loading="lazy" />
+                    {entry.hasLoss && (
+                      <div className="absolute inset-0 bg-red-900/50 flex items-center justify-center backdrop-blur-[1px]">
+                        <X className="w-8 h-8 text-red-500" strokeWidth={3} />
+                      </div>
+                    )}
                   </div>
                   <div className="font-bold text-white truncate">{entry.username}</div>
                 </div>
@@ -580,6 +659,15 @@ export default function Link4Page() {
                         <div key={pIdx} className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-zinc-700 bg-zinc-800/50 flex flex-col items-center justify-center shrink-0">
                           <Lock className="w-4 h-4 text-zinc-500 mb-1" />
                           <span className="text-[10px] font-bold text-zinc-500 uppercase">Pick In</span>
+                        </div>
+                      );
+                    }
+
+                    if (pick.status === 'CANCELLED') {
+                      return (
+                        <div key={pIdx} className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-red-500/20 bg-red-500/5 flex flex-col items-center justify-center p-1 text-center shrink-0 opacity-50">
+                          <div className="text-[9px] sm:text-[10px] text-zinc-500 font-bold mb-0.5 truncate w-full px-1">{pick.sport}</div>
+                          <div className="text-xs sm:text-sm font-bold truncate w-full px-1 line-through text-zinc-500">{pick.name}</div>
                         </div>
                       );
                     }

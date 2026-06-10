@@ -1,6 +1,7 @@
 import { adminDb } from '../lib/firebase-admin.js';
 import { gradeMatchups } from './grader.js';
 import { gradePickemMatchups } from './pickemGrader.js';
+import { gradeLink4Matchups, processCompletedLink4Segments } from './link4Grader.js';
 import { League, LeagueResponse, scrapeLeagueSchedules } from './espnScraper.js';
 
 export { scrapeLeagueSchedules } from './espnScraper.js';
@@ -566,6 +567,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
       if (matchupsToGrade.length > 0) {
         await gradeMatchups(matchupsToGrade);
+        await gradeLink4Matchups(matchupsToGrade);
 
         const pickemMatchupsToGrade: any[] = [];
         for (const matchup of matchupsToGrade) {
@@ -604,6 +606,10 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
       response.scoreMatchupsCreated = newCount;
       response.matchupsUpdated = updateCount;
+
+      // Check for Link4 payouts
+      await processCompletedLink4Segments();
+
     } catch (e: any) {
       console.error(`[Sync] Error writing to Firestore for ${league}:`, e);
       response.error = e.message;

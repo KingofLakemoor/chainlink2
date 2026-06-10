@@ -2,6 +2,7 @@ import express from 'express';
 import { adminAuth, adminDb } from './lib/firebase-admin.js';
 import { scrapeLeagueSchedules } from './services/scheduleProcessor.js';
 import { gradeMatchups } from './services/grader.js';
+import { gradeLink4Matchups, payoutLink4Segment } from './services/link4Grader.js';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
@@ -192,6 +193,99 @@ apiRouter.post('/stripe/webhook', express.raw({type: 'application/json'}), async
   res.send();
 });
 
+
+apiRouter.post("/link4/submit", async (req, res) => {
+  try {
+    const { segmentId, picks, username, avatarUrl } = req.body;
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const idToken = authHeader.split('Bearer ')[1];
+    if (!adminAuth || !adminDb) return res.status(500).json({ success: false, error: "admin tools not initialized" });
+
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    await adminDb.runTransaction(async (transaction: any) => {
+      const segmentRef = adminDb.collection('link4Segments').doc(segmentId);
+      const segmentDoc = await transaction.get(segmentRef);
+      if (!segmentDoc.exists) throw new Error("Segment not found");
+      const segmentData = segmentDoc.data();
+      const cost = segmentData.cost ?? 10;
+
+      const userRef = adminDb.collection('users').doc(uid);
+      const userDoc = await transaction.get(userRef);
+      if (!userDoc.exists) throw new Error("User not found");
+
+      const pickRef = adminDb.collection('link4Picks').doc(`${segmentId}_${uid}`);
+      const pickDoc = await transaction.get(pickRef);
+
+      const userData = userDoc.data();
+      const currentLinks = userData.links || 0;
+
+      if (pickDoc.exists) {
+        // User is appending picks. No fee deduction.
+        const existingData = pickDoc.data();
+        if (existingData.hasLoss) throw new Error("You have been eliminated and cannot make more picks.");
+
+        const currentPicks = Array.isArray(existingData.picks) ? existingData.picks : (existingData.picks ? Object.values(existingData.picks) : []);
+
+        // Ensure they aren't overwriting existing picks, only appending
+        const incomingPicksCount = picks.filter((p: any) => p !== null).length;
+        if (incomingPicksCount <= currentPicks.length) {
+            throw new Error("Invalid submission. You can only append new picks.");
+        }
+
+        // Ensure previous picks match exactly
+        for (let i = 0; i < currentPicks.length; i++) {
+           if (picks[i] === null || picks[i].id !== currentPicks[i].id) {
+               throw new Error("Invalid submission. Cannot modify locked picks.");
+           }
+        }
+
+        // Only store non-null picks
+        const sanitizedPicks = picks.filter((p: any) => p !== null);
+
+        transaction.update(pickRef, {
+          picks: sanitizedPicks,
+          updatedAt: Date.now()
+        });
+
+      } else {
+        // First pick, deduct fee
+        if (currentLinks < cost) {
+          throw new Error(`Not enough links. Link4 requires ${cost} links to enter.`);
+        }
+
+        const sanitizedPicks = picks.filter((p: any) => p !== null);
+        if (sanitizedPicks.length === 0) {
+            throw new Error("Must provide at least one pick to enter.");
+        }
+
+        transaction.update(userRef, { links: currentLinks - cost });
+
+        transaction.set(pickRef, {
+          segmentId,
+          userId: uid,
+          username: username || 'Anonymous',
+          avatarUrl: avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${uid}`,
+          picks: sanitizedPicks,
+          hasLoss: false,
+          submittedAt: Date.now(),
+          updatedAt: Date.now()
+        });
+      }
+    });
+
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Error submitting Link4 picks:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 apiRouter.post("/picks/cancel-pick", async (req, res) => {
   try {
     const { matchupId } = req.body;
@@ -320,6 +414,18 @@ apiRouter.post("/picks/make-pick", async (req, res) => {
     res.json({ success: true });
   } catch (e: any) {
     console.error("Make pick error:", e.message, e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+
+apiRouter.post("/admin/link4/payout", validateAdmin, async (req, res) => {
+  try {
+    const { segmentId } = req.body;
+    await payoutLink4Segment(segmentId);
+    res.json({ success: true });
+  } catch (e: any) {
+    console.error('Link4 payout error:', e);
     res.status(500).json({ success: false, error: e.message });
   }
 });
@@ -526,6 +632,7 @@ apiRouter.post("/admin/grade-matchup", validateAdmin, async (req, res) => {
 
     const matchup = snap.docs[0].data();
     await gradeMatchups([{ ...matchup, status: 'STATUS_FINAL' }]); // Force grade
+    await gradeLink4Matchups([{ ...matchup, status: 'STATUS_FINAL' }]);
     res.json({ success: true });
   } catch (e: any) {
     console.error("Grade matchup error:", e.message, e);
@@ -613,6 +720,7 @@ apiRouter.post("/admin/matchups/external", validateAdmin, async (req, res) => {
 
     if (matchupData.status === 'STATUS_FINAL' || matchupData.status === 'STATUS_POSTPONED') {
       await gradeMatchups([matchupData]);
+      await gradeLink4Matchups([matchupData]);
     }
 
     res.json({ success: true, message: "Matchup synced successfully", matchup: matchupData });
