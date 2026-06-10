@@ -13,9 +13,7 @@
     "lint": "tsc --noEmit",
     "init-db": "tsx scripts/init_collections.ts",
     "seed-achievements": "tsx scripts/seed_achievements.ts",
-    "seed-shop": "tsx scripts/seed_shop.ts",
-    "seed-nba-bracket": "tsx scripts/seed_nba_bracket.ts",
-    "seed-world-cup-bracket": "tsx scripts/seed_world_cup_bracket.ts"
+    "seed-shop": "tsx scripts/seed_shop.ts"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",

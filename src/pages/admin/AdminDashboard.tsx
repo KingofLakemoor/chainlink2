@@ -46,7 +46,6 @@ const ADMIN_MENU = [
       { id: 'matchups-all', label: 'All Matchups', path: '/admin/matchups' },
       { id: 'matchups-picks', label: 'Picks', path: '/admin/picks' },
       { id: 'matchups-create', label: 'Create Matchup', path: '/admin/matchups/create' },
-      { id: 'matchups-find', label: 'Find Matchup', path: '/admin/matchups/find' }
     ]
   },
 { id: 'pickem', label: "Pick'em", icon: Layers, path: '/admin/pickem' },
@@ -68,7 +67,6 @@ const ADMIN_MENU = [
     subItems: [
       { id: 'sponsors-all', label: 'All Sponsors', path: '/admin/sponsors' },
       { id: 'sponsors-create', label: 'Create Sponsor', path: '/admin/sponsors/create' },
-      { id: 'sponsors-featured', label: 'Featured Sponsors', path: '/admin/sponsors/featured' }
     ]
   },
   {
@@ -89,7 +87,6 @@ const ADMIN_MENU = [
   { id: 'users-links', label: 'Manage Links', icon: Link2, path: '/admin/users/links' },
   { id: 'referrals', label: 'Referrals', icon: Users, path: '/admin/referrals' },
   { id: 'notifications', label: 'Notifications', icon: Bell, path: '/admin/notifications' },
-  { id: 'actions', label: 'Actions', icon: Shield, path: '/admin/actions' },
   {
     id: 'shopItems',
     label: 'Shop',
@@ -1254,7 +1251,6 @@ export default function AdminDashboard() {
                 } />
 
                 <Route path="matchups/create" element={<CreateMatchupPage />} />
-                <Route path="matchups/find" element={<AdminPlaceholder title="Find Matchup" />} />
 <Route path="matchups/:id" element={<AdminEditMatchup />} />
                 <Route path="pga-builder" element={<PGABuilderPage />} />
 
@@ -1266,7 +1262,6 @@ export default function AdminDashboard() {
                 <Route path="sponsors" element={<SponsorsListPage />} />
                 <Route path="sponsors/create" element={<CreateSponsorPage />} />
                 <Route path="sponsors/edit/:id" element={<EditSponsorPage />} />
-                <Route path="sponsors/featured" element={<AdminPlaceholder title="Featured Sponsors" />} />
 
                 {/* Achievements */}
                 <Route path="achievements" element={<AchievementsListPage />} />
@@ -1283,7 +1278,6 @@ export default function AdminDashboard() {
                 <Route path="users/cosmetics" element={<UserCosmeticsAdminPage />} />
                 <Route path="users/links" element={<AddLinksAdminPage />} />
                 <Route path="referrals" element={<ReferralsAdminPage />} />
-                <Route path="actions" element={<AdminPlaceholder title="Admin Actions Log" />} />
 
                 {/* Notifications */}
                 <Route path="notifications" element={<NotificationsListPage />} />
