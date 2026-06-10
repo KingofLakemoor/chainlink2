@@ -352,11 +352,11 @@ export default function DashboardPage() {
       </div>
 
       {/* Sponsor Badges */}
-      {sponsors.length > 0 && (
+      {sponsors.filter(s => s.featured).length > 0 && (
         <div className="pt-6 border-t border-zinc-800/50 mt-8">
             <p className="text-center text-xs text-zinc-500 uppercase font-bold tracking-wider mb-4">Sponsored By</p>
             <div className="flex flex-wrap items-center justify-center gap-8 transition-all duration-300">
-               {sponsors.sort((a, b) => (a.order || 0) - (b.order || 0)).map(sponsor => (
+               {sponsors.filter(s => s.featured).sort((a, b) => (a.order || 0) - (b.order || 0)).map(sponsor => (
                  <a
                    key={sponsor.id}
                    href={sponsor.url ? (sponsor.url.startsWith('http') ? sponsor.url : `https://${sponsor.url}`) : '#'}
