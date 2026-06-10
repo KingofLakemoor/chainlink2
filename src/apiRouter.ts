@@ -183,7 +183,6 @@ apiRouter.post('/stripe/webhook', express.raw({type: 'application/json'}), async
 
           transaction.update(userRef, updateData);
         });
-        console.log(`Successfully processed payment for user ${uid}`);
       } catch (e: any) {
          console.error(`Error updating user ${uid} after payment:`, e.message);
       }

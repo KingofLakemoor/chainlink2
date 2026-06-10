@@ -13,8 +13,6 @@ export async function gradeMatchups(matchups: any[]) {
   const finalMatchups = matchups.filter(m => m.status === 'STATUS_FINAL' || m.status === 'STATUS_POSTPONED');
   if (finalMatchups.length === 0) return;
 
-  console.log(`[Grader] Found ${finalMatchups.length} final matchups to grade.`);
-
   for (const matchup of finalMatchups) {
     try {
       await gradeSingleMatchup(matchup);
@@ -35,11 +33,8 @@ export async function gradeSingleMatchup(matchup: any) {
     .get();
 
   if (pendingPicksSnap.empty) {
-    console.log(`[Grader] No pending picks for matchup ${matchup.gameId}.`);
     return;
   }
-
-  console.log(`[Grader] Grading ${pendingPicksSnap.size} picks for matchup ${matchup.gameId}.`);
 
   // Fetch achievements and earnable titles once for the matchup grading run
   const achievementsSnap = await adminDb.collection('achievements').get();
@@ -306,7 +301,6 @@ export async function gradeSingleMatchup(matchup: any) {
         });
       });
 
-      console.log(`[Grader] Pick ${pickDoc.id} graded as ${pickStatus}. User ${userId} updated. Notification queued.`);
     } catch (err) {
       console.error(`[Grader] Failed to grade pick ${pickDoc.id}:`, err);
     }

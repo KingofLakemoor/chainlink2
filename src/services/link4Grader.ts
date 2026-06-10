@@ -12,8 +12,6 @@ export async function gradeLink4Matchups(matchups: any[]) {
   const finalMatchups = matchups.filter(m => m.status === 'STATUS_FINAL' || m.status === 'STATUS_POSTPONED');
   if (finalMatchups.length === 0) return;
 
-  console.log(`[Link4Grader] Found \${finalMatchups.length} final matchups to grade.`);
-
   // Evaluate all active link4 segments
   const adminDb = getAdminDb();
   if (!adminDb) return;
@@ -95,7 +93,6 @@ export async function gradeLink4Matchups(matchups: any[]) {
           hasLoss: pickData.hasLoss || hasNewLoss,
           updatedAt: Date.now()
         });
-        console.log(`[Link4Grader] Updated link4Pick \${pickDoc.id} with \${hasNewLoss ? 'a LOSS' : 'new grades'}.`);
       }
     }
   }
@@ -200,12 +197,9 @@ export async function processCompletedLink4Segments() {
 
   if (segmentsToPayout.length === 0) return;
 
-  console.log(`[Link4Grader] Found ${segmentsToPayout.length} completed segments to payout.`);
-
   for (const segmentDoc of segmentsToPayout) {
     try {
       await payoutLink4Segment(segmentDoc.id);
-      console.log(`[Link4Grader] Successfully paid out segment ${segmentDoc.id}.`);
     } catch (e: any) {
       console.error(`[Link4Grader] Error paying out segment ${segmentDoc.id}:`, e);
     }

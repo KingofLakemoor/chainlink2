@@ -12,8 +12,6 @@ export async function gradePickemMatchups(pickemMatchups: any[]) {
   const finalMatchups = pickemMatchups.filter(m => m.status === 'STATUS_FINAL' || m.status === 'STATUS_POSTPONED');
   if (finalMatchups.length === 0) return;
 
-  console.log(`[PickemGrader] Found ${finalMatchups.length} final pickem matchups to grade.`);
-
   for (const matchup of finalMatchups) {
     try {
       await gradeSinglePickemMatchup(matchup);
@@ -34,11 +32,8 @@ export async function gradeSinglePickemMatchup(matchup: any) {
     .get();
 
   if (pendingPicksSnap.empty) {
-    console.log(`[PickemGrader] No pending picks for pickem matchup ${matchup.id}.`);
     return;
   }
-
-  console.log(`[PickemGrader] Grading ${pendingPicksSnap.size} picks for pickem matchup ${matchup.id}.`);
 
   const homeScore = Number(matchup.homeTeam?.score || 0);
   const awayScore = Number(matchup.awayTeam?.score || 0);
@@ -130,7 +125,6 @@ export async function gradeSinglePickemMatchup(matchup: any) {
         });
       });
 
-      console.log(`[PickemGrader] Pick ${pickDoc.id} graded as ${pickStatus}. Points: ${pointsEarned}.`);
     } catch (err) {
       console.error(`[PickemGrader] Failed to grade pickem pick ${pickDoc.id}:`, err);
     }

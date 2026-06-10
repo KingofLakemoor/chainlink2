@@ -14,13 +14,11 @@ if (!getApps().length) {
         credential: cert(serviceAccount),
         projectId: firebaseConfig.projectId,
       });
-      console.log("Firebase Admin initialized with FIREBASE_SERVICE_ACCOUNT_KEY");
     } else {
       initializeApp({
         credential: applicationDefault(),
         projectId: firebaseConfig.projectId,
       });
-      console.log("Firebase Admin initialized with default credentials");
     }
   } catch (e) {
     console.error("Failed to initialize Firebase Admin:", e);

@@ -47,7 +47,6 @@ try {
   const messaging = getMessaging(app);
 
   onBackgroundMessage(messaging, (payload) => {
-    console.log('[sw.ts] Received background message ', payload);
   });
 } catch (error) {
   console.error('Failed to initialize Firebase Messaging in Service Worker', error);
