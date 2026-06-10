@@ -573,6 +573,9 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
         const uniqueGameIds = Array.from(new Set(matchupsToGrade.map(m => m.gameId))).filter(Boolean);
         const matchupMap = new Map(matchupsToGrade.map(m => [m.gameId, m]));
 
+        let pickemBatch = adminDb.batch();
+        let pickemOpCount = 0;
+
         for (let i = 0; i < uniqueGameIds.length; i += 30) {
           const chunk = uniqueGameIds.slice(i, i + 30);
           try {
@@ -590,7 +593,14 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                 'awayTeam.score': matchup.awayTeam?.score ?? 0,
                 updatedAt: Date.now()
               };
-              await doc.ref.update(updateData);
+              pickemBatch.update(doc.ref, updateData);
+              pickemOpCount++;
+
+              if (pickemOpCount >= 500) {
+                await pickemBatch.commit();
+                pickemBatch = adminDb.batch();
+                pickemOpCount = 0;
+              }
 
               pickemMatchupsToGrade.push({
                 ...pData,
@@ -604,6 +614,10 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
           } catch (err) {
             console.error(`[Sync] Error syncing pickem matchup chunk:`, err);
           }
+        }
+
+        if (pickemOpCount > 0) {
+          await pickemBatch.commit();
         }
 
         if (pickemMatchupsToGrade.length > 0) {
