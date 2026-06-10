@@ -78,14 +78,27 @@ export const frequentSync = onSchedule({ schedule: "every 2 minutes", timeoutSec
 
           if (notifData.audience === 'GLOBAL') {
             // Fetch all users and filter in memory since array inequality filters are not fully supported
-            const usersSnap = await adminDb.collection('users').get();
-            usersSnap.docs.forEach((uDoc: any) => {
-              const uData = uDoc.data();
-              if (uData.notificationsEnabled !== false && uData.fcmTokens && Array.isArray(uData.fcmTokens) && uData.fcmTokens.length > 0) {
-                tokens.push(...uData.fcmTokens);
-                uData.fcmTokens.forEach((t: string) => tokenToUserId.set(t, uDoc.id));
+            let lastDoc = null;
+            let hasMore = true;
+            while (hasMore) {
+              let query = adminDb.collection('users').limit(500);
+              if (lastDoc) {
+                query = query.startAfter(lastDoc);
               }
-            });
+              const usersSnap = await query.get();
+              if (usersSnap.empty) {
+                hasMore = false;
+                break;
+              }
+              lastDoc = usersSnap.docs[usersSnap.docs.length - 1];
+              usersSnap.docs.forEach((uDoc: any) => {
+                const uData = uDoc.data();
+                if (uData.notificationsEnabled !== false && uData.fcmTokens && Array.isArray(uData.fcmTokens) && uData.fcmTokens.length > 0) {
+                  tokens.push(...uData.fcmTokens);
+                  uData.fcmTokens.forEach((t: string) => tokenToUserId.set(t, uDoc.id));
+                }
+              });
+            }
           } else if (notifData.audience === 'USER' && notifData.targetUserId) {
             const userSnap = await adminDb.collection('users').doc(notifData.targetUserId).get();
             if (userSnap.exists) {
