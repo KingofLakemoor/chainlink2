@@ -80,16 +80,27 @@ export default function LeaderboardsPage() {
              { id: 'user-123', name: 'Mock User', username: 'MockUser123', image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=mock-user-123', stats: { wins: 30, losses: 5, pushes: 0 }, currentChain: 15, bestChain: 15 },
              { id: '2', name: 'Jane Smith', username: 'janesmith', image: '', stats: { wins: 12, losses: 2, pushes: 0 }, currentChain: 3, bestChain: 8 },
              { id: '3', name: 'Bob Johnson', username: 'bobj', image: '', stats: { wins: 5, losses: 8, pushes: 1 }, currentChain: 0, bestChain: 2 },
+             { id: '4', name: 'Inactive User', username: 'inactive', image: '', stats: { wins: 0, losses: 0, pushes: 0 }, currentChain: 0, bestChain: 0 },
            ];
 
            // Calculate win rates
-           const processedMock = mockData.map(player => {
+           let processedMock = mockData.map(player => {
                const wins = player.stats?.wins || 0;
                const losses = player.stats?.losses || 0;
                const total = wins + losses;
                const winRate = total > 0 ? (wins / total) * 100 : 0;
-               return { ...player, winRate, totalDecisions: total };
-           }).sort((a, b) => {
+               return { ...player, winRate, totalDecisions: total, nextPickText: 'NO PICK' };
+           });
+
+           if (selectedMonth === 'current') {
+               processedMock = processedMock.filter(player => {
+                   const hasStats = (player.stats?.wins || 0) > 0 || (player.stats?.losses || 0) > 0 || (player.stats?.pushes || 0) > 0;
+                   const hasActivePick = player.nextPickText !== 'NO PICK';
+                   return hasStats || hasActivePick;
+               });
+           }
+
+           processedMock.sort((a, b) => {
                const aCurrentChain = a.currentChain || 0;
                const bCurrentChain = b.currentChain || 0;
                if (bCurrentChain !== aCurrentChain) return bCurrentChain - aCurrentChain;
@@ -207,8 +218,17 @@ export default function LeaderboardsPage() {
             };
         });
 
+        let finalData = mergedData;
+        if (selectedMonth === 'current') {
+            finalData = mergedData.filter(player => {
+                const hasStats = (player.stats?.wins || 0) > 0 || (player.stats?.losses || 0) > 0 || (player.stats?.pushes || 0) > 0;
+                const hasActivePick = player.nextPickText !== 'NO PICK';
+                return hasStats || hasActivePick;
+            });
+        }
+
         // Default sort by Current Chain, Longest Chain, Most Wins, Win Percentage
-        mergedData.sort((a, b) => {
+        finalData.sort((a, b) => {
             const aCurrentChain = a.currentChain || 0;
             const bCurrentChain = b.currentChain || 0;
             if (bCurrentChain !== aCurrentChain) return bCurrentChain - aCurrentChain;
@@ -221,7 +241,7 @@ export default function LeaderboardsPage() {
             return (b.winRate || 0) - (a.winRate || 0);
         });
 
-        setLeaderboardData(mergedData);
+        setLeaderboardData(finalData);
       } catch (err) {
         console.error("Error fetching leaderboard data", err);
       } finally {
