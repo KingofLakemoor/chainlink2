@@ -167,14 +167,18 @@ export const MatchupCard = React.memo(function MatchupCard({
                     )}>
                        {(m.metadata?.lowerScoreWins ? m.awayTeam.score < m.homeTeam.score : m.awayTeam.score > m.homeTeam.score) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-300"></div>}
                        {(m.league === 'ATP' || m.league === 'WTA') && m.metadata?.awayLinescores ? (
-                         m.metadata.awayLinescores.map((score: number, i: number) => (
-                           <React.Fragment key={i}>
-                             {i > 0 && <div className="w-px h-3 sm:h-4 bg-zinc-600 mx-0.5 sm:mx-1"></div>}
-                             <span>{score}</span>
-                           </React.Fragment>
-                         ))
+                         <div className="flex items-center w-full overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                           <div className="flex items-center mx-auto w-max px-0.5">
+                             {m.metadata.awayLinescores.map((score: number, i: number) => (
+                               <React.Fragment key={i}>
+                                 {i > 0 && <div className="w-px h-3 sm:h-4 bg-zinc-600 mx-0.5 sm:mx-1 shrink-0"></div>}
+                                 <span className="shrink-0 text-[13px] sm:text-base">{score}</span>
+                               </React.Fragment>
+                             ))}
+                           </div>
+                         </div>
                        ) : (
-                         m.awayTeam.score ?? 0
+                         <span>{m.awayTeam.score ?? 0}</span>
                        )}
                     </div>
 
@@ -216,14 +220,18 @@ export const MatchupCard = React.memo(function MatchupCard({
                     )}>
                        {(m.metadata?.lowerScoreWins ? m.homeTeam.score < m.awayTeam.score : m.homeTeam.score > m.awayTeam.score) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-300"></div>}
                        {(m.league === 'ATP' || m.league === 'WTA') && m.metadata?.homeLinescores ? (
-                         m.metadata.homeLinescores.map((score: number, i: number) => (
-                           <React.Fragment key={i}>
-                             {i > 0 && <div className="w-px h-3 sm:h-4 bg-zinc-600 mx-0.5 sm:mx-1"></div>}
-                             <span>{score}</span>
-                           </React.Fragment>
-                         ))
+                         <div className="flex items-center w-full overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                           <div className="flex items-center mx-auto w-max px-0.5">
+                             {m.metadata.homeLinescores.map((score: number, i: number) => (
+                               <React.Fragment key={i}>
+                                 {i > 0 && <div className="w-px h-3 sm:h-4 bg-zinc-600 mx-0.5 sm:mx-1 shrink-0"></div>}
+                                 <span className="shrink-0 text-[13px] sm:text-base">{score}</span>
+                               </React.Fragment>
+                             ))}
+                           </div>
+                         </div>
                        ) : (
-                         m.homeTeam.score ?? 0
+                         <span>{m.homeTeam.score ?? 0}</span>
                        )}
                     </div>
 
