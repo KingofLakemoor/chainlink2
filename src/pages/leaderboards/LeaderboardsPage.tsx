@@ -118,7 +118,11 @@ export default function LeaderboardsPage() {
            return;
         }
 
-        const usersSnap = await getDocs(collection(db, 'users'));
+        const usersRes = await fetch('/api/users/public');
+        if (!usersRes.ok) throw new Error("Failed to fetch leaderboard data");
+        const usersData = await usersRes.json();
+        const usersList = usersData.users || [];
+
         const chainsSnap = await getDocs(collection(db, 'chains'));
 
         // Fetch pending picks and all matchups to determine next pick
@@ -160,9 +164,8 @@ export default function LeaderboardsPage() {
         const items = shopItemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setInventoryItems(items);
 
-        const mergedData = usersSnap.docs.map(doc => {
-            const userData = doc.data();
-            const chainData = chainsMap.get(doc.id) || { chain: 0, best: 0, allTimeBest: 0 };
+        const mergedData = usersList.map((userData: any) => {
+            const chainData = chainsMap.get(userData.id) || { chain: 0, best: 0, allTimeBest: 0 };
 
             let statsToUse = userData.stats || { wins: 0, losses: 0, pushes: 0 };
             let currentChainToUse = chainData.chain || 0;
@@ -194,7 +197,7 @@ export default function LeaderboardsPage() {
             const winRate = total > 0 ? (wins / total) * 100 : 0;
 
             let nextPickText = 'NO PICK';
-            const userPick = activePicksMap.get(doc.id);
+            const userPick = activePicksMap.get(userData.id);
             if (userPick) {
                 const matchup = matchupsMap.get(userPick.matchupId);
                 if (matchup) {
@@ -207,8 +210,8 @@ export default function LeaderboardsPage() {
             }
 
             return {
-                id: doc.id,
                 ...userData,
+                id: userData.id,
                 stats: statsToUse,
                 currentChain: currentChainToUse,
                 bestChain: bestChainToUse,

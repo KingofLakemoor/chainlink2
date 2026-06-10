@@ -66,18 +66,16 @@ const ensureUserProfile = async (user: User, username?: string, referrerId?: str
 
     await setDoc(userRef, defaultData);
 
-    // If they were referred, update the referrer's count
+    // If they were referred, update the referrer's count via API
     if (referrerId) {
       try {
-        const referrerRef = doc(db, 'users', referrerId);
-        const referrerSnap = await getDoc(referrerRef);
-        if (referrerSnap.exists()) {
-           await updateDoc(referrerRef, {
-             referralsCount: increment(1)
-           });
-        }
+        await fetch('/api/referral/increment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ referrerId })
+        });
       } catch (e) {
-        console.error("Failed to update referrer count", e);
+        console.error("Failed to update referrer count via API", e);
       }
     }
 
