@@ -39,7 +39,7 @@ interface Link4Pick {
 }
 
 export default function Link4Page() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [activeSegmentId, setActiveSegmentId] = useState<string | null>(null);
   const [isLoadingSegment, setIsLoadingSegment] = useState(true);
   const [endTime, setEndTime] = useState<string>('');
@@ -346,8 +346,8 @@ export default function Link4Page() {
         body: JSON.stringify({
           segmentId: activeSegmentId,
           picks: picks,
-          username: (user as any).username || 'Anonymous',
-          avatarUrl: (user as any).avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`
+          username: profile?.username || (user as any).username || 'Anonymous',
+          avatarUrl: profile?.image || profile?.avatarUrl || (user as any).avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`
         })
       });
 
