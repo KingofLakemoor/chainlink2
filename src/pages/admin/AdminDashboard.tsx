@@ -252,8 +252,6 @@ function AdminMatchups() {
           const scrapedMatchups = result.data;
 
           if (scrapedMatchups && scrapedMatchups.length > 0) {
-             console.log(`Fetched ${scrapedMatchups.length} matchups for ${league}. Writing...`);
-
              // Client-side mapping
              // Fetch existing matchups for this league to avoid duplicates
              const existingSnap = await getDocs(query(collection(db, 'matchups'), where('league', '==', league)));

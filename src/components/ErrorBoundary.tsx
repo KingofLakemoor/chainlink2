@@ -27,7 +27,6 @@ export class ErrorBoundary extends Component<Props, State> {
       (error.message && error.message.includes('Loading chunk')) ||
       (error.message && error.message.includes('dynamically imported module'))
     ) {
-      console.log('Chunk load error detected, reloading page...');
       window.location.reload();
     }
   }

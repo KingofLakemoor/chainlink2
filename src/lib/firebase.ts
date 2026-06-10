@@ -122,7 +122,6 @@ const handlePendingCredential = async (user: User) => {
 
 export const loginWithEmail = async (email: string, pass: string) => {
   if (import.meta.env.DEV && (!app.options.apiKey || app.options.apiKey === 'MY_FIREBASE_API_KEY')) {
-    console.log('Mock login triggered (no valid API key in dev mode)');
     window.dispatchEvent(new Event('mock-login'));
     return;
   }
@@ -149,7 +148,6 @@ export const loginWithEmail = async (email: string, pass: string) => {
 
 export const signupWithEmail = async (email: string, pass: string, username: string, referrerId?: string) => {
   if (import.meta.env.DEV && (!app.options.apiKey || app.options.apiKey === 'MY_FIREBASE_API_KEY')) {
-    console.log('Mock login triggered (no valid API key in dev mode)');
     window.dispatchEvent(new CustomEvent('mock-login', { detail: { email, username, referrerId } }));
     return;
   }
@@ -175,7 +173,6 @@ export const signupWithEmail = async (email: string, pass: string, username: str
 
 export const loginWithDiscord = async () => {
   if (import.meta.env.DEV && (!app.options.apiKey || app.options.apiKey === 'MY_FIREBASE_API_KEY')) {
-    console.log('Mock login triggered (no valid API key in dev mode)');
     window.dispatchEvent(new Event('mock-login'));
     return;
   }
@@ -215,7 +212,6 @@ export const loginWithDiscord = async () => {
 
 export const loginWithGoogle = async () => {
   if (import.meta.env.DEV && (!app.options.apiKey || app.options.apiKey === 'MY_FIREBASE_API_KEY')) {
-    console.log('Mock login triggered (no valid API key in dev mode)');
     window.dispatchEvent(new Event('mock-login'));
     return;
   }
@@ -277,7 +273,6 @@ export const handleAuthRedirect = async () => {
 
 export const logout = () => {
   if (import.meta.env.DEV && (!app.options.apiKey || app.options.apiKey === 'MY_FIREBASE_API_KEY')) {
-    console.log('Mock logout triggered');
     window.dispatchEvent(new Event('mock-logout'));
     return;
   }

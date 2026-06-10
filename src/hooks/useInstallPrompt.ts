@@ -34,8 +34,7 @@ export function useInstallPrompt() {
     // Show the install prompt
     deferredPrompt.prompt();
     // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to the install prompt: ${outcome}`);
+    await deferredPrompt.userChoice;
     // We've used the prompt, and can't use it again, throw it away
     setDeferredPrompt(null);
   };
