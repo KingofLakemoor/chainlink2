@@ -5,7 +5,7 @@ import { ShoppingCart, Trophy, Link2, Coins, ChevronRight, Mail, Calendar,  } fr
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { db } from '../../lib/firebase';
-import { collection, getDocs, query, where, documentId, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, query, where, documentId, onSnapshot, orderBy } from 'firebase/firestore';
 import { DashboardPick, DashboardPickSkeleton } from '../../components/dashboard/dashboard-pick';
 import { FirebaseImage } from '../../components/ui/FirebaseImage';
 
@@ -71,6 +71,34 @@ export default function DashboardPage() {
   const [allFetchedMatchups, setAllFetchedMatchups] = React.useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [sponsors, setSponsors] = React.useState<any[]>([]);
+  const [announcements, setAnnouncements] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const q = query(collection(db, 'announcements'), where('active', '==', true), orderBy('createdAt', 'desc'));
+        const snap = await getDocs(q);
+        setAnnouncements(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+      } catch (e) {
+        console.error("Error fetching announcements:", e);
+        // Fallback without index
+        try {
+          const q = query(collection(db, 'announcements'), where('active', '==', true));
+          const snap = await getDocs(q);
+          const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          docs.sort((a: any, b: any) => {
+            const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+            const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+            return timeB - timeA;
+          });
+          setAnnouncements(docs);
+        } catch (innerE) {
+            console.error("Failed fallback announcement fetch", innerE);
+        }
+      }
+    };
+    fetchAnnouncements();
+  }, []);
 
   React.useEffect(() => {
     if (!user) return;
@@ -333,10 +361,22 @@ export default function DashboardPage() {
                   </div>
               </div>
 
-              <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6">
+              <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6 flex flex-col max-h-[300px]">
                   <h2 className="text-lg font-bold text-zinc-100 mb-4">Announcements</h2>
-                  <div className="bg-[#18181a] rounded-xl p-4 border border-zinc-800">
-                      <p className="text-sm text-zinc-400">Welcome to ChainLink Dashboard! Stay tuned for upcoming events and features.</p>
+                  <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-3">
+                      {announcements.length > 0 ? announcements.map(ann => (
+                          <div key={ann.id} className="bg-[#18181a] rounded-xl p-4 border border-zinc-800 relative overflow-hidden">
+                              {ann.priority === 'HIGH' && (
+                                  <div className="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
+                              )}
+                              <h3 className="font-bold text-zinc-200 text-sm mb-1">{ann.title}</h3>
+                              <p className="text-sm text-zinc-400 whitespace-pre-wrap">{ann.content}</p>
+                          </div>
+                      )) : (
+                          <div className="bg-[#18181a] rounded-xl p-4 border border-zinc-800">
+                              <p className="text-sm text-zinc-400">Welcome to ChainLink Dashboard! Stay tuned for upcoming events and features.</p>
+                          </div>
+                      )}
                   </div>
               </div>
           </div>
