@@ -235,33 +235,37 @@ export default function PlayDashboard() {
       const el = document.getElementById(`matchup-card-${matchupId}`);
       if (el) {
         try {
-          const html2canvas = (await import('html2canvas')).default;
-          const canvas = await html2canvas(el, {
+          const htmlToImage = await import('html-to-image');
+
+          const blob = await htmlToImage.toBlob(el, {
               backgroundColor: '#0a0a0a',
-              scale: 2,
-              useCORS: true
+              pixelRatio: 2,
           });
 
-          canvas.toBlob(async (blob) => {
-            if (!blob) return;
+          if (!blob) return;
 
-            const file = new File([blob], `chainlink-matchup-${matchupId}.png`, { type: 'image/png' });
+          const file = new File([blob], `chainlink-matchup-${matchupId}.png`, { type: 'image/png' });
 
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-              try {
-                await navigator.share({
-                  files: [file],
-                  title: 'ChainLink Matchup',
-                });
-              } catch (error: any) {
-                if (error.name !== 'AbortError') {
-                   downloadFallback(canvas.toDataURL('image/png'), matchupId);
-                }
+          const downloadFromBlob = (b: Blob) => {
+             const url = URL.createObjectURL(b);
+             downloadFallback(url, matchupId);
+             setTimeout(() => URL.revokeObjectURL(url), 100);
+          };
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({
+                files: [file],
+                title: 'ChainLink Matchup',
+              });
+            } catch (error: any) {
+              if (error.name !== 'AbortError') {
+                 downloadFromBlob(blob);
               }
-            } else {
-              downloadFallback(canvas.toDataURL('image/png'), matchupId);
             }
-          }, 'image/png');
+          } else {
+            downloadFromBlob(blob);
+          }
 
         } catch (error) {
           console.error("Failed to share matchup", error);
