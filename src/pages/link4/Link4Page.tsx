@@ -166,8 +166,33 @@ export default function Link4Page() {
         // Wait for allMatchups to be ready
         if (allMatchups.length === 0) return;
 
-        const leaderboardEntries: Link4LeaderboardEntry[] = [];
+        // Fetch user profiles for all picks to get up-to-date usernames and avatars
+        const uids = [...new Set(allUserPicks.map(p => p.userId))];
+        let profilesMap: Record<string, any> = {};
 
+        if (uids.length > 0) {
+           try {
+             // Fetch in chunks of 50 if needed, but for now just comma separated
+             const chunkedUids = [];
+             for (let i = 0; i < uids.length; i += 50) {
+               chunkedUids.push(uids.slice(i, i + 50));
+             }
+
+             for (const chunk of chunkedUids) {
+                const res = await fetch(`/api/users/public?uids=${chunk.join(',')}`);
+                if (res.ok) {
+                   const data = await res.json();
+                   data.users.forEach((u: any) => {
+                      if (u) profilesMap[u.id] = u;
+                   });
+                }
+             }
+           } catch (e) {
+             console.error("Failed to fetch profiles for Link4 leaderboard", e);
+           }
+        }
+
+        const leaderboardEntries: Link4LeaderboardEntry[] = [];
 
         for (const userPickData of allUserPicks) {
            let score = 0;
@@ -253,10 +278,12 @@ export default function Link4Page() {
               score = -99999;
            }
 
+           const userProfile = profilesMap[userPickData.userId];
+
            leaderboardEntries.push({
               userId: userPickData.userId,
-              username: userPickData.username,
-              avatarUrl: userPickData.avatarUrl,
+              username: userProfile?.username || userProfile?.name || userPickData.username || 'Anonymous',
+              avatarUrl: userProfile?.image || userPickData.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userPickData.userId}`,
               picks: processedPicks,
               score,
               potentialScore: hasLoss ? -99999 : score + potentialScore,

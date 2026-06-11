@@ -341,8 +341,8 @@ apiRouter.post("/link4/submit", async (req, res) => {
         transaction.set(pickRef, {
           segmentId,
           userId: uid,
-          username: username || 'Anonymous',
-          avatarUrl: avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${uid}`,
+          username: userData.username || userData.name || username || 'Anonymous',
+          avatarUrl: userData.image || avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${uid}`,
           picks: sanitizedPicks,
           hasLoss: false,
           submittedAt: Date.now(),
