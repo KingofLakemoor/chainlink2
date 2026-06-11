@@ -18,6 +18,7 @@ interface Link4LeaderboardPick {
   name?: string;
   sport?: string;
   status: 'PENDING' | 'WIN' | 'LOSS' | 'PUSH' | 'EMPTY' | 'CANCELLED';
+  score?: number;
 }
 
 interface Link4LeaderboardEntry {
@@ -205,12 +206,14 @@ export default function Link4Page() {
                 }
               }
 
+              let pickScore = 0;
               if (status === 'WIN' && pickMatchup) {
                  // Add Moneyline logic for calculating score
                  const pickedHome = pick.name === pickMatchup.homeTeam.name;
                  const ml = pickedHome ? pickMatchup.metadata?.mlHome : pickMatchup.metadata?.mlAway;
                  if (ml !== undefined && ml !== null) {
                     score += ml;
+                    pickScore = ml;
                  }
               }
 
@@ -218,7 +221,8 @@ export default function Link4Page() {
                  id: pick.id,
                  name: pick.name,
                  sport: pick.sport,
-                 status
+                 status,
+                 score: pickScore
               };
            });
 
@@ -508,33 +512,96 @@ export default function Link4Page() {
               const isLocked = index > nextPickIndex && nextPickIndex !== -1;
               const isFilled = pick !== null;
 
+              // Find current user's entry to get the status of this specific pick
+              const myEntry = leaderboardData.find(entry => entry.userId === user?.uid);
+              const processedPick = pick ? myEntry?.picks.find(p => p.id === pick.id) : null;
+              const processedStatus = processedPick?.status || 'PENDING';
+              const pickScore = processedPick?.score || 0;
+
+              const isWin = processedStatus === 'WIN';
+              const isLoss = processedStatus === 'LOSS';
+              const isPush = processedStatus === 'PUSH';
+              const isCancelled = processedStatus === 'CANCELLED';
+
+              let borderClass = '';
+              let bgClass = '';
+              let textClass = 'text-white';
+              let sportBgClass = 'bg-zinc-800';
+              let sportTextClass = 'text-zinc-300';
+              let numBgClass = 'bg-zinc-800';
+              let numTextClass = 'text-zinc-600';
+
+              if (isFilled) {
+                if (isWin) {
+                  borderClass = 'border-green-500/50';
+                  bgClass = 'bg-green-500/10';
+                  textClass = 'text-green-400';
+                  sportBgClass = 'bg-green-500/20';
+                  sportTextClass = 'text-green-400';
+                  numBgClass = 'bg-green-500/20';
+                  numTextClass = 'text-green-500';
+                } else if (isLoss) {
+                  borderClass = 'border-red-500/50';
+                  bgClass = 'bg-red-500/10';
+                  textClass = 'text-red-400';
+                  sportBgClass = 'bg-red-500/20';
+                  sportTextClass = 'text-red-400';
+                  numBgClass = 'bg-red-500/20';
+                  numTextClass = 'text-red-500';
+                } else if (isCancelled) {
+                  borderClass = 'border-red-500/20';
+                  bgClass = 'bg-red-500/5';
+                  textClass = 'text-zinc-500 line-through';
+                  sportBgClass = 'bg-zinc-800/50';
+                  sportTextClass = 'text-zinc-600';
+                  numBgClass = 'bg-zinc-800/50';
+                  numTextClass = 'text-zinc-700';
+                } else {
+                  // Pending or Push
+                  borderClass = 'border-[#27272a]';
+                  bgClass = 'bg-[#121212]';
+                  numBgClass = 'bg-zinc-800';
+                  numTextClass = 'text-zinc-400';
+                }
+              } else if (isActive) {
+                borderClass = 'border-green-500';
+                bgClass = 'bg-green-500/5 shadow-[0_0_15px_rgba(34,197,94,0.1)] scale-[1.02] cursor-pointer';
+                numBgClass = 'bg-green-500';
+                numTextClass = 'text-green-950';
+              } else if (isLocked) {
+                borderClass = 'border-zinc-800';
+                bgClass = 'bg-[#121212] opacity-50';
+              } else {
+                borderClass = 'border-dashed border-zinc-700';
+                bgClass = 'bg-[#1a1a1a]';
+              }
+
               return (
                 <div
                   key={index}
                   onClick={() => handleSlotClick(index)}
                   className={`
                     relative aspect-square md:aspect-auto md:h-48 rounded-xl border-2 flex flex-col items-center justify-center p-4 transition-all
-                    ${isActive ? 'border-green-500 bg-green-500/5 shadow-[0_0_15px_rgba(34,197,94,0.1)] scale-[1.02] cursor-pointer' : ''}
-                    ${isLocked ? 'border-zinc-800 bg-[#121212] opacity-50' : ''}
-                    ${isFilled ? 'border-[#27272a] bg-[#121212]' : ''}
-                    ${!isActive && !isLocked && !isFilled ? 'border-dashed border-zinc-700 bg-[#1a1a1a]' : ''}
+                    ${borderClass} ${bgClass}
                   `}
                 >
                   {/* Slot Number */}
-                  <div className={`absolute top-3 left-3 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                    isFilled ? 'bg-zinc-800 text-zinc-400' :
-                    isActive ? 'bg-green-500 text-green-950' :
-                    'bg-zinc-800 text-zinc-600'
-                  }`}>
+                  <div className={`absolute top-3 left-3 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${numBgClass} ${numTextClass}`}>
                     {index + 1}
                   </div>
 
                   {isFilled ? (
-                    <div className="text-center w-full">
-                      <div className="inline-block px-2 py-1 bg-zinc-800 text-zinc-300 text-xs font-bold rounded mb-2">
+                    <div className="text-center w-full flex flex-col items-center justify-center">
+                      <div className={`inline-block px-2 py-1 text-xs font-bold rounded mb-2 ${sportBgClass} ${sportTextClass}`}>
                         {pick.sport}
                       </div>
-                      <h3 className="font-bold text-white text-lg break-words">{pick.name}</h3>
+                      <h3 className={`font-bold text-lg break-words ${textClass}`}>{pick.name}</h3>
+                      {isWin && (
+                        <div className="mt-2 text-green-500 font-bold">+{pickScore}</div>
+                      )}
+                      {isLoss && (
+                        <div className="mt-2 text-red-500 font-bold uppercase">Loss</div>
+                      )}
                     </div>
                   ) : isActive ? (
                     <div className="text-center">
