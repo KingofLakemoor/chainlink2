@@ -54,6 +54,7 @@ export function FirebaseImage({ src, fallback, ...props }: FirebaseImageProps) {
       src={resolvedSrc}
       {...props}
       loading="lazy"
+      crossOrigin="anonymous"
       onError={(e) => {
         if (fallback) {
           e.currentTarget.src = fallback;
