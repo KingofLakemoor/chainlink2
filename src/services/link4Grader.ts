@@ -26,6 +26,9 @@ export async function gradeLink4Matchups(matchups: any[]) {
     return;
   }
 
+  let batch = adminDb.batch();
+  let opCount = 0;
+
   for (const segmentDoc of activeSegmentsDocs) {
     const segmentId = segmentDoc.id;
     const picksSnap = await adminDb.collection('link4Picks').where('segmentId', '==', segmentId).get();
@@ -88,13 +91,24 @@ export async function gradeLink4Matchups(matchups: any[]) {
           });
         }
 
-        await adminDb.collection('link4Picks').doc(pickDoc.id).update({
+        batch.update(adminDb.collection('link4Picks').doc(pickDoc.id), {
           picks: newPicks,
           hasLoss: pickData.hasLoss || hasNewLoss,
           updatedAt: Date.now()
         });
+        opCount++;
+
+        if (opCount >= 500) {
+          await batch.commit();
+          batch = adminDb.batch();
+          opCount = 0;
+        }
       }
     }
+  }
+
+  if (opCount > 0) {
+    await batch.commit();
   }
 }
 
