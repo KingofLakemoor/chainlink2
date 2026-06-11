@@ -19,6 +19,7 @@ const EditShopItemPage = React.lazy(() => import('./shopItems/EditShopItemPage')
 const NotificationsListPage = React.lazy(() => import('./notifications/NotificationsListPage'));
 const CreateNotificationPage = React.lazy(() => import('./notifications/CreateNotificationPage'));
 const EditNotificationPage = React.lazy(() => import('./notifications/EditNotificationPage'));
+const AnnouncementsAdminPage = React.lazy(() => import('./announcements/AnnouncementsAdminPage'));
 const SponsorsListPage = React.lazy(() => import('./sponsors/SponsorsListPage'));
 const CreateSponsorPage = React.lazy(() => import('./sponsors/CreateSponsorPage'));
 const EditSponsorPage = React.lazy(() => import('./sponsors/EditSponsorPage'));
@@ -51,15 +52,7 @@ const ADMIN_MENU = [
 { id: 'pickem', label: "Pick'em", icon: Layers, path: '/admin/pickem' },
   { id: 'brackets', label: 'Brackets', icon: GitMerge, path: '/admin/brackets' },
   { id: 'pga-builder', label: 'PGA Builder', icon: Flag, path: '/admin/pga-builder' },
-  {
-    id: 'announcements',
-    label: 'Announcements',
-    icon: FileText,
-    subItems: [
-      { id: 'announcements-all', label: 'All Announcements', path: '/admin/announcements' },
-      { id: 'announcements-create', label: 'Create Announcement', path: '/admin/announcements/create' }
-    ]
-  },
+  { id: 'announcements', label: 'Announcements', icon: FileText, path: '/admin/announcements' },
   {
     id: 'sponsors',
     label: 'Sponsors',
@@ -1253,8 +1246,7 @@ export default function AdminDashboard() {
                 <Route path="pga-builder" element={<PGABuilderPage />} />
 
                 {/* Announcements */}
-                <Route path="announcements" element={<GenericTable collectionName="announcements" />} />
-                <Route path="announcements/create" element={<AdminPlaceholder title="Create Announcement" />} />
+                <Route path="announcements/*" element={<AnnouncementsAdminPage />} />
 
                 {/* Sponsors */}
                 <Route path="sponsors" element={<SponsorsListPage />} />
