@@ -593,7 +593,6 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                 'awayTeam.score': matchup.awayTeam?.score ?? 0,
                 updatedAt: Date.now()
               };
-              // ⚡ Performance optimization: using batch.update instead of await doc.ref.update
               pickemBatch.update(doc.ref, updateData);
               pickemOpCount++;
 
