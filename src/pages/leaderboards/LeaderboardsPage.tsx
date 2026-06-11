@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/button';
 import { cn } from '../../lib/utils';
 import { Trophy, Download, Medal, Flame, CheckCircle2, Percent, Users } from 'lucide-react';
 import { format } from 'date-fns';
+import { FirebaseImage } from '../../components/ui/FirebaseImage';
 
 import { Hexagons } from '../../components/ui/avatar-rings/hexagons';
 import { Hip } from '../../components/ui/avatar-rings/hip';
@@ -368,8 +369,9 @@ export default function LeaderboardsPage() {
                     <RingComponent isStatic={!animateCosmetics} />
                  </div>
               )}
-               <img loading="lazy"
+               <FirebaseImage loading="lazy"
                  src={player.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${player.id}`}
+                 fallback={`https://api.dicebear.com/7.x/avataaars/svg?seed=${player.id}`}
                  alt={player.displayName || player.username || player.name}
                  className="w-16 h-16 rounded-full relative z-10 border-2 border-[#121212]"
               />
@@ -539,7 +541,7 @@ export default function LeaderboardsPage() {
                           })()}
                           <div className={`w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden border flex-shrink-0 relative z-10 ${player.equippedCosmetics?.AVATAR_RING ? 'border-transparent' : 'border-zinc-700'}`}>
                             {player.image ? (
-                               <img loading="lazy"  src={player.image} alt={player.name} className="w-full h-full object-cover" />
+                               <FirebaseImage loading="lazy" src={player.image} fallback={`https://api.dicebear.com/7.x/avataaars/svg?seed=${player.id}`} alt={player.name} className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-xs font-bold text-zinc-500">{(player.username || player.name || '?').charAt(0).toUpperCase()}</span>
                             )}
