@@ -42,7 +42,11 @@ export default function EditPickPage() {
       // Parse JSON string values back to objects if needed
       const finalData = { ...updateData };
       if (typeof finalData.pick === 'string') {
-        try { finalData.pick = JSON.parse(finalData.pick); } catch (e) {}
+        try {
+          finalData.pick = JSON.parse(finalData.pick);
+        } catch (e) {
+          throw new Error('Invalid JSON format in pick field');
+        }
       }
 
       await updateDoc(docRef, finalData);
