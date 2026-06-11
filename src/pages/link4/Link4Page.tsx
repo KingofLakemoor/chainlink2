@@ -624,7 +624,7 @@ export default function Link4Page() {
                       </div>
                       <h3 className={`font-bold text-lg break-words ${textClass}`}>{pick.name}</h3>
                       {isWin && (
-                        <div className="mt-2 text-green-500 font-bold">+{pickScore}</div>
+                        <div className="mt-2 text-green-500 font-bold">{pickScore > 0 ? `+${pickScore}` : pickScore}</div>
                       )}
                       {isLoss && (
                         <div className="mt-2 text-red-500 font-bold uppercase">Loss</div>
