@@ -241,17 +241,43 @@ export default function PlayDashboard() {
               scale: 2,
               useCORS: true
           });
-          const dataUrl = canvas.toDataURL('image/png');
-          const link = document.createElement('a');
-          link.download = `chainlink-matchup-${matchupId}.png`;
-          link.href = dataUrl;
-          link.click();
+
+          canvas.toBlob(async (blob) => {
+            if (!blob) return;
+
+            const file = new File([blob], `chainlink-matchup-${matchupId}.png`, { type: 'image/png' });
+
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              try {
+                await navigator.share({
+                  files: [file],
+                  title: 'ChainLink Matchup',
+                });
+              } catch (error: any) {
+                if (error.name !== 'AbortError') {
+                   downloadFallback(canvas.toDataURL('image/png'), matchupId);
+                }
+              }
+            } else {
+              downloadFallback(canvas.toDataURL('image/png'), matchupId);
+            }
+          }, 'image/png');
+
         } catch (error) {
           console.error("Failed to share matchup", error);
         }
       }
       setSharingMatchupId(null);
     }, 100);
+  };
+
+  const downloadFallback = (dataUrl: string, matchupId: string) => {
+    const link = document.createElement('a');
+    link.download = `chainlink-matchup-${matchupId}.png`;
+    link.href = dataUrl;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const activePick = Object.values(userPicks).find((p: any) => p.status === 'PENDING');
