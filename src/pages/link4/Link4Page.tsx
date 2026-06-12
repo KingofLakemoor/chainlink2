@@ -460,7 +460,7 @@ export default function Link4Page() {
             Link4
           </h1>
           <p className="text-zinc-400 text-lg">
-            Connect four to win! Play Link4 and earn links. Entry: {segmentCost} links.
+            Connect four to win! Play Link4 and earn links. Entry: {segmentCost} links. You don't have to make all 4 picks at once—submit them one by one as games become available!
             {theme.sponsorName && (
               <span className="block mt-1 text-sm">
                 Presented by{' '}
