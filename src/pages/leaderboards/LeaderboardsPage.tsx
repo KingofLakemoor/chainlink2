@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/button';
 import { cn } from '../../lib/utils';
 import { Trophy, Download, Medal, Flame, CheckCircle2, Percent, Users } from 'lucide-react';
 import { format } from 'date-fns';
+import { FirebaseImage } from '../../components/ui/FirebaseImage';
 
 import { Hexagons } from '../../components/ui/avatar-rings/hexagons';
 import { Hip } from '../../components/ui/avatar-rings/hip';
@@ -60,6 +61,26 @@ const AvatarRingMap: Record<string, React.FC<any>> = {
   'NovatrixCodeAvatarRing': NovatrixCodeAvatarRing,
   'NovatrixQuantAvatarRing': NovatrixQuantAvatarRing
 };
+
+
+class CosmeticsErrorBoundary extends React.Component<{ children: React.ReactNode, fallback?: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: any) {
+    console.error("Cosmetics component failed to load:", error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || null;
+    }
+    return this.props.children;
+  }
+}
 
 export default function LeaderboardsPage() {
   const { user } = useAuth();
@@ -352,7 +373,7 @@ export default function LeaderboardsPage() {
       <div className="bg-[#121212] border border-zinc-800 rounded-xl relative overflow-hidden group min-h-[220px] flex flex-col">
          {BannerComponent ? (
             <div className="absolute inset-0 z-0">
-               <BannerComponent isStatic={!animateCosmetics} />
+               <CosmeticsErrorBoundary fallback={<div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5 pointer-events-none"></div>}><BannerComponent isStatic={!animateCosmetics} /></CosmeticsErrorBoundary>
             </div>
          ) : (
             <div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5 pointer-events-none"></div>
@@ -365,11 +386,12 @@ export default function LeaderboardsPage() {
             <div className="relative mb-3">
               {RingComponent && (
                  <div className="absolute inset-0 z-0 transform scale-125 pointer-events-none rounded-full overflow-hidden">
-                    <RingComponent isStatic={!animateCosmetics} />
+                    <CosmeticsErrorBoundary fallback={null}><RingComponent isStatic={!animateCosmetics} /></CosmeticsErrorBoundary>
                  </div>
               )}
-               <img loading="lazy"
+               <FirebaseImage loading="lazy"
                  src={player.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${player.id}`}
+                 fallback={`https://api.dicebear.com/7.x/avataaars/svg?seed=${player.id}`}
                  alt={player.displayName || player.username || player.name}
                  className="w-16 h-16 rounded-full relative z-10 border-2 border-[#121212]"
               />
@@ -533,13 +555,13 @@ export default function LeaderboardsPage() {
                             if (!RingComponent) return null;
                             return (
                               <div className="absolute inset-0 z-0 transform scale-125 pointer-events-none rounded-full overflow-hidden">
-                                <RingComponent isStatic={!animateCosmetics} />
+                                <CosmeticsErrorBoundary fallback={null}><RingComponent isStatic={!animateCosmetics} /></CosmeticsErrorBoundary>
                               </div>
                             )
                           })()}
                           <div className={`w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden border flex-shrink-0 relative z-10 ${player.equippedCosmetics?.AVATAR_RING ? 'border-transparent' : 'border-zinc-700'}`}>
                             {player.image ? (
-                               <img loading="lazy"  src={player.image} alt={player.name} className="w-full h-full object-cover" />
+                               <FirebaseImage loading="lazy" src={player.image} fallback={`https://api.dicebear.com/7.x/avataaars/svg?seed=${player.id}`} alt={player.name} className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-xs font-bold text-zinc-500">{(player.username || player.name || '?').charAt(0).toUpperCase()}</span>
                             )}
