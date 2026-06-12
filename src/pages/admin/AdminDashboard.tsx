@@ -418,6 +418,19 @@ function AdminMatchups() {
     }
   };
 
+  const handleToggleLink4Excluded = async (id: string, currentExcluded: boolean) => {
+    try {
+      await updateDoc(doc(db, 'matchups', id), {
+        link4Excluded: !currentExcluded,
+        updatedAt: Date.now()
+      });
+      setData(prev => prev.map(m => m.id === id ? { ...m, link4Excluded: !currentExcluded } : m));
+    } catch (e) {
+      console.error("Error toggling Link4 excluded status", e);
+      alert("Failed to toggle Link4 excluded status");
+    }
+  };
+
   if (loading) return <div className="p-8 text-zinc-500">Loading matchups...</div>;
 
   const statuses = Array.from(new Set(data.map(m => m.status))).filter(Boolean);
@@ -486,6 +499,7 @@ function AdminMatchups() {
                 <th className="px-4 py-3 font-medium">ML</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Active</th>
+                <th className="px-4 py-3 font-medium">Link4</th>
                 <th className="px-4 py-3 font-medium">Start Time</th>
                 <th className="px-4 py-3 font-medium">Picks</th>
                 <th className="px-4 py-3 font-medium text-right">Actions</th>
@@ -509,6 +523,15 @@ function AdminMatchups() {
                       title={row.active ? "Mark Inactive" : "Mark Active"}
                     >
                       {row.active ? 'ACTIVE' : 'INACTIVE'}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => handleToggleLink4Excluded(row.id, !!row.link4Excluded)}
+                      className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider transition-colors ${!row.link4Excluded ? 'bg-green-500/20 text-green-400 hover:bg-red-500/20 hover:text-red-400' : 'bg-red-500/20 text-red-400 hover:bg-green-500/20 hover:text-green-400'}`}
+                      title={row.link4Excluded ? "Include in Link4" : "Exclude from Link4"}
+                    >
+                      {!row.link4Excluded ? 'INCLUDED' : 'EXCLUDED'}
                     </button>
                   </td>
                   <td className="px-4 py-3 text-zinc-500">{new Date(row.startTime).toLocaleString()}</td>

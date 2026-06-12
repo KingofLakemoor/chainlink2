@@ -131,7 +131,7 @@ export const MatchupCard = React.memo(function MatchupCard({
                    {m.metadata.mlAway > 0 ? `+${m.metadata.mlAway}` : m.metadata.mlAway}
                  </div>
                )}
-               {m.type === 'SOCCER_SCORE' && (() => {
+               {m.type === 'SOCCER_SCORE' && !isLink4 && (() => {
                  const type = m.metadata?.awayScoreType || 'WIN_BY';
                  const val = m.metadata?.awayScoreValue;
                  const hasVal = val !== undefined && val !== null && val !== '';
@@ -270,7 +270,7 @@ export const MatchupCard = React.memo(function MatchupCard({
                    {m.metadata.mlHome > 0 ? `+${m.metadata.mlHome}` : m.metadata.mlHome}
                  </div>
                )}
-               {m.type === 'SOCCER_SCORE' && (() => {
+               {m.type === 'SOCCER_SCORE' && !isLink4 && (() => {
                  const type = m.metadata?.homeScoreType || 'WIN_DRAW_LOSE';
                  const val = m.metadata?.homeScoreValue;
                  const hasVal = val !== undefined && val !== null && val !== '';
