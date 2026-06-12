@@ -131,6 +131,19 @@ export async function payoutLink4Segment(segmentId: string) {
 
     const segmentCost = segmentDoc.data().cost ?? 10;
     const allPicks = picksSnap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
+
+    // Check if any active player has a pending game 4
+    for (const entry of allPicks) {
+      if (entry.hasLoss) continue;
+      const rawPicks = Array.isArray(entry.picks) ? entry.picks : (entry.picks ? Object.values(entry.picks) : []);
+      if (rawPicks.length >= 4) {
+        const game4 = rawPicks[3] as any;
+        if (game4 && game4.status === 'PENDING') {
+          return; // Hold payout, someone is still actively competing for the win
+        }
+      }
+    }
+
     const totalPot = allPicks.length * segmentCost;
     const payoutAmount = Math.floor(totalPot * 0.60);
 
