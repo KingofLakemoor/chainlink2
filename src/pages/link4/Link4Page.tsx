@@ -615,8 +615,8 @@ export default function Link4Page() {
               }
 
               return (
+                <React.Fragment key={index}>
                 <div
-                  key={index}
                   onClick={() => handleSlotClick(index)}
                   className={`
                     relative aspect-square md:aspect-auto md:h-48 rounded-xl border-2 flex flex-col items-center justify-center p-4 transition-all
@@ -657,6 +657,55 @@ export default function Link4Page() {
                     </div>
                   )}
                 </div>
+
+                {/* Game Selection Slide Down Inline */}
+                {index === nextPickIndex && (
+                  <div
+                    className="col-span-1 md:col-span-4 overflow-hidden transition-all duration-500 ease-in-out"
+                    style={{ maxHeight: isSelectingPick ? '5000px' : '0', opacity: isSelectingPick ? 1 : 0 }}
+                  >
+                    <div className="bg-[#1a1a1a] border border-[#27272a] rounded-xl p-6 md:p-8 mt-2 mb-4">
+                      <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                          <Grid className="w-5 h-5 text-green-500" />
+                          Select Pick {nextPickIndex + 1}
+                        </h2>
+                        <button
+                          onClick={() => setIsSelectingPick(false)}
+                          className="text-zinc-400 hover:text-white"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+
+                      <div className="grid lg:grid-cols-2 gap-5">
+                        {availableMatchups.map((m) => (
+                          <MatchupCard
+                            key={m.gameId}
+                            m={m}
+                            user={user}
+                            pickData={null}
+                            hasActivePickAnywhere={false}
+                            mCounts={{ total: 0, away: 0, home: 0 }}
+                            sponsors={sponsors}
+                            onMakePick={handleMakePick}
+                            onCancelPick={() => {}}
+                            onShareMatchup={() => {}}
+                            sharingMatchupId={null}
+                            isMyPick={false}
+                            isLink4={true}
+                          />
+                        ))}
+                        {availableMatchups.length === 0 && (
+                          <div className="col-span-2 text-center py-12 text-zinc-500">
+                            <p>No eligible matchups available right now.</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                </React.Fragment>
               );
             })}
           </div>
@@ -698,52 +747,6 @@ export default function Link4Page() {
               <p className="text-red-400">You lost a pick and have been eliminated from this segment.</p>
             </div>
           )}
-        </div>
-
-        {/* Game Selection Slide Down */}
-        <div
-          className="overflow-hidden transition-all duration-500 ease-in-out"
-          style={{ maxHeight: isSelectingPick ? '5000px' : '0', opacity: isSelectingPick ? 1 : 0 }}
-        >
-          <div className="bg-[#1a1a1a] border border-[#27272a] rounded-xl p-6 md:p-8 mt-4">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Grid className="w-5 h-5 text-green-500" />
-                Select Pick {nextPickIndex + 1}
-              </h2>
-              <button
-                onClick={() => setIsSelectingPick(false)}
-                className="text-zinc-400 hover:text-white"
-              >
-                Cancel
-              </button>
-            </div>
-
-            <div className="grid lg:grid-cols-2 gap-5">
-              {availableMatchups.map((m) => (
-                <MatchupCard
-                  key={m.gameId}
-                  m={m}
-                  user={user}
-                  pickData={null}
-                  hasActivePickAnywhere={false}
-                  mCounts={{ total: 0, away: 0, home: 0 }}
-                  sponsors={sponsors}
-                  onMakePick={handleMakePick}
-                  onCancelPick={() => {}}
-                  onShareMatchup={() => {}}
-                  sharingMatchupId={null}
-                  isMyPick={false}
-                  isLink4={true}
-                />
-              ))}
-              {availableMatchups.length === 0 && (
-                <div className="col-span-2 text-center py-12 text-zinc-500">
-                  <p>No eligible matchups available right now.</p>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
 
         {/* Leaderboard Section */}
