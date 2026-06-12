@@ -421,6 +421,10 @@ export default function Link4Page() {
     }
 
     return true;
+  }).sort((a, b) => {
+    const timeA = a.startTime ? new Date(a.startTime).getTime() : 0;
+    const timeB = b.startTime ? new Date(b.startTime).getTime() : 0;
+    return timeA - timeB;
   });
 
   if (isLoadingSegment) {
