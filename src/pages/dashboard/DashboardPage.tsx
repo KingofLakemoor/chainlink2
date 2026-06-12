@@ -8,7 +8,6 @@ import { format } from 'date-fns';
 import { db } from '../../lib/firebase';
 import { collection, getDocs, query, where, documentId, onSnapshot, orderBy } from 'firebase/firestore';
 import { DashboardPick, DashboardPickSkeleton } from '../../components/dashboard/dashboard-pick';
-import { FirebaseImage } from '../../components/ui/FirebaseImage';
 
 import { Hexagons } from '../../components/ui/avatar-rings/hexagons';
 import { Hip } from '../../components/ui/avatar-rings/hip';

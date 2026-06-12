@@ -36,7 +36,6 @@ import { NovatrixQuantAvatarRing } from '../../components/ui/avatar-rings/novatr
 import { NovatrixCodeBanner } from '../../components/ui/profile-banners/novatrix/NovatrixCodeBanner';
 import { NovatrixQuantBanner } from '../../components/ui/profile-banners/novatrix/NovatrixQuantBanner';
 import { TitleMap } from '../../components/ui/titles';
-import { FirebaseImage } from '../../components/ui/FirebaseImage';
 
 const AvatarRingMap: Record<string, React.FC<any>> = {
   'Hexagons': Hexagons,
