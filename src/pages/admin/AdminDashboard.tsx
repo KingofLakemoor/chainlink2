@@ -32,10 +32,11 @@ const AddLinksAdminPage = React.lazy(() => import('./users/AddLinksAdminPage'));
 import {
   Users, CheckCircle2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
-  FileText, Diamond, Target, Bell, Shield, Link2, Menu, X, Settings, GitMerge, Flag
+  FileText, Diamond, Target, Bell, Shield, Link2, Menu, X, Settings, GitMerge, Flag, BookOpen
 } from 'lucide-react';
 
 const ScraperSettingsPage = React.lazy(() => import('./settings/ScraperSettingsPage'));
+const AdminGuidePage = React.lazy(() => import('./guide/AdminGuidePage'));
 
 const ADMIN_MENU = [
   { id: 'leagues', label: 'Leagues', icon: Target, path: '/admin/leagues' },
@@ -97,6 +98,7 @@ const ADMIN_MENU = [
       { id: 'settings-scraper', label: 'Scraper Settings', path: '/admin/settings/scraper' }
     ]
   },
+  { id: 'guide', label: 'Operating Guide', icon: BookOpen, path: '/admin/guide' },
 ];
 
 function AdminSidebar({ open, setOpen }: { open: boolean; setOpen: (val: boolean) => void }) {
@@ -1304,6 +1306,9 @@ export default function AdminDashboard() {
 
                 {/* Settings */}
                 <Route path="settings/scraper" element={<ScraperSettingsPage />} />
+
+                {/* Admin Guide */}
+                <Route path="guide" element={<AdminGuidePage />} />
 
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="matchups" replace />} />
