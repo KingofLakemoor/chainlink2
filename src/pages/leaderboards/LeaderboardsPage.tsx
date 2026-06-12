@@ -62,6 +62,26 @@ const AvatarRingMap: Record<string, React.FC<any>> = {
   'NovatrixQuantAvatarRing': NovatrixQuantAvatarRing
 };
 
+
+class CosmeticsErrorBoundary extends React.Component<{ children: React.ReactNode, fallback?: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: any) {
+    console.error("Cosmetics component failed to load:", error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || null;
+    }
+    return this.props.children;
+  }
+}
+
 export default function LeaderboardsPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -353,7 +373,7 @@ export default function LeaderboardsPage() {
       <div className="bg-[#121212] border border-zinc-800 rounded-xl relative overflow-hidden group min-h-[220px] flex flex-col">
          {BannerComponent ? (
             <div className="absolute inset-0 z-0">
-               <BannerComponent isStatic={!animateCosmetics} />
+               <CosmeticsErrorBoundary fallback={<div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5 pointer-events-none"></div>}><BannerComponent isStatic={!animateCosmetics} /></CosmeticsErrorBoundary>
             </div>
          ) : (
             <div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5 pointer-events-none"></div>
@@ -366,7 +386,7 @@ export default function LeaderboardsPage() {
             <div className="relative mb-3">
               {RingComponent && (
                  <div className="absolute inset-0 z-0 transform scale-125 pointer-events-none rounded-full overflow-hidden">
-                    <RingComponent isStatic={!animateCosmetics} />
+                    <CosmeticsErrorBoundary fallback={null}><RingComponent isStatic={!animateCosmetics} /></CosmeticsErrorBoundary>
                  </div>
               )}
                <FirebaseImage loading="lazy"
@@ -535,7 +555,7 @@ export default function LeaderboardsPage() {
                             if (!RingComponent) return null;
                             return (
                               <div className="absolute inset-0 z-0 transform scale-125 pointer-events-none rounded-full overflow-hidden">
-                                <RingComponent isStatic={!animateCosmetics} />
+                                <CosmeticsErrorBoundary fallback={null}><RingComponent isStatic={!animateCosmetics} /></CosmeticsErrorBoundary>
                               </div>
                             )
                           })()}
