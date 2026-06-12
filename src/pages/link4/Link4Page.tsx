@@ -1,3 +1,4 @@
+import { FirebaseImage } from '../../components/ui/FirebaseImage';
 import React, { useState, useEffect } from 'react';
 import { Grid, Clock, Trophy, Lock, X } from 'lucide-react';
 import { collection, query, where, getDocs, orderBy, limit, doc, setDoc } from 'firebase/firestore';
@@ -764,7 +765,7 @@ export default function Link4Page() {
                 <div className="flex items-center gap-4 min-w-[200px] w-full sm:w-auto">
                   <div className="text-xl font-black text-zinc-500 w-8 text-center">#{index + 1}</div>
                   <div className="w-10 h-10 rounded-full bg-zinc-800 border-2 border-zinc-700 overflow-hidden shrink-0 relative">
-                    <img src={entry.avatarUrl} alt={entry.username} className="w-full h-full object-cover" loading="lazy" />
+                    <FirebaseImage fallback={`https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.userId || "guest"}`} src={entry.avatarUrl} alt={entry.username} className="w-full h-full object-cover" loading="lazy" />
                     {entry.hasLoss && (
                       <div className="absolute inset-0 bg-red-900/50 flex items-center justify-center backdrop-blur-[1px]">
                         <X className="w-8 h-8 text-red-500" strokeWidth={3} />
@@ -775,7 +776,7 @@ export default function Link4Page() {
                 </div>
 
                 {/* Picks Row */}
-                <div className="flex flex-1 justify-center sm:justify-start gap-2 sm:gap-4 w-full overflow-x-auto pb-2 sm:pb-0">
+                <div className="flex flex-1 w-full overflow-x-auto pb-2 sm:pb-0"><div className="flex gap-2 sm:gap-4 m-auto w-max">
                   {entry.picks.map((pick, pIdx) => {
                     if (pick.status === 'EMPTY') {
                       return (
@@ -819,6 +820,7 @@ export default function Link4Page() {
                       </div>
                     );
                   })}
+                </div>
                 </div>
 
                 {/* Score Column */}

@@ -1,3 +1,4 @@
+import { FirebaseImage } from '../../components/ui/FirebaseImage';
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { collection, getDocs, doc, query, where, setDoc, getDoc, deleteDoc, documentId } from 'firebase/firestore';
@@ -483,7 +484,7 @@ export default function PickEmPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <img src={participant.avatar} alt={participant.name} className="w-8 h-8 rounded-full bg-zinc-800" loading="lazy" />
+                          <FirebaseImage fallback={`https://api.dicebear.com/7.x/avataaars/svg?seed=${participant.id || "guest"}`} src={participant.avatar} alt={participant.name} className="w-8 h-8 rounded-full bg-zinc-800" loading="lazy" />
                           <span className="font-medium text-white">{participant.name} {participant.uid === user?.uid && '(You)'}</span>
                         </div>
                       </td>

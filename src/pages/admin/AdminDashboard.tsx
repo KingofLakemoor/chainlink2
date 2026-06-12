@@ -1,3 +1,4 @@
+import { FirebaseImage } from '../../components/ui/FirebaseImage';
 import React from "react";
 const Link4AdminPage = React.lazy(() => import('./link4/Link4AdminPage'));
 import { useState, useEffect } from 'react';
@@ -1048,7 +1049,7 @@ function AdminEditMatchup() {
                     <tr key={p.id} className="hover:bg-zinc-800/30 transition-colors">
                         <td className="py-4">
                             <div className="flex items-center gap-3">
-                                <img src={p.userImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p.userId}`} className="w-8 h-8 rounded-full bg-zinc-800" loading="lazy" />
+                                <FirebaseImage fallback={`https://api.dicebear.com/7.x/avataaars/svg?seed=${p.userId}`} src={p.userImage || ""} className="w-8 h-8 rounded-full bg-zinc-800" loading="lazy" />
                                 <span className="font-medium text-zinc-300">{p.userName}</span>
                             </div>
                         </td>
