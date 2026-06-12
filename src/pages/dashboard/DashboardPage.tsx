@@ -1,3 +1,4 @@
+import { FirebaseImage } from '../../components/ui/FirebaseImage';
 import React from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
@@ -283,7 +284,7 @@ export default function DashboardPage() {
             }`}>
                <div className={`relative z-10 w-full h-full rounded-full overflow-hidden ${RingComponent ? 'border-2 border-black/50' : ''}`}>
                  {profile.image ? (
-                   <img src={profile.image} alt={profile.username || profile.name} className="w-full h-full object-cover" loading="lazy" />
+                   <FirebaseImage fallback={`https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.id || "guest"}`} src={profile.image} alt={profile.username || profile.name} className="w-full h-full object-cover" loading="lazy" />
                  ) : (
                    <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-4xl font-bold text-zinc-400">
                      {(profile.username || profile.name)?.charAt(0) || user.email?.charAt(0) || '?'}

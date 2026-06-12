@@ -1,3 +1,4 @@
+import { FirebaseImage } from '../../components/ui/FirebaseImage';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
@@ -421,7 +422,7 @@ export default function ProfilePage() {
                  }}
                >
                  {profile.image ? (
-                   <img src={profile.image} alt={profile.username || profile.name} className="w-full h-full object-cover transition-opacity group-hover:opacity-50" loading="lazy" />
+                   <FirebaseImage fallback={`https://api.dicebear.com/7.x/avataaars/svg?seed=${profile?.id || "guest"}`} src={profile.image} alt={profile.username || profile.name} className="w-full h-full object-cover transition-opacity group-hover:opacity-50" loading="lazy" />
                  ) : (
                    <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-4xl font-bold text-zinc-400 transition-opacity group-hover:opacity-50">
                      {(profile.username || profile.name)?.charAt(0) || user.email?.charAt(0) || '?'}
