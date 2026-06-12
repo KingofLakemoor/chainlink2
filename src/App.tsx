@@ -10,7 +10,7 @@ import { useInstallPrompt } from './hooks/useInstallPrompt';
 import { NotificationPrompt } from './components/ui/NotificationPrompt';
 import {
   Link2, LayoutDashboard, User as UserIcon, PlayCircle, Layers, Trophy, Grid,
-  ShoppingCart, CheckCircle2, Users, LogOut, ShieldAlert, Menu, X, Flame
+  ShoppingCart, CheckCircle2, Users, LogOut, ShieldAlert, Menu, X, Flame, HelpCircle
 } from 'lucide-react';
 import {
   MdOutlineSportsSoccer, MdOutlineSportsBasketball, MdOutlineSportsHockey, MdOutlineSportsBaseball, MdOutlineSportsTennis
@@ -72,6 +72,7 @@ const Sidebar = React.memo(function Sidebar({ open, setOpen }: { open: boolean, 
         <NavItem icon={Trophy} label="Leaderboards" path="/leaderboards" />
 
         <NavItem icon={ShoppingCart} label="Link Shop" path="/shop" />
+        <NavItem icon={HelpCircle} label="Help & Rules" path="/help" />
 
         {profile?.role === "ADMIN" && (
           <>
@@ -388,6 +389,7 @@ const BracketsPage = React.lazy(() => import('./pages/brackets/BracketsPage').th
 const Link4Page = React.lazy(() => import('./pages/link4/Link4Page'));
 const PickEmPage = React.lazy(() => import('./pages/pickem/PickEmPage'));
 const SponsorPage = React.lazy(() => import('./pages/SponsorPage'));
+const HelpPage = React.lazy(() => import('./pages/help/HelpPage'));
 
 export default function App() {
   return (
@@ -411,6 +413,7 @@ export default function App() {
           <Route path="/leaderboards" element={<PrivateRoute><MainLayout><LeaderboardsPage /></MainLayout></PrivateRoute>} />
           <Route path="/shop" element={<PrivateRoute><MainLayout><ShopPage /></MainLayout></PrivateRoute>} />
           <Route path="/sponsor" element={<SponsorPage />} />
+          <Route path="/help" element={<MainLayout><HelpPage /></MainLayout>} />
           {/* Catch all route back to play */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
