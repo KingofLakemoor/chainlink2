@@ -247,8 +247,20 @@ apiRouter.post('/stripe/webhook', express.raw({type: 'application/json'}), async
 
           if (itemType === 'links') {
             if (amountStr) {
-               const amount = parseInt(amountStr, 10);
+               const amount = parseInt(String(amountStr), 10);
                updateData.links = (profile.links || 0) + amount;
+
+               // Keep a record of all link purchases
+               const ordersRef = adminDb.collection('orders').doc();
+               transaction.set(ordersRef, {
+                 userId: uid,
+                 userEmail: profile.email || '',
+                 itemId: `links-${amount}`,
+                 itemName: `${amount} Links Pack`,
+                 status: 'COMPLETED',
+                 createdAt: Date.now(),
+                 updatedAt: Date.now()
+               });
             }
           } else if (itemType === 'premium') {
              updateData.premium = true;
