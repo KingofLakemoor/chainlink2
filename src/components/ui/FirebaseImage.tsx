@@ -56,9 +56,10 @@ export function FirebaseImage({ src, fallback, ...props }: FirebaseImageProps) {
       loading="lazy"
       crossOrigin="anonymous"
       onError={(e) => {
-        if (fallback) {
+        if (fallback && e.currentTarget.src !== fallback) {
           e.currentTarget.src = fallback;
-          e.currentTarget.onerror = null; // Prevent infinite loop if fallback also fails
+        } else {
+          e.currentTarget.style.display = 'none';
         }
       }}
     />
