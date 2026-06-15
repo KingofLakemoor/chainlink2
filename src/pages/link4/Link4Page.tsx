@@ -234,14 +234,19 @@ export default function Link4Page() {
                 }
               }
 
-              let pickScore = 0;
-              if (status === 'WIN' && pickMatchup) {
-                 // Add Moneyline logic for calculating score
-                 const pickedHome = pick.name === pickMatchup.homeTeam.name;
-                 const ml = pickedHome ? pickMatchup.metadata?.mlHome : pickMatchup.metadata?.mlAway;
-                 if (ml !== undefined && ml !== null) {
-                    score += ml;
-                    pickScore = ml;
+              let pickScore = pick.score !== undefined && pick.score !== null ? pick.score : 0;
+              if (status === 'WIN') {
+                 if (pickScore !== 0) {
+                    score += pickScore;
+                 } else if (pickMatchup) {
+                    // Fallback to recalculating if we still have the matchup locally but grader hasn't set score
+                    // Add Moneyline logic for calculating score
+                    const pickedHome = pick.name === pickMatchup.homeTeam.name;
+                    const ml = pickedHome ? pickMatchup.metadata?.mlHome : pickMatchup.metadata?.mlAway;
+                    if (ml !== undefined && ml !== null) {
+                       score += ml;
+                       pickScore = ml;
+                    }
                  }
               }
 
