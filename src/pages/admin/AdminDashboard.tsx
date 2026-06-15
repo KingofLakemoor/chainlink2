@@ -30,6 +30,7 @@ const AdminPicksPage = React.lazy(() => import('./picks/AdminPicksPage'));
 const ReferralsAdminPage = React.lazy(() => import('./referrals/ReferralsAdminPage'));
 const UserCosmeticsAdminPage = React.lazy(() => import('./users/UserCosmeticsAdminPage'));
 const AddLinksAdminPage = React.lazy(() => import('./users/AddLinksAdminPage'));
+const PremiumStatusAdminPage = React.lazy(() => import('./users/PremiumStatusAdminPage'));
 import {
   Users, CheckCircle2, ShoppingCart, Layers, Trophy,
   Trash2, Search, Edit, RefreshCw, ChevronDown, ChevronRight,
@@ -78,6 +79,7 @@ const ADMIN_MENU = [
   { id: 'link4', label: 'Link4', icon: Target, path: '/admin/link4' },
 
   { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
+  { id: 'premium', label: 'Premium Status', icon: Diamond, path: '/admin/premium' },
   { id: 'users-cosmetics', label: 'User Cosmetics', icon: Users, path: '/admin/users/cosmetics' },
   { id: 'users-links', label: 'Manage Links', icon: Link2, path: '/admin/users/links' },
   { id: 'referrals', label: 'Referrals', icon: Users, path: '/admin/referrals' },
@@ -1293,6 +1295,7 @@ export default function AdminDashboard() {
                 <Route path="users" element={<GenericTable collectionName="users" />} />
                 <Route path="users/cosmetics" element={<UserCosmeticsAdminPage />} />
                 <Route path="users/links" element={<AddLinksAdminPage />} />
+                <Route path="premium" element={<PremiumStatusAdminPage />} />
                 <Route path="referrals" element={<ReferralsAdminPage />} />
 
                 {/* Notifications */}
