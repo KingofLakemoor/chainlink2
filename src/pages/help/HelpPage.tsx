@@ -1,5 +1,5 @@
 import React from 'react';
-import { HelpCircle, Info, BookOpen, Target, Link2, HelpCircle as FaqIcon, ShieldAlert } from 'lucide-react';
+import { HelpCircle, Info, BookOpen, Target, Link2, HelpCircle as FaqIcon, ShieldAlert, Crown } from 'lucide-react';
 
 export function HelpPage() {
   return (
@@ -31,6 +31,29 @@ export function HelpPage() {
               <li><strong>Break the Chain:</strong> A single incorrect pick resets your Chain back to 0. (Pushes/Ties do not break your chain, but do not increase it).</li>
               <li><strong>Earn Links:</strong> As you make picks, you earn <strong>Links</strong> (the in-game currency), which can be used to buy items in the Shop.</li>
               <li><strong>Climb the Leaderboards:</strong> Compete with other users globally to have the longest Chain and the most wins.</li>
+            </ul>
+          </div>
+        </section>
+
+        {/* ChainLink Pro */}
+        <section className="bg-[#121212] border border-purple-500/30 rounded-xl p-6 md:p-8 shadow-xl relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 to-transparent pointer-events-none"></div>
+          <div className="flex items-center gap-3 mb-6 relative z-10">
+            <div className="p-2 bg-purple-500/20 rounded-lg">
+              <Crown className="w-6 h-6 text-purple-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-zinc-100">ChainLink Pro Benefits</h2>
+          </div>
+          <div className="space-y-4 text-zinc-300 relative z-10">
+            <p>
+              <strong>ChainLink Pro</strong> is our premium subscription that offers exclusive perks, deeper stats, and enhances your overall experience.
+            </p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li><strong>Daily Links:</strong> Receive 10 bonus Links every single day.</li>
+              <li><strong>Future Pick Queuing:</strong> Premium members can queue up future picks in advance, automatically locking them in when the previous pick resolves.</li>
+              <li><strong>Advanced Metrics:</strong> Unlock the "Advanced Metrics" page to view detailed win/loss/push records by sport, view your all-time pick history, and track achievement medal distribution.</li>
+              <li><strong>Exclusive Shop Items:</strong> Get access to purchase Pro-only premium cosmetics, banners, and rings in the Shop.</li>
+              <li><strong>ScriptLess Premium:</strong> Enjoy full complimentary access to ScriptLess Premium, our sister site for Fantasy Reality TV predictions.</li>
             </ul>
           </div>
         </section>
