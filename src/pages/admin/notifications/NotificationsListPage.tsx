@@ -107,7 +107,7 @@ export default function NotificationsListPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-zinc-400">
-                      {new Date(notif.scheduledTime).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })}
+                      {new Date(notif.scheduledTime).toLocaleString()}
                     </td>
                   </tr>
                 );

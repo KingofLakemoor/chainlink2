@@ -349,7 +349,7 @@ export default function PickEmPage() {
                 return (
                   <div key={m.id} className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
                     <div className="p-3 bg-[#18181A] border-b border-zinc-800 text-xs text-zinc-400 font-medium flex justify-between items-center">
-                      <span>{new Date(m.startTime).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })}</span>
+                      <span>{new Date(m.startTime).toLocaleString()}</span>
                       <div className="flex items-center gap-2">
                         {isSpread && (
                           <span className="px-2 py-1 text-[10px] uppercase tracking-wider rounded-md font-bold bg-purple-500/20 text-purple-400 border border-purple-500/30">

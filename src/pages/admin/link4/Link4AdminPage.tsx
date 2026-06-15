@@ -592,11 +592,11 @@ export default function Link4AdminPage() {
                     <div className="space-y-2 text-sm mb-4">
                       <div className="flex justify-between text-zinc-400">
                         <span>Start:</span>
-                        <span className="text-zinc-200">{new Date(segment.startTime).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })}</span>
+                        <span className="text-zinc-200">{new Date(segment.startTime).toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between text-zinc-400">
                         <span>End:</span>
-                        <span className="text-zinc-200">{new Date(segment.endTime).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })}</span>
+                        <span className="text-zinc-200">{new Date(segment.endTime).toLocaleString()}</span>
                       </div>
 
                       {segment.theme?.sponsorName && (

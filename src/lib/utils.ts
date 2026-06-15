@@ -25,7 +25,7 @@ export const formatUpcomingTime = (timestamp: number) => {
   const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
   const isTomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000).getDate() === date.getDate() && new Date(now.getTime() + 24 * 60 * 60 * 1000).getMonth() === date.getMonth();
 
-  const timeString = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+  const timeString = date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
   if (isToday) {
     return `Today @ ${timeString}`;
