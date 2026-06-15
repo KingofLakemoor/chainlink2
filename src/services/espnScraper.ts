@@ -1,4 +1,4 @@
-export const SUPPORTED_LEAGUES = ["NFL", "NBA", "NHL", "MLB", "MLS", "EPL", "MBB", "WBB", "NWSL", "CFB", "CBASE", "ATP", "WTA", "WNBA", "PGA", "FIFA", "FRA", "TUR", "RPL", "CHN"] as const;
+export const SUPPORTED_LEAGUES = ["NFL", "NBA", "NHL", "MLB", "MLS", "EPL", "MBB", "WBB", "NWSL", "CFB", "CBASE", "ATP", "WTA", "WNBA", "PGA", "FIFA", "FRA", "TUR", "RPL", "CHN", "CRICKET"] as const;
 
 export type League = typeof SUPPORTED_LEAGUES[number] | string;
 
@@ -108,6 +108,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
       case "WNBA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/scoreboard?dates=${date}`);
       case "ATP": return ['https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard'];
       case "WTA": return ['https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard'];
+      case "CRICKET": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/cricket/21266/scoreboard?dates=${date}`);
       default: throw new Error(`Unsupported league: ${league}`);
     }
   }
@@ -128,6 +129,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
     case "CFB": return [`https://cdn.espn.com/core/college-football/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "CBASE": return [`https://cdn.espn.com/core/college-baseball/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "WNBA": return [`https://cdn.espn.com/core/wnba/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
+    case "CRICKET": return [ `https://site.api.espn.com/apis/site/v2/sports/cricket/21266/scoreboard?dates=${year}&limit=300` ];
     default: throw new Error(`Unsupported league: ${league}`);
   }
 }
@@ -171,7 +173,7 @@ export async function fetchScheduleData(endpoint: string, league: League, isScor
   }
 
   // For scoreboards or leagues already using scoreboard
-  if (league === "MBB" || league === "WBB" || league === "PGA" || league === "CBASE" || league === "ATP" || league === "WTA" || league === "FIFA" || isScoreboardOnly) {
+  if (league === "MBB" || league === "WBB" || league === "PGA" || league === "CBASE" || league === "ATP" || league === "WTA" || league === "FIFA" || league === "CRICKET" || isScoreboardOnly) {
     const seenGameIds = new Set<string>();
     const uniqueEvents = [];
 
