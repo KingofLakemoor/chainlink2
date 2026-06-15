@@ -13,6 +13,8 @@ export const MATCHUP_FINAL_STATUSES = [
   "STATUS_FINAL_OVERTIME",
   "STATUS_FINAL_SHOOTOUT",
   "STATUS_FINAL_PENALTIES",
+  "STATUS_RETIRED",
+  "STATUS_WALKOVER",
 ];
 
 export const MATCHUP_IN_PROGRESS_STATUSES = [
@@ -36,15 +38,13 @@ export const MATCHUP_DELAYED_STATUSES = [
   "STATUS_DELAYED",
   "STATUS_RAIN_DELAY",
   "STATUS_DELAY",
+  "STATUS_SUSPENDED",
 ];
 
 export const MATCHUP_POSTPONED_STATUSES = [
   "STATUS_POSTPONED",
   "STATUS_CANCELED",
-  "STATUS_SUSPENDED",
   "STATUS_ABANDONDED",
-  "STATUS_RETIRED",
-  "STATUS_WALKOVER",
 ];
 
 export const MATCHUP_SCHEDULED_STATUSES = ["STATUS_SCHEDULED"];
@@ -287,7 +287,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                   let homeScore = homeCompetitor.linescores ? homeCompetitor.linescores.filter((ls: any) => ls.winner === true).length : 0;
                   let awayScore = awayCompetitor.linescores ? awayCompetitor.linescores.filter((ls: any) => ls.winner === true).length : 0;
 
-                  if (comp.status?.type?.completed === true) {
+                  if (comp.status?.type?.completed === true || comp.status?.type?.name === "STATUS_FINAL" || MATCHUP_FINAL_STATUSES.includes(comp.status?.type?.name || "") || comp.status?.type?.shortDetail?.toLowerCase().includes("final") || comp.status?.type?.detail?.toLowerCase().includes("final")) {
                       if (homeCompetitor.winner === true && homeScore <= awayScore) {
                           homeScore = awayScore + 1;
                       } else if (awayCompetitor.winner === true && awayScore <= homeScore) {
@@ -307,11 +307,11 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                   const descLower = finalStatusDesc.toLowerCase();
                   const detailLower = (comp.status?.type?.detail || "").toLowerCase();
 
-                  if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus) || descLower.includes('postponed') || descLower.includes('canceled') || descLower.includes('cancelled') || descLower.includes('suspended') || descLower.includes('abandoned') || detailLower.includes('postponed') || detailLower.includes('canceled') || detailLower.includes('cancelled') || detailLower.includes('suspended') || detailLower.includes('abandoned')) {
+                  if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus) || descLower.includes('postponed') || descLower.includes('canceled') || descLower.includes('cancelled') || descLower.includes('abandoned') || detailLower.includes('postponed') || detailLower.includes('canceled') || detailLower.includes('cancelled') || detailLower.includes('abandoned')) {
                       finalStatus = "STATUS_POSTPONED";
-                  } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus)) {
+                  } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus) || descLower.includes('suspended') || detailLower.includes('suspended') || descLower.includes('delayed') || detailLower.includes('delayed')) {
                       finalStatus = "STATUS_DELAYED";
-                  } else if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || (comp.status?.type?.completed === true && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus))) {
+                  } else if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || (comp.status?.type?.completed === true && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus)) || (descLower.includes('final') && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus))) {
                       finalStatus = "STATUS_FINAL";
                   } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || compState === 'in') {
                       finalStatus = "STATUS_IN_PROGRESS";
@@ -457,11 +457,11 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
           const descLower = finalStatusDesc.toLowerCase();
           const detailLower = (competition.status?.type?.detail || "").toLowerCase();
 
-          if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus) || descLower.includes('postponed') || descLower.includes('canceled') || descLower.includes('cancelled') || descLower.includes('suspended') || descLower.includes('abandoned') || detailLower.includes('postponed') || detailLower.includes('canceled') || detailLower.includes('cancelled') || detailLower.includes('suspended') || detailLower.includes('abandoned')) {
+          if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus) || descLower.includes('postponed') || descLower.includes('canceled') || descLower.includes('cancelled') || descLower.includes('abandoned') || detailLower.includes('postponed') || detailLower.includes('canceled') || detailLower.includes('cancelled') || detailLower.includes('abandoned')) {
               finalStatus = "STATUS_POSTPONED";
-          } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus)) {
+          } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus) || descLower.includes('suspended') || detailLower.includes('suspended') || descLower.includes('delayed') || detailLower.includes('delayed')) {
               finalStatus = "STATUS_DELAYED";
-          } else if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || (descLower.includes('final') && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus))) {
+          } else if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || (competition.status?.type?.completed === true && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus)) || (descLower.includes('final') && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus))) {
               finalStatus = "STATUS_FINAL";
           } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || (rawStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0))) {
               finalStatus = "STATUS_IN_PROGRESS";

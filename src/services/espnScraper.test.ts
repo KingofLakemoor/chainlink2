@@ -21,6 +21,8 @@ test('MATCHUP_FINAL_STATUSES contains expected values', () => {
     "STATUS_FINAL_OVERTIME",
     "STATUS_FINAL_SHOOTOUT",
     "STATUS_FINAL_PENALTIES",
+    "STATUS_RETIRED",
+    "STATUS_WALKOVER",
   ];
   expect(MATCHUP_FINAL_STATUSES).toEqual(expected);
 });
@@ -50,6 +52,7 @@ test('MATCHUP_DELAYED_STATUSES contains expected values', () => {
     "STATUS_DELAYED",
     "STATUS_RAIN_DELAY",
     "STATUS_DELAY",
+    "STATUS_SUSPENDED",
   ];
   expect(MATCHUP_DELAYED_STATUSES).toEqual(expected);
 });
@@ -58,10 +61,7 @@ test('MATCHUP_POSTPONED_STATUSES contains expected values', () => {
   const expected = [
     "STATUS_POSTPONED",
     "STATUS_CANCELED",
-    "STATUS_SUSPENDED",
     "STATUS_ABANDONDED",
-    "STATUS_RETIRED",
-    "STATUS_WALKOVER",
   ];
   expect(MATCHUP_POSTPONED_STATUSES).toEqual(expected);
 });
