@@ -481,6 +481,7 @@ export default function ShopPage() {
                 <p className="mb-2 text-center">Unlock the ultimate ChainLink experience:</p>
                 <ul className="list-disc pl-5 space-y-1">
                   <li><strong>10 Links</strong> daily just for logging in</li>
+                  <li><strong>Queue future picks</strong> automatically</li>
                   <li>Exclusive <strong>Advanced Metrics</strong> tracking</li>
                   <li>Access to <strong>Pro-exclusive shop items</strong></li>
                   <li>Full access to <strong>ScriptLess Premium</strong></li>
