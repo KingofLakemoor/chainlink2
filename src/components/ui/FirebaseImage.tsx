@@ -21,6 +21,13 @@ export function FirebaseImage({ src, fallback, ...props }: FirebaseImageProps) {
 
       if (src.startsWith('gs://')) {
         try {
+          if (src.toLowerCase().includes('scriptless.png')) {
+            if (isMounted) {
+              setResolvedSrc('/images/scriptless.png');
+            }
+            return;
+          }
+
           const storage = getStorage(app);
           let adjustedSrc = src;
           adjustedSrc = adjustedSrc.replace(/sponsors\/scriptless\.png/i, "Sponsors/scriptless.png");
