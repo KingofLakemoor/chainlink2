@@ -477,7 +477,15 @@ export default function ShopPage() {
                 <Crown className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">ChainLink Pro</h3>
-              <p className="text-purple-200/70 text-sm mb-6 flex-1">Get 10 Links daily, unlock exclusive stats, access pro features, and enjoy full access to ScriptLess Premium (our sister game for Fantasy Reality TV).</p>
+              <div className="text-purple-200/70 text-sm mb-6 flex-1 text-left space-y-1 w-full max-w-sm">
+                <p className="mb-2 text-center">Unlock the ultimate ChainLink experience:</p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li><strong>10 Links</strong> daily just for logging in</li>
+                  <li>Exclusive <strong>Advanced Metrics</strong> tracking</li>
+                  <li>Access to <strong>Pro-exclusive shop items</strong></li>
+                  <li>Full access to <strong>ScriptLess Premium</strong></li>
+                </ul>
+              </div>
               <div className="w-full">
                 <Button
                   onClick={() => handleStripeCheckout('premium')}
