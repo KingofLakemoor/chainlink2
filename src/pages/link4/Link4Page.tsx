@@ -80,12 +80,14 @@ export default function Link4Page() {
   useEffect(() => {
     const fetchActiveSegment = async () => {
       try {
-        const now = new Date().toISOString();
+        const now = new Date();
+        const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString();
+        const nowStr = now.toISOString();
         const segmentsRef = collection(db, 'link4Segments');
 
         const q = query(
           segmentsRef,
-          where('endTime', '>', now),
+          where('endTime', '>', twelveHoursAgo),
           orderBy('endTime', 'asc'),
           limit(1)
         );
@@ -101,7 +103,7 @@ export default function Link4Page() {
           // If we want it to be visible before it starts, we could handle 'PENDING' vs 'ACTIVE' state
           // For now, we will just use it if the start time has passed.
           // Otherwise, we could show a "Starts In" countdown, but we'll stick to the current logic for simplicity.
-          if (activeSegment.startTime && activeSegment.startTime > now) {
+          if (activeSegment.startTime && activeSegment.startTime > nowStr) {
             // It hasn't started yet, we might want to hide picks or show a different countdown
             // We'll leave it as is to keep the countdown to end time, but it's noted.
           }
