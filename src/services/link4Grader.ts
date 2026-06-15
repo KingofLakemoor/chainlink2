@@ -57,6 +57,7 @@ export async function gradeLink4Matchups(matchups: any[]) {
 
         // Determine outcome
         let status = 'PENDING';
+        let pickScore = pick.score || 0;
         if (finalizedMatchup.status === 'STATUS_POSTPONED') {
            status = 'PUSH';
         } else {
@@ -70,6 +71,13 @@ export async function gradeLink4Matchups(matchups: any[]) {
              if (pickedHome && homeScore > awayScore) won = true;
              if (!pickedHome && awayScore > homeScore) won = true;
              status = won ? 'WIN' : 'LOSS';
+
+             if (won) {
+                 const ml = pickedHome ? finalizedMatchup.metadata?.mlHome : finalizedMatchup.metadata?.mlAway;
+                 if (ml !== undefined && ml !== null) {
+                     pickScore = ml;
+                 }
+             }
            }
         }
 
@@ -78,7 +86,7 @@ export async function gradeLink4Matchups(matchups: any[]) {
         }
 
         isModified = true;
-        return { ...pick, status };
+        return { ...pick, status, score: pickScore };
       });
 
       if (isModified) {
@@ -163,14 +171,18 @@ export async function payoutLink4Segment(segmentId: string) {
        for (const pick of rawPicks as any[]) {
           if (pick.status === 'WIN') {
              wins++;
-             const matchupSnaps = await transaction.get(adminDb.collection('matchups').where('gameId', '==', pick.id.replace('pick-', '')).limit(1));
-             if (!matchupSnaps.empty) {
-               const matchup = matchupSnaps.docs[0].data();
-               const pickedHome = pick.name === matchup.homeTeam?.name;
-               const ml = pickedHome ? matchup.metadata?.mlHome : matchup.metadata?.mlAway;
-               if (ml !== undefined && ml !== null) {
-                  score += ml;
-               }
+             if (pick.score !== undefined && pick.score !== null && pick.score !== 0) {
+                 score += pick.score;
+             } else {
+                 const matchupSnaps = await transaction.get(adminDb.collection('matchups').where('gameId', '==', pick.id.replace('pick-', '')).limit(1));
+                 if (!matchupSnaps.empty) {
+                   const matchup = matchupSnaps.docs[0].data();
+                   const pickedHome = pick.name === matchup.homeTeam?.name;
+                   const ml = pickedHome ? matchup.metadata?.mlHome : matchup.metadata?.mlAway;
+                   if (ml !== undefined && ml !== null) {
+                      score += ml;
+                   }
+                 }
              }
           } else if (pick.status === 'PENDING') {
              stillPending = true;
