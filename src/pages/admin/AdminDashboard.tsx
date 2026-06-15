@@ -537,7 +537,7 @@ function AdminMatchups() {
                       {!row.link4Excluded ? 'INCLUDED' : 'EXCLUDED'}
                     </button>
                   </td>
-                  <td className="px-4 py-3 text-zinc-500">{new Date(row.startTime).toLocaleString()}</td>
+                  <td className="px-4 py-3 text-zinc-500">{new Date(row.startTime).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })}</td>
                   <td className="px-4 py-3 text-zinc-300 font-mono">{pickCounts[row.id] || 0}</td>
                   <td className="px-4 py-3 text-right">
                     <Link to={`/admin/matchups/${row.id}`} className="text-zinc-500 hover:text-white mr-3 inline-block"><Edit className="w-4 h-4" /></Link>

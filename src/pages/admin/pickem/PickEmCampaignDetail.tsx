@@ -395,7 +395,7 @@ export default function PickEmCampaignDetail() {
                   <tr key={m.id} className="hover:bg-zinc-800/20 transition-colors">
                     <td className="px-4 py-3 font-medium text-zinc-200">{m.title}</td>
                     <td className="px-4 py-3 text-zinc-400">{m.statusDesc || m.status}</td>
-                    <td className="px-4 py-3 text-zinc-400">{new Date(m.startTime).toLocaleString()}</td>
+                    <td className="px-4 py-3 text-zinc-400">{new Date(m.startTime).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })}</td>
                     <td className="px-4 py-3 text-center">
                       <button
                         onClick={() => handleToggleSpread(m.id, m.type)}
