@@ -154,6 +154,10 @@ export default function MyPicksPage() {
               statusColorClass = 'bg-blue-950/20 border-blue-900/50';
               statusTextColor = 'text-blue-400';
               statusText = 'In Progress';
+            } else if (pick.status === 'QUEUED') {
+              statusColorClass = 'bg-cyan-950/20 border-cyan-900/50';
+              statusTextColor = 'text-cyan-400';
+              statusText = 'Queued';
             }
 
             return (
