@@ -9,7 +9,7 @@ interface MatchupCardProps {
   user: any;
   pickData?: any;
   profile?: any;
-  hasActivePickAnywhere: boolean;
+  hasActivePickAnywhere: boolean | any[];
   mCounts?: { total: number; away: number; home: number };
   sponsors: any[];
   onMakePick: (matchup: any, team: any) => void;

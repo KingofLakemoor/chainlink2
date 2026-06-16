@@ -189,10 +189,11 @@ export default function PlayDashboard() {
         return;
     }
 
-    const hasActivePickAnywhere = Object.values(userPicks).some((p: any) => p.status === 'PENDING');
+    const activePicks = Object.values(userPicks).filter((p: any) => p.status === 'PENDING');
+    const maxPicks = profile?.premium ? 2 : 1;
 
-    if (hasActivePickAnywhere && (!userPicks[matchup.gameId] || userPicks[matchup.gameId].status !== 'PENDING')) {
-       alert("You already have an active pending pick.");
+    if (activePicks.length >= maxPicks && (!userPicks[matchup.gameId] || userPicks[matchup.gameId].status !== 'PENDING')) {
+       alert(profile?.premium ? "You already have the maximum of 2 active pending picks." : "You already have an active pending pick. Upgrade to ChainLink Pro to queue picks.");
        return;
     }
 
@@ -300,8 +301,9 @@ export default function PlayDashboard() {
             <MatchupCard
               m={activeMatchup}
               user={user}
+              profile={profile}
               pickData={userPicks[activeMatchup.gameId]}
-              hasActivePickAnywhere={Object.values(userPicks).some((p: any) => p.status === 'PENDING')}
+              hasActivePickAnywhere={Object.values(userPicks).filter((p: any) => p.status === 'PENDING')}
               mCounts={matchupPickCounts[activeMatchup.gameId]}
               sponsors={sponsors}
               onMakePick={handleMakePick}
@@ -347,8 +349,9 @@ export default function PlayDashboard() {
               <MatchupCard
                 m={m}
                 user={user}
+                profile={profile}
                 pickData={userPicks[m.gameId]}
-                hasActivePickAnywhere={Object.values(userPicks).some((p: any) => p.status === 'PENDING')}
+                hasActivePickAnywhere={Object.values(userPicks).filter((p: any) => p.status === 'PENDING')}
                 mCounts={matchupPickCounts[m.gameId]}
                 sponsors={sponsors}
                 onMakePick={handleMakePick}
