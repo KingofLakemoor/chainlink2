@@ -21,6 +21,9 @@
   --animate-novatrix-title-glow: novatrix-title-glow 4.2s ease-in-out infinite;
   --animate-novatrix-ring-rotate: novatrix-ring-rotate 26s linear infinite;
   --animate-novatrix-ring-pulse: novatrix-ring-pulse 5s ease-in-out infinite;
+  --animate-signal-title-glow: signal-title-glow 4.2s ease-in-out infinite;
+  --animate-signal-ring-rotate: signal-ring-rotate 26s linear infinite;
+  --animate-signal-ring-pulse: signal-ring-pulse 5s ease-in-out infinite;
 
   @keyframes vault-rotate {
     0% { transform: rotate(0deg); }
@@ -111,7 +114,23 @@
     0%, 100% { opacity: 0.6; transform: scale(1); }
     50% { opacity: 1; transform: scale(1.08); }
   }
+
+  @keyframes signal-title-glow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(16,185,129,0.6)); }
+    50% { filter: drop-shadow(0 0 18px rgba(45,212,191,1)); }
+  }
+
+  @keyframes signal-ring-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes signal-ring-pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.08); }
+  }
 }
+
 
 @layer base {
   body {
