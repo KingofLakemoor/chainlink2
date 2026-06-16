@@ -63,32 +63,7 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'NovatrixQuantBanner': NovatrixQuantBanner
 };
 
-// Simple deterministic random number generator (Linear Congruential Generator)
-function seededRandom(seed: number) {
-  return function() {
-    seed = (seed * 9301 + 49297) % 233280;
-    return seed / 233280;
-  };
-}
 
-function getMonthlySelection(items: any[], type: string, count: number, typeSeed: number) {
-  const now = new Date();
-  const yearMonth = now.getFullYear() * 100 + (now.getMonth() + 1); // e.g., 202405
-  const seed = yearMonth + typeSeed;
-  const random = seededRandom(seed);
-
-  // Pool from items that are not featured
-  const categoryItems = items.filter(item => item.type === type && !item.featured);
-  categoryItems.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
-
-  // Fisher-Yates shuffle with seeded random
-  for (let i = categoryItems.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [categoryItems[i], categoryItems[j]] = [categoryItems[j], categoryItems[i]];
-  }
-
-  return categoryItems.slice(0, count);
-}
 
 export default function ShopPage() {
   const { user, profile } = useAuth();
@@ -263,14 +238,14 @@ export default function ShopPage() {
   };
 
 
-  const banners = getMonthlySelection(items, 'PROFILE_BANNER', 3, 1);
-  const titles = getMonthlySelection(items, 'TITLE', 3, 2);
-  const rings = getMonthlySelection(items, 'AVATAR_RING', 3, 3);
 
-  const featuredCosmetics = items.filter(item => item.featured && (item.type === 'AVATAR_RING' || item.type === 'PROFILE_BANNER' || item.type === 'TITLE'));
-    const allBanners = [...featuredCosmetics.filter(item => item.type === 'PROFILE_BANNER'), ...banners];
-  const allRings = [...featuredCosmetics.filter(item => item.type === 'AVATAR_RING'), ...rings];
-  const allTitles = [...featuredCosmetics.filter(item => item.type === 'TITLE'), ...titles];
+  const regularItems = items.filter(item => item.active !== false && item.forSale !== false && !item.premiumOnly);
+  const featuredCosmetics = items.filter(item => item.featured && item.active !== false && item.forSale !== false && (item.type === 'AVATAR_RING' || item.type === 'PROFILE_BANNER' || item.type === 'TITLE') && !item.premiumOnly);
+
+  const allBanners = [...featuredCosmetics.filter(item => item.type === 'PROFILE_BANNER'), ...regularItems.filter(item => item.type === 'PROFILE_BANNER' && !item.featured)];
+  const allRings = [...featuredCosmetics.filter(item => item.type === 'AVATAR_RING'), ...regularItems.filter(item => item.type === 'AVATAR_RING' && !item.featured)];
+  const allTitles = [...featuredCosmetics.filter(item => item.type === 'TITLE'), ...regularItems.filter(item => item.type === 'TITLE' && !item.featured)];
+  const proItems = items.filter(item => item.active !== false && item.forSale !== false && item.premiumOnly);
 
   const renderCosmeticCard = (item: any) => {
     const ownsItem = profile?.inventory?.includes(item.id);
@@ -471,32 +446,51 @@ export default function ShopPage() {
               </div>
             </div>
 
-            {/* Premium Subscription */}
-            <div className="bg-gradient-to-b from-purple-900/40 to-[#121212] border border-purple-500/30 rounded-xl p-6 flex flex-col items-center text-center sm:col-span-2 lg:col-span-4 max-w-2xl mx-auto w-full">
-              <div className="w-16 h-16 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center mb-4">
-                <Crown className="w-8 h-8" />
+            {/* Premium Subscription / Pro Shop */}
+            {profile?.premium ? (
+              <div className="bg-gradient-to-b from-purple-900/40 to-[#121212] border border-purple-500/30 rounded-xl p-6 flex flex-col items-center text-center sm:col-span-2 lg:col-span-4 w-full">
+                <div className="w-16 h-16 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center mb-4 mx-auto">
+                  <Crown className="w-8 h-8" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-6">ChainLink Pro</h3>
+
+                {proItems.length === 0 ? (
+                  <div className="text-purple-300/60 p-4 border border-purple-500/20 rounded-lg w-full">
+                    New Pro cosmetics coming soon!
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full text-left">
+                    {proItems.map(item => renderCosmeticCard(item))}
+                  </div>
+                )}
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">ChainLink Pro</h3>
-              <div className="text-purple-200/70 text-sm mb-6 flex-1 text-left space-y-1 w-full max-w-sm">
-                <p className="mb-2 text-center">Unlock the ultimate ChainLink experience:</p>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li><strong>10 Links</strong> daily just for logging in</li>
-                  <li><strong>Queue future picks</strong> automatically</li>
-                  <li>Exclusive <strong>Advanced Metrics</strong> tracking</li>
-                  <li>Access to <strong>Pro-exclusive shop items</strong></li>
-                  <li>Full access to <strong>ScriptLess Premium</strong></li>
-                </ul>
+            ) : (
+              <div className="bg-gradient-to-b from-purple-900/40 to-[#121212] border border-purple-500/30 rounded-xl p-6 flex flex-col items-center text-center sm:col-span-2 lg:col-span-4 max-w-2xl mx-auto w-full">
+                <div className="w-16 h-16 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center mb-4">
+                  <Crown className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">ChainLink Pro</h3>
+                <div className="text-purple-200/70 text-sm mb-6 flex-1 text-left space-y-1 w-full max-w-sm">
+                  <p className="mb-2 text-center">Unlock the ultimate ChainLink experience:</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li><strong>10 Links</strong> daily just for logging in</li>
+                    <li><strong>Queue future picks</strong> automatically</li>
+                    <li>Exclusive <strong>Advanced Metrics</strong> tracking</li>
+                    <li>Access to <strong>Pro-exclusive shop items</strong></li>
+                    <li>Full access to <strong>ScriptLess Premium</strong></li>
+                  </ul>
+                </div>
+                <div className="w-full">
+                  <Button
+                    onClick={() => handleStripeCheckout('premium')}
+                    disabled={buyLoading === 'premium-undefined' || !user || profile?.premium}
+                    className="w-full bg-purple-600 hover:bg-purple-500 text-white"
+                  >
+                    {profile?.premium ? 'Active' : buyLoading === 'premium-undefined' ? 'Loading...' : '$10.49 / mo'}
+                  </Button>
+                </div>
               </div>
-              <div className="w-full">
-                <Button
-                  onClick={() => handleStripeCheckout('premium')}
-                  disabled={buyLoading === 'premium-undefined' || !user || profile?.premium}
-                  className="w-full bg-purple-600 hover:bg-purple-500 text-white"
-                >
-                  {profile?.premium ? 'Active' : buyLoading === 'premium-undefined' ? 'Loading...' : '$10.49 / mo'}
-                </Button>
-              </div>
-            </div>
+            )}
           </div>
         </section>
 
