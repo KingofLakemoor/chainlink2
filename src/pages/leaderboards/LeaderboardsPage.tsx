@@ -20,6 +20,7 @@ import { ZeroZeroAvatarRing } from '../../components/ui/avatar-rings/zero-zero';
 import { NovatrixCodeAvatarRing } from '../../components/ui/avatar-rings/novatrix-code';
 import { NovatrixQuantAvatarRing } from '../../components/ui/avatar-rings/novatrix-quant';
 import { SignalFloorAvatarRing } from '../../components/ui/avatar-rings/signal-floor';
+import { EdgeLedgerAvatarRing } from '../../components/ui/avatar-rings/edge-ledger';
 import { TitleMap } from '../../components/ui/titles';
 import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
 import { OceanBanner } from '../../components/ui/profile-banners/ocean';
@@ -34,6 +35,7 @@ import { XenonTerminalBanner } from '../../components/ui/profile-banners/xenon-t
 import { NovatrixCodeBanner } from '../../components/ui/profile-banners/novatrix/NovatrixCodeBanner';
 import { NovatrixQuantBanner } from '../../components/ui/profile-banners/novatrix/NovatrixQuantBanner';
 import { SignalFloorBanner } from '../../components/ui/profile-banners/signal-floor/SignalFloorBanner';
+import { EdgeLedgerBanner } from '../../components/ui/profile-banners/edge-ledger/EdgeLedgerBanner';
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {
   'BoardRoomBanner': BoardRoomBanner,
@@ -49,6 +51,7 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'NovatrixCodeBanner': NovatrixCodeBanner,
   'NovatrixQuantBanner': NovatrixQuantBanner,
   'SignalFloorBanner': SignalFloorBanner
+  ,'EdgeLedgerBanner': EdgeLedgerBanner
 };
 
 const AvatarRingMap: Record<string, React.FC<any>> = {
@@ -64,6 +67,7 @@ const AvatarRingMap: Record<string, React.FC<any>> = {
   'NovatrixCodeAvatarRing': NovatrixCodeAvatarRing,
   'NovatrixQuantAvatarRing': NovatrixQuantAvatarRing,
   'SignalFloorAvatarRing': SignalFloorAvatarRing
+  ,'EdgeLedgerAvatarRing': EdgeLedgerAvatarRing
 };
 
 
