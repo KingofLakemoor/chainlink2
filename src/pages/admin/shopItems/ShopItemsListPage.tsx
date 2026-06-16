@@ -4,40 +4,12 @@ import { collection, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firesto
 import { db } from '../../../lib/firebase';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
-import { Edit, Trash2, RefreshCw } from 'lucide-react';
-
-// Simple deterministic random number generator (Linear Congruential Generator)
-function seededRandom(seed: number) {
-  return function() {
-    seed = (seed * 9301 + 49297) % 233280;
-    return seed / 233280;
-  };
-}
-
-function getMonthlySelectionIds(items: any[], type: string, count: number, typeSeed: number) {
-  const now = new Date();
-  const yearMonth = now.getFullYear() * 100 + (now.getMonth() + 1); // e.g., 202405
-  const seed = yearMonth + typeSeed;
-  const random = seededRandom(seed);
-
-  // Pool from items that are not featured
-  const categoryItems = items.filter(item => item.type === type && !item.featured && item.active);
-  categoryItems.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
-
-  // Fisher-Yates shuffle with seeded random
-  for (let i = categoryItems.length - 1; i > 0; i--) {
-    const j = Math.floor(random() * (i + 1));
-    [categoryItems[i], categoryItems[j]] = [categoryItems[j], categoryItems[i]];
-  }
-
-  return categoryItems.slice(0, count).map(i => i.id);
-}
+import { Edit, Trash2 } from 'lucide-react';
 
 export default function ShopItemsListPage() {
   const navigate = useNavigate();
   const [shopItems, setShopItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [rotatingIds, setRotatingIds] = useState<Set<string>>(new Set());
 
   const fetchData = async () => {
     setLoading(true);
@@ -54,15 +26,6 @@ export default function ShopItemsListPage() {
   useEffect(() => {
     fetchData();
   }, []);
-
-  useEffect(() => {
-    if (shopItems.length > 0) {
-      const bannerIds = getMonthlySelectionIds(shopItems, 'PROFILE_BANNER', 3, 1);
-      const titleIds = getMonthlySelectionIds(shopItems, 'TITLE', 3, 2);
-      const ringIds = getMonthlySelectionIds(shopItems, 'AVATAR_RING', 3, 3);
-      setRotatingIds(new Set([...bannerIds, ...titleIds, ...ringIds]));
-    }
-  }, [shopItems]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to archive/delete this shop item?")) return;
@@ -181,12 +144,6 @@ export default function ShopItemsListPage() {
                         />
                         <span className="text-zinc-400 text-xs">Featured</span>
                       </label>
-                      {rotatingIds.has(item.id) && (
-                        <div className="flex items-center gap-1 text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded text-[10px] uppercase font-bold w-max border border-cyan-500/20">
-                          <RefreshCw className="w-3 h-3" />
-                          Rotating
-                        </div>
-                      )}
                     </div>
                   </td>
                 </tr>
