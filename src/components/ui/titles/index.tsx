@@ -4,6 +4,7 @@ import { OpulentoTitle } from './opulento';
 import { ZeroZeroTitle } from './zero-zero';
 import { NovatrixCodeTitle } from './novatrix-code';
 import { NovatrixQuantTitle } from './novatrix-quant';
+import { SignalFloorTitle } from './signal-floor';
 
 export const TitleMap: Record<string, React.FC<any>> = {
   'V1OriginatorTitle': V1OriginatorTitle,
@@ -11,4 +12,5 @@ export const TitleMap: Record<string, React.FC<any>> = {
   'ZeroZeroTitle': ZeroZeroTitle,
   'NovatrixCodeTitle': NovatrixCodeTitle,
   'NovatrixQuantTitle': NovatrixQuantTitle,
+  'SignalFloorTitle': SignalFloorTitle,
 };
