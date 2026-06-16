@@ -97,7 +97,7 @@ export default function MyPicksPage() {
   }, [picks, matchups]);
 
   if (isLoading) {
-    return <div className="p-8 text-center text-zinc-400">Loading My Picks...</div>;
+    return <div className="p-8 text-center text-zinc-400">Loading My Stats...</div>;
   }
 
   return (
