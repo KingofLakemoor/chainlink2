@@ -53,6 +53,7 @@ export function HelpPage() {
               <li><strong>Future Pick Queuing:</strong> Premium members can queue up future picks in advance, automatically locking them in when the previous pick resolves.</li>
               <li><strong>Advanced Metrics:</strong> Unlock the "Advanced Metrics" page to view detailed win/loss/push records by sport, view your all-time pick history, and track achievement medal distribution.</li>
               <li><strong>Exclusive Shop Items:</strong> Get access to purchase Pro-only premium cosmetics, banners, and rings in the Shop.</li>
+              <li><strong>Monthly Pro Set:</strong> Receive a special Pro Only cosmetic set every month.</li>
               <li><strong>ScriptLess Premium:</strong> Enjoy full complimentary access to ScriptLess Premium, our sister site for Fantasy Reality TV predictions.</li>
             </ul>
           </div>
