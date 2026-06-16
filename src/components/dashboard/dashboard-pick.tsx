@@ -76,7 +76,9 @@ export const DashboardPick = React.memo(function DashboardPick({ activePick, act
                 <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">{activeMatchup.league}</span>
                 {renderFeaturedTag()}
             </div>
-            <div className="text-lg font-bold text-zinc-100 mb-6">{activeMatchup.title}</div>
+            <div className="text-lg font-bold text-zinc-100 mb-6">
+              {activeMatchup.type === 'SOCCER_SCORE' ? `${activeMatchup.awayTeam.name} @ ${activeMatchup.homeTeam.name}` : activeMatchup.title}
+            </div>
 
             <div className="flex items-center justify-center gap-8 w-full">
               <div className={cn("flex flex-col items-center gap-3 p-4 rounded-xl border relative", activePick?.pick?.id === (activeMatchup.type === 'OVER_UNDER' ? 'OVER' : activeMatchup.awayTeam.id) ? 'border-green-500 bg-green-500/10' : 'border-zinc-800 opacity-50')}>

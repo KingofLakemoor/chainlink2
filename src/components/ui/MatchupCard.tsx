@@ -109,7 +109,9 @@ export const MatchupCard = React.memo(function MatchupCard({
 
       {/* Matchup content */}
       <div className="p-3 sm:p-5">
-        <div className="text-base font-bold text-zinc-100 mb-6">{m.title}</div>
+        <div className="text-base font-bold text-zinc-100 mb-6">
+          {m.type === 'SOCCER_SCORE' ? `${m.awayTeam.name} @ ${m.homeTeam.name}` : m.title}
+        </div>
 
         <div className="flex items-center justify-between">
            <div className="flex flex-col items-center gap-2 sm:gap-3 w-[100px] sm:w-[140px]">

@@ -742,6 +742,13 @@ function AdminEditMatchup() {
             newData.hasCustomTitle = true;
         }
 
+        if (field === 'type' && value === 'SOCCER_SCORE') {
+            const awayName = newData.awayTeam?.name || 'Away';
+            const homeName = newData.homeTeam?.name || 'Home';
+            newData.title = `${awayName} @ ${homeName}`.trim();
+            newData.hasCustomTitle = true;
+        }
+
         if (field === 'metadata.overUnder' && newData.type === 'OVER_UNDER') {
             const awayName = newData.awayTeam?.name || 'Away';
             const homeName = newData.homeTeam?.name || 'Home';
