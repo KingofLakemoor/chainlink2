@@ -60,7 +60,7 @@
     "autoprefixer": "^10.4.21",
     "dotenv": "^17.4.2",
     "esbuild": "^0.28.1",
-    "firebase-tools": "^15.17.0",
+    "firebase-tools": "^15.20.0",
     "playwright": "^1.60.0",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.22.4",
@@ -75,6 +75,8 @@
     "teeny-request": "^10.1.2",
     "uuid": "^14.0.0",
     "ip-address": "^10.2.0",
-    "esbuild": "^0.28.1"
+    "esbuild": "^0.28.1",
+    "@opentelemetry/core": "^2.8.0",
+    "js-yaml": "^4.2.0"
   }
 }
