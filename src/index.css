@@ -137,3 +137,21 @@
     @apply bg-[#0a0a0a] text-zinc-50 antialiased;
   }
 }
+
+@layer utilities {
+  @keyframes ledger-title-glow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(234,179,8,0.6)); }
+    50% { filter: drop-shadow(0 0 18px rgba(250,204,21,1)); }
+  }
+  .animate-ledger-title-glow {
+    animation: ledger-title-glow 4.6s ease-in-out infinite;
+  }
+
+  @keyframes ledger-ring-glow {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.04); }
+  }
+  .animate-ledger-ring-glow {
+    animation: ledger-ring-glow 6s ease-in-out infinite;
+  }
+}
