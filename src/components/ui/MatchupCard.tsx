@@ -8,6 +8,7 @@ interface MatchupCardProps {
   m: any;
   user: any;
   pickData?: any;
+  profile?: any;
   hasActivePickAnywhere: boolean;
   mCounts?: { total: number; away: number; home: number };
   sponsors: any[];
@@ -23,6 +24,7 @@ export const MatchupCard = React.memo(function MatchupCard({
   m,
   user,
   pickData,
+  profile,
   hasActivePickAnywhere,
   mCounts = { total: 0, away: 0, home: 0 },
   sponsors,
@@ -34,7 +36,11 @@ export const MatchupCard = React.memo(function MatchupCard({
   isLink4 = false
 }: MatchupCardProps) {
   const hasPicked = !!pickData;
-  const isPickDisabled = !user || hasPicked || hasActivePickAnywhere;
+  const hasActivePicksArray = Array.isArray(hasActivePickAnywhere);
+  const activePicksCount = hasActivePicksArray ? hasActivePickAnywhere.length : (hasActivePickAnywhere ? 1 : 0);
+
+  const isPickDisabled = !user || hasPicked || activePicksCount >= (profile?.premium ? 2 : 1);
+  const isQueueState = !hasPicked && profile?.premium && activePicksCount === 1;
   const awayHotPct = mCounts.total > 0 ? Math.round((mCounts.away / mCounts.total) * 100) : 0;
   const homeHotPct = mCounts.total > 0 ? Math.round((mCounts.home / mCounts.total) * 100) : 0;
   const isScheduled = m.status === 'STATUS_SCHEDULED';
@@ -110,9 +116,9 @@ export const MatchupCard = React.memo(function MatchupCard({
              <span className="text-xs sm:text-sm font-semibold text-zinc-200 truncate w-full text-center px-1">{m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.name}</span>
              <div className="relative">
                <button
-                 disabled={isPickDisabled}
-                 onClick={() => !isPickDisabled && onMakePick(m, m.type === 'OVER_UNDER' ? { id: 'OVER', name: 'OVER', image: '/images/over.png' } : m.awayTeam)}
-                 className={cn("w-20 h-20 sm:w-28 sm:h-28 rounded-xl border flex items-center justify-center p-1.5 bg-[#1a1a1a] transition-all", pickData?.pick?.id === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
+                 disabled={isPickDisabled && !isQueueState}
+                 onClick={() => (!isPickDisabled || isQueueState) && onMakePick(m, m.type === 'OVER_UNDER' ? { id: 'OVER', name: 'OVER', image: '/images/over.png' } : m.awayTeam)}
+                 className={cn("w-20 h-20 sm:w-28 sm:h-28 rounded-xl border flex items-center justify-center p-1.5 bg-[#1a1a1a] transition-all", pickData?.pick?.id === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : (isQueueState ? 'border-[#3f3f46] opacity-80 cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50')))}
                >
                   <FirebaseImage fallback="/logo.png" src={m.type === 'OVER_UNDER' ? '/images/over.png' : m.awayTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.name} />
                </button>
@@ -249,9 +255,9 @@ export const MatchupCard = React.memo(function MatchupCard({
              <span className="text-xs sm:text-sm font-semibold text-zinc-200 truncate w-full text-center px-1">{m.type === 'OVER_UNDER' ? 'UNDER' : `@${m.homeTeam.name}`}</span>
              <div className="relative">
                <button
-                 disabled={isPickDisabled}
-                 onClick={() => !isPickDisabled && onMakePick(m, m.type === 'OVER_UNDER' ? { id: 'UNDER', name: 'UNDER', image: '/images/under.png' } : m.homeTeam)}
-                 className={cn("w-20 h-20 sm:w-28 sm:h-28 rounded-xl border flex items-center justify-center p-1.5 bg-[#1a1a1a] transition-all", pickData?.pick?.id === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50'))}
+                 disabled={isPickDisabled && !isQueueState}
+                 onClick={() => (!isPickDisabled || isQueueState) && onMakePick(m, m.type === 'OVER_UNDER' ? { id: 'UNDER', name: 'UNDER', image: '/images/under.png' } : m.homeTeam)}
+                 className={cn("w-20 h-20 sm:w-28 sm:h-28 rounded-xl border flex items-center justify-center p-1.5 bg-[#1a1a1a] transition-all", pickData?.pick?.id === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) ? 'border-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.2)]' : (!isPickDisabled ? 'border-[#3f3f46] hover:border-[#22c55e] cursor-pointer' : (isQueueState ? 'border-[#3f3f46] opacity-80 cursor-pointer' : 'border-[#3f3f46] cursor-default opacity-50')))}
                >
                   <FirebaseImage fallback="/logo.png" src={m.type === 'OVER_UNDER' ? '/images/under.png' : m.homeTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.name} />
                </button>
@@ -325,7 +331,11 @@ export const MatchupCard = React.memo(function MatchupCard({
               ) : !isPickDisabled ? (
                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity">Select Team</span>
               ) : (
-                <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
+                isQueueState ? (
+                  <span className="text-[10px] font-bold text-fuchsia-500 uppercase tracking-wide border border-fuchsia-500/30 bg-fuchsia-500/10 px-2 py-0.5 rounded shadow-[0_0_8px_rgba(217,70,239,0.2)]">Queue Pick</span>
+                ) : (
+                  <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
+                )
               )
            )}
         </div>
