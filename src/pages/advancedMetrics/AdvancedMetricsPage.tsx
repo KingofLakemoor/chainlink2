@@ -9,6 +9,30 @@ import LifetimeStats from '../mypicks/LifetimeStats';
 import { useNavigate } from 'react-router-dom';
 
 export default function AdvancedMetricsPage() {
+const fetchMatchupsForPicks = async (fetchedPicks: any[]) => {
+    if (fetchedPicks.length === 0) return [];
+
+    // Extract unique matchupIds
+    const matchupIdsToFetch = Array.from(new Set(fetchedPicks.map(p => p.matchupId).filter(Boolean)));
+
+    if (matchupIdsToFetch.length === 0) return [];
+
+    // Chunk into 30s for the 'in' operator
+    const chunks = [];
+    for (let i = 0; i < matchupIdsToFetch.length; i += 30) {
+      chunks.push(matchupIdsToFetch.slice(i, i + 30));
+    }
+
+    const fetchedMatchups = [];
+    for (const chunk of chunks) {
+      const q = query(collection(db, 'matchups'), where('gameId', 'in', chunk));
+      const snap = await getDocs(q);
+      snap.docs.forEach(d => fetchedMatchups.push({id: d.id, ...d.data()}));
+    }
+
+    return fetchedMatchups;
+  };
+
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'ALL_TIME' | 'MEDALS' | 'LEAGUE_STATS'>('ALL_TIME');
@@ -44,7 +68,10 @@ export default function AdvancedMetricsPage() {
   useEffect(() => {
     if (!user || !profile?.premium) return;
 
-    const fetchInitialPicks = async () => {
+
+
+
+  const fetchInitialPicks = async () => {
       setIsLoadingPicks(true);
       try {
         if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
@@ -63,6 +90,8 @@ export default function AdvancedMetricsPage() {
           const snap = await getDocs(q);
           const fetchedPicks = snap.docs.map(doc => ({ id: doc.id, ...(doc.data() as object) }));
           setPicks(fetchedPicks);
+          const newMatchups = await fetchMatchupsForPicks(fetchedPicks);
+          setMatchups(newMatchups);
 
           if (snap.docs.length > 0) {
             setLastVisiblePick(snap.docs[snap.docs.length - 1]);
@@ -79,20 +108,6 @@ export default function AdvancedMetricsPage() {
     };
     fetchInitialPicks();
 
-    // Fetch basic matchups just for display
-    const fetchMatchups = async () => {
-      if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
-         setMatchups([
-            { id: 'mock-1', gameId: 'mock-1', title: 'Phillies @ Team B', startTime: Date.now() - 22 * 60 * 60 * 1000, homeTeam: { id: 'teamB', name: 'Team B', image: 'https://via.placeholder.com/150' }, awayTeam: { id: 'teamA', name: 'Phillies', image: 'https://via.placeholder.com/150' } },
-            { id: 'mock-2', gameId: 'mock-2', title: 'Spartak Moscow @ Team D', startTime: Date.now() + 2 * 60 * 60 * 1000, homeTeam: { id: 'teamD', name: 'Team D', image: 'https://via.placeholder.com/150' }, awayTeam: { id: 'teamC', name: 'Spartak Moscow', image: 'https://via.placeholder.com/150' } },
-            { id: 'mock-3', gameId: 'mock-3', title: 'Cubs @ Team E', startTime: Date.now() - 17 * 60 * 60 * 1000, homeTeam: { id: 'teamE', name: 'Team E', image: 'https://via.placeholder.com/150' }, awayTeam: { id: 'teamF', name: 'Cubs', image: 'https://via.placeholder.com/150' } }
-         ]);
-      } else {
-        const snap = await getDocs(collection(db, 'matchups'));
-        setMatchups(snap.docs.map(d => ({id: d.id, ...d.data()})));
-      }
-    };
-    fetchMatchups();
 
   }, [user, profile]);
 
@@ -110,6 +125,12 @@ export default function AdvancedMetricsPage() {
       const snap = await getDocs(q);
       const fetchedPicks = snap.docs.map(doc => ({ id: doc.id, ...(doc.data() as object) }));
       setPicks(prev => [...prev, ...fetchedPicks]);
+      const newMatchups = await fetchMatchupsForPicks(fetchedPicks);
+      setMatchups(prev => {
+        const existingIds = new Set(prev.map(m => m.gameId));
+        const uniqueNew = newMatchups.filter(m => !existingIds.has(m.gameId));
+        return [...prev, ...uniqueNew];
+      });
       if (snap.docs.length > 0) {
         setLastVisiblePick(snap.docs[snap.docs.length - 1]);
       }
@@ -223,7 +244,7 @@ export default function AdvancedMetricsPage() {
                         if (userAchievements && Array.isArray(userAchievements)) {
                             count = userAchievements.filter(id => {
                                 if (typeof id === 'string') return id === ach.id;
-                                if (id && typeof id === 'object' && id.id) return id.id === ach.id;
+                                if (id && typeof id === 'object') return (id.achievementId || id.id) === ach.id;
                                 return false;
                             }).length;
                         }
@@ -268,6 +289,13 @@ export default function AdvancedMetricsPage() {
                     let statusText = pick.status;
 
                     let displayTeamName = pick.pick?.name;
+                    if (matchup && matchup.type === 'OVER_UNDER') {
+                      displayTeamName = `${displayTeamName} (${matchup.overUnderNumber})`;
+                    } else if (matchup && matchup.type === 'SPREAD') {
+                      const spread = pick.pick?.id === matchup.awayTeam?.id ? matchup.awayTeamSpread : matchup.homeTeamSpread;
+                      const spreadStr = spread > 0 ? `+${spread}` : spread;
+                      displayTeamName = `${displayTeamName} ${spreadStr}`;
+                    }
                     let displayTeamImage = pick.pick?.image;
 
                     if (!displayTeamName || !displayTeamImage) {
@@ -301,6 +329,9 @@ export default function AdvancedMetricsPage() {
                     return (
                       <div key={pick.id} className={cn("rounded-xl border p-6 flex flex-col items-center justify-center gap-4 transition-colors", statusColorClass)}>
                         <div className="text-base font-medium text-zinc-200 text-center">{displayTeamName}</div>
+                        <div className="text-xs text-zinc-500 font-medium text-center px-2">
+                          {matchup?.title || matchup?.gameId || 'Unknown Matchup'}
+                        </div>
                         <div className={cn("text-xs font-bold uppercase tracking-wider", statusTextColor)}>
                           {statusText}
                         </div>

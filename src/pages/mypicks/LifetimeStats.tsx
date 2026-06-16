@@ -26,8 +26,8 @@ interface LifetimeStatsProps {
 export default function LifetimeStats({ userStats }: LifetimeStatsProps) {
   const leagues = Object.keys(userStats).sort((a, b) => {
     // Sort by total volume of picks
-    const totalA = userStats[a].wins + userStats[a].losses + userStats[a].pushes;
-    const totalB = userStats[b].wins + userStats[b].losses + userStats[b].pushes;
+    const totalA = (userStats[a].wins || 0) + (userStats[a].losses || 0) + (userStats[a].pushes || 0);
+    const totalB = (userStats[b].wins || 0) + (userStats[b].losses || 0) + (userStats[b].pushes || 0);
     return totalB - totalA;
   });
 
@@ -39,7 +39,7 @@ export default function LifetimeStats({ userStats }: LifetimeStatsProps) {
     );
   }
 
-  const totalPicks = leagues.reduce((sum, l) => sum + userStats[l].wins + userStats[l].losses + userStats[l].pushes, 0);
+  const totalPicks = leagues.reduce((sum, l) => sum + (userStats[l].wins || 0) + (userStats[l].losses || 0) + (userStats[l].pushes || 0), 0);
 
   return (
     <div className="bg-[#121212] border border-zinc-800 rounded-2xl p-6 mb-8 overflow-hidden">
@@ -57,7 +57,7 @@ export default function LifetimeStats({ userStats }: LifetimeStatsProps) {
             <div key={league} className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 flex flex-col items-center justify-center hover:bg-zinc-800/50 transition-colors">
               <div className="text-4xl mb-4 opacity-90">{icon}</div>
               <div className="text-lg font-bold text-zinc-100 tracking-wide mb-1">
-                {stats.wins} - {stats.losses} - {stats.pushes}
+                {stats.wins || 0} - {stats.losses || 0} - {stats.pushes || 0}
               </div>
               <div className="text-[10px] uppercase font-bold tracking-widest text-zinc-500">
                 {league}
