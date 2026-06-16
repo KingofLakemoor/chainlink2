@@ -1,2 +1,21 @@
-1. Update achievements to use links instead of coins and remove link reward.
-2. Update grader.ts to unlock titles programatically based on the logic described in their descriptions.
+1. Fix existing titles stretching player profile cards.
+   - Reduced text size classes for `signal-floor`, `novatrix-code`, `novatrix-quant`, `edge-ledger`, and `zero-zero` titles so they scale better down to small screen sizes instead of fixed `[64px]` or `[40px]` sizes. (Already applied using sed but need to make sure to include in plan.)
+
+2. Implement BadBeat Banner, Title, and Ring components.
+   - Create `src/components/ui/profile-banners/bad-beat/BadBeatBanner.tsx`. Copy the code exactly but apply the aspect ratio clamp: `Math.max(1.0, Math.min(gl.canvas.width / gl.canvas.height, 3.0))` inside `resize()` so it fixes the "pinhole" issue.
+   - Create `src/components/ui/titles/bad-beat.tsx`. Ensure it uses responsive text sizes like `text-[14px] sm:text-[18px] md:text-[22px]` rather than the original `text-[40px]`.
+   - Create `src/components/ui/avatar-rings/bad-beat/BadBeatAvatarRing.tsx`.
+
+3. Register components in mappings.
+   - Update `AvatarRingMap` and `ProfileBannerMap` in `DashboardPage.tsx`, `ProfilePage.tsx`, `LeaderboardsPage.tsx`, `ShopPage.tsx`.
+   - Update `TitleMap` in `src/components/ui/titles/index.tsx`.
+
+4. Update `src/index.css`.
+   - Add animations for Bad Beat components: `badbeat-title-glow`, `badbeat-ring-rotate`, `badbeat-ring-pulse`.
+
+5. Update `shop_items.json`.
+   - Edit the existing banner object for `"id": "banner_bad_beat"`: change `"image": "bg-zinc-800"` and `"preview": "bg-zinc-800"` to `"BadBeatBanner"`.
+   - Edit the existing title object for `"id": "title_bad_beat_survivor"`: change `"image": ""` and `"preview": ""` to `"BadBeatTitle"`.
+   - Add a new avatar ring object for `"id": "ring_bad_beat"`. Let's give it the name "Bad Beat" and set `"image": "BadBeatAvatarRing"`, `"preview": "BadBeatAvatarRing"`.
+
+6. Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
