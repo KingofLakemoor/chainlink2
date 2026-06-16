@@ -273,9 +273,9 @@
     "type": "PROFILE_BANNER",
     "active": true,
     "forSale": false,
-    "image": "bg-zinc-800",
+    "image": "BadBeatBanner",
     "featured": false,
-    "preview": "bg-zinc-800",
+    "preview": "BadBeatBanner",
     "order": 19,
     "collectionId": ""
   },
@@ -581,9 +581,9 @@
     "type": "TITLE",
     "active": true,
     "forSale": false,
-    "image": "",
+    "image": "BadBeatTitle",
     "featured": false,
-    "preview": "",
+    "preview": "BadBeatTitle",
     "order": 32,
     "collectionId": ""
   },
@@ -1432,5 +1432,19 @@
     "order": 81,
     "collectionId": "edge_ledger",
     "premiumOnly": true
+  },
+  {
+    "id": "ring_bad_beat",
+    "name": "The Bad Beat",
+    "description": "The moment the odds flip against you.",
+    "cost": 1500,
+    "type": "AVATAR_RING",
+    "active": true,
+    "forSale": false,
+    "image": "BadBeatAvatarRing",
+    "featured": false,
+    "preview": "BadBeatAvatarRing",
+    "order": 33,
+    "collectionId": ""
   }
 ]

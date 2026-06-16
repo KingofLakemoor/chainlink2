@@ -35,10 +35,12 @@ import { NovatrixCodeAvatarRing } from '../../components/ui/avatar-rings/novatri
 import { NovatrixQuantAvatarRing } from '../../components/ui/avatar-rings/novatrix-quant';
 import { SignalFloorAvatarRing } from '../../components/ui/avatar-rings/signal-floor';
 import { EdgeLedgerAvatarRing } from '../../components/ui/avatar-rings/edge-ledger';
+import { BadBeatAvatarRing } from '../../components/ui/avatar-rings/bad-beat';
 import { NovatrixCodeBanner } from '../../components/ui/profile-banners/novatrix/NovatrixCodeBanner';
 import { NovatrixQuantBanner } from '../../components/ui/profile-banners/novatrix/NovatrixQuantBanner';
 import { SignalFloorBanner } from '../../components/ui/profile-banners/signal-floor/SignalFloorBanner';
 import { EdgeLedgerBanner } from '../../components/ui/profile-banners/edge-ledger/EdgeLedgerBanner';
+import { BadBeatBanner } from '../../components/ui/profile-banners/bad-beat';
 import { TitleMap } from '../../components/ui/titles';
 
 const AvatarRingMap: Record<string, React.FC<any>> = {
@@ -54,7 +56,8 @@ const AvatarRingMap: Record<string, React.FC<any>> = {
   'NovatrixCodeAvatarRing': NovatrixCodeAvatarRing,
   'NovatrixQuantAvatarRing': NovatrixQuantAvatarRing,
   'SignalFloorAvatarRing': SignalFloorAvatarRing
-  ,'EdgeLedgerAvatarRing': EdgeLedgerAvatarRing
+  ,'EdgeLedgerAvatarRing': EdgeLedgerAvatarRing,
+  'BadBeatAvatarRing': BadBeatAvatarRing
 };
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {
@@ -71,7 +74,8 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'NovatrixCodeBanner': NovatrixCodeBanner,
   'NovatrixQuantBanner': NovatrixQuantBanner,
   'SignalFloorBanner': SignalFloorBanner
-  ,'EdgeLedgerBanner': EdgeLedgerBanner
+  ,'EdgeLedgerBanner': EdgeLedgerBanner,
+  'BadBeatBanner': BadBeatBanner
 };
 
 export default function ProfilePage() {

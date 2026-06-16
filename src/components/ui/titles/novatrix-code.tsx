@@ -3,7 +3,7 @@ import React from 'react';
 export const NovatrixCodeTitle = ({ className = "" }) => (
   <div className={`relative inline-block ${className}`}>
     <div className="absolute inset-0 blur-xl bg-[radial-gradient(circle,_rgba(168,85,247,0.4),_transparent_70%)]" />
-    <div className="relative font-mono text-[40px] tracking-[0.35em] uppercase
+    <div className="relative font-mono text-[14px] sm:text-[18px] md:text-[22px] tracking-[0.35em] uppercase
       text-violet-300 drop-shadow-[0_0_14px_rgba(167,139,250,0.9)]
       animate-novatrix-title-glow">
       NOVATRIX CODE

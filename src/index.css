@@ -155,3 +155,29 @@
     animation: ledger-ring-glow 6s ease-in-out infinite;
   }
 }
+
+@layer utilities {
+  @keyframes badbeat-title-glow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(239,68,68,0.6)); }
+    50% { filter: drop-shadow(0 0 18px rgba(239,68,68,1)); }
+  }
+  .animate-badbeat-title-glow {
+    animation: badbeat-title-glow 4.2s ease-in-out infinite;
+  }
+
+  @keyframes badbeat-ring-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
+  }
+  .animate-badbeat-ring-rotate {
+    animation: badbeat-ring-rotate 22s linear infinite;
+  }
+
+  @keyframes badbeat-ring-pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.12); }
+  }
+  .animate-badbeat-ring-pulse {
+    animation: badbeat-ring-pulse 5s ease-in-out infinite;
+  }
+}
