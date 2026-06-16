@@ -285,9 +285,16 @@ export default function PlayDashboard() {
     document.body.removeChild(link);
   };
 
-  const activePick = Object.values(userPicks).find((p: any) => p.status === 'PENDING');
+  const activePicks = Object.values(userPicks)
+    .filter((p: any) => p.status === 'PENDING')
+    .sort((a: any, b: any) => (a.createdAt || 0) - (b.createdAt || 0));
+  const activePick = activePicks[0];
+  const queuedPick = activePicks[1];
   const activeMatchup = activePick ? allFetchedMatchups.find(m => m.gameId === activePick.matchupId) : null;
-  const filteredMatchups = matchups.filter(m => !activePick || m.gameId !== activePick.matchupId);
+  // We don't filter out queuedPick from available matchups below because the instructions say we should just display it underneath My Pick,
+  // but let's check if the queued matchup should be filtered out from the main list.
+  // Normally the activePick is filtered out. We should probably filter out both activePick and queuedPick.
+  const filteredMatchups = matchups.filter(m => !activePicks.find((p: any) => p.matchupId === m.gameId));
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
@@ -313,6 +320,38 @@ export default function PlayDashboard() {
               isMyPick={true}
             />
           </div>
+          {queuedPick && (() => {
+            const queuedMatchup = allFetchedMatchups.find(m => m.gameId === queuedPick.matchupId);
+            if (!queuedMatchup) return null;
+            return (
+              <div className="mt-4 bg-[#111111] border border-fuchsia-500/50 rounded-xl p-4 flex items-center justify-between shadow-[0_0_15px_rgba(217,70,239,0.1)]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-[#1a1a1a] border border-[#27272a] flex items-center justify-center p-1 shadow-inner">
+                    {queuedPick.pick.image ? (
+                       <img src={queuedPick.pick.image} alt={queuedPick.pick.name} className="w-full h-full object-contain" />
+                    ) : (
+                       <span className="text-xs font-bold text-zinc-500">{queuedPick.pick.name}</span>
+                    )}
+                  </div>
+                  <div>
+                    <div className="text-fuchsia-400 font-bold text-sm tracking-wide uppercase flex items-center gap-2">
+                       <span className="relative flex h-2 w-2">
+                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-fuchsia-400 opacity-75"></span>
+                         <span className="relative inline-flex rounded-full h-2 w-2 bg-fuchsia-500"></span>
+                       </span>
+                       Queued Pick: {queuedPick.pick.name}
+                    </div>
+                    <div className="text-zinc-500 text-xs mt-0.5 truncate max-w-[200px] sm:max-w-md">
+                      {queuedMatchup.type === 'SOCCER_SCORE' ? `${queuedMatchup.awayTeam.name} @ ${queuedMatchup.homeTeam.name}` : queuedMatchup.title}
+                    </div>
+                  </div>
+                </div>
+                <button onClick={() => handleCancelPick(queuedMatchup)} className="text-xs font-bold text-zinc-500 hover:text-red-500 transition-colors uppercase tracking-wide flex items-center gap-1 bg-[#1a1a1a] px-3 py-1.5 rounded-md border border-[#27272a] hover:border-red-500/50">
+                  Cancel
+                </button>
+              </div>
+            );
+          })()}
         </div>
       )}
 

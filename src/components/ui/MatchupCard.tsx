@@ -330,14 +330,12 @@ export const MatchupCard = React.memo(function MatchupCard({
            ) : (
               !user ? (
                 <Link to="/login" className="text-xs font-bold text-zinc-500 uppercase tracking-wide hover:text-zinc-300">Sign Up / Sign In</Link>
+              ) : isQueueState ? (
+                <span className="text-[10px] font-bold text-fuchsia-500 uppercase tracking-wide border border-fuchsia-500/30 bg-fuchsia-500/10 px-2 py-0.5 rounded shadow-[0_0_8px_rgba(217,70,239,0.2)]">Queue Pick</span>
               ) : !isPickDisabled ? (
                 <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity">Select Team</span>
               ) : (
-                isQueueState ? (
-                  <span className="text-[10px] font-bold text-fuchsia-500 uppercase tracking-wide border border-fuchsia-500/30 bg-fuchsia-500/10 px-2 py-0.5 rounded shadow-[0_0_8px_rgba(217,70,239,0.2)]">Queue Pick</span>
-                ) : (
-                  <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
-                )
+                <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
               )
            )}
         </div>
