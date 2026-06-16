@@ -485,6 +485,7 @@ export default function ShopPage() {
                     <li><strong>Queue future picks</strong> automatically</li>
                     <li>Exclusive <strong>Advanced Metrics</strong> tracking</li>
                     <li>Access to <strong>Pro-exclusive shop items</strong></li>
+                    <li>A special <strong>Pro Only cosmetic set</strong> every month</li>
                     <li>Full access to <strong>ScriptLess Premium</strong></li>
                   </ul>
                 </div>
