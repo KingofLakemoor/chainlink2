@@ -30,6 +30,8 @@ export function FirebaseImage({ src, fallback, ...props }: FirebaseImageProps) {
 
           const storage = getStorage(app);
           let adjustedSrc = src;
+          // Clean up the URL format
+          adjustedSrc = adjustedSrc.replace('gs://chainlink-2-72590.firebasestorage.app/', '');
           adjustedSrc = adjustedSrc.replace(/sponsors\/scriptless\.png/i, "Sponsors/scriptless.png");
           const imageRef = ref(storage, adjustedSrc);
           const url = await getDownloadURL(imageRef);
