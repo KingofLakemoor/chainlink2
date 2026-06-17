@@ -43,7 +43,7 @@ export const MatchupCard = React.memo(function MatchupCard({
   const isQueueState = !hasPicked && profile?.premium && activePicksCount === 1;
   const awayHotPct = mCounts.total > 0 ? Math.round((mCounts.away / mCounts.total) * 100) : 0;
   const homeHotPct = mCounts.total > 0 ? Math.round((mCounts.home / mCounts.total) * 100) : 0;
-  const isScheduled = m.status === 'STATUS_SCHEDULED';
+  const isScheduled = m.status === 'STATUS_SCHEDULED' && (!m.metadata?.homeLinescores || m.metadata?.homeLinescores.length === 0) && (!m.metadata?.awayLinescores || m.metadata?.awayLinescores.length === 0) && (m.homeTeam.score === 0 && m.awayTeam.score === 0);
 
   let featuredColor = "";
   let featuredName = "Featured Sponsor";
@@ -174,7 +174,7 @@ export const MatchupCard = React.memo(function MatchupCard({
                       (m.metadata?.lowerScoreWins ? m.awayTeam.score < m.homeTeam.score : m.awayTeam.score > m.homeTeam.score) ? "text-zinc-100" : (m.status === 'STATUS_IN_PROGRESS' ? "text-zinc-200" : "text-zinc-500")
                     )}>
                        {(m.metadata?.lowerScoreWins ? m.awayTeam.score < m.homeTeam.score : m.awayTeam.score > m.homeTeam.score) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-300"></div>}
-                       {(m.league === 'ATP' || m.league === 'WTA') && m.metadata?.awayLinescores ? (
+                       {(m.league === 'ATP' || m.league === 'WTA') && m.metadata?.awayLinescores && m.metadata.awayLinescores.length > 0 ? (
                          m.metadata.awayLinescores.map((score: number, i: number) => (
                            <React.Fragment key={i}>
                              {i > 0 && <div className="w-px h-3 sm:h-4 bg-zinc-600 mx-0.5 sm:mx-1"></div>}
@@ -223,7 +223,7 @@ export const MatchupCard = React.memo(function MatchupCard({
                       (m.metadata?.lowerScoreWins ? m.homeTeam.score < m.awayTeam.score : m.homeTeam.score > m.awayTeam.score) ? "text-zinc-100" : (m.status === 'STATUS_IN_PROGRESS' ? "text-zinc-200" : "text-zinc-500")
                     )}>
                        {(m.metadata?.lowerScoreWins ? m.homeTeam.score < m.awayTeam.score : m.homeTeam.score > m.awayTeam.score) && <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-yellow-300"></div>}
-                       {(m.league === 'ATP' || m.league === 'WTA') && m.metadata?.homeLinescores ? (
+                       {(m.league === 'ATP' || m.league === 'WTA') && m.metadata?.homeLinescores && m.metadata.homeLinescores.length > 0 ? (
                          m.metadata.homeLinescores.map((score: number, i: number) => (
                            <React.Fragment key={i}>
                              {i > 0 && <div className="w-px h-3 sm:h-4 bg-zinc-600 mx-0.5 sm:mx-1"></div>}
