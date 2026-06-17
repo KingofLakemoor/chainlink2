@@ -189,6 +189,23 @@ const fetchMatchupsForPicks = async (fetchedPicks: any[]) => {
     return acc;
   }, {});
 
+  // Sort achievements within each weight class
+  Object.keys(achievementsByWeight).forEach(weight => {
+    achievementsByWeight[weight].sort((a: any, b: any) => {
+      // Sort by type first
+      const typeComparison = (a.type || '').localeCompare(b.type || '');
+      if (typeComparison !== 0) return typeComparison;
+
+      // Then by threshold
+      const aThreshold = Number(a.threshold || 0);
+      const bThreshold = Number(b.threshold || 0);
+      if (aThreshold !== bThreshold) return aThreshold - bThreshold;
+
+      // Finally by name
+      return (a.name || '').localeCompare(b.name || '');
+    });
+  });
+
   const sortedWeights = Object.keys(achievementsByWeight).map(Number).sort((a, b) => b - a);
   const userAchievements = profile?.achievements || [];
 
