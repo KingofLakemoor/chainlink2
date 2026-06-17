@@ -23,7 +23,7 @@ export function EdgeLedgerBanner({
       uniforms: {
         uTime: { value: 0 },
         uResolution: {
-          value: new Color(gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height),
+          value: new Color(gl.canvas.width, gl.canvas.height, gl.canvas.height ? Math.max(1.0, Math.min(gl.canvas.width / gl.canvas.height, 3.0)) : 1.0),
         },
       },
       transparent: true,
@@ -34,11 +34,13 @@ export function EdgeLedgerBanner({
     function resize() {
       if (!container.current) return;
       renderer.setSize(container.current.offsetWidth, container.current.offsetHeight);
-      program.uniforms.uResolution.value = new Color(
-        gl.canvas.width,
-        gl.canvas.height,
-        gl.canvas.width / gl.canvas.height
-      );
+      if (program.uniforms.uResolution) {
+        program.uniforms.uResolution.value = new Color(
+          gl.canvas.width,
+          gl.canvas.height,
+          gl.canvas.height ? Math.max(1.0, Math.min(gl.canvas.width / gl.canvas.height, 3.0)) : 1.0
+        );
+      }
     }
 
     window.addEventListener("resize", resize);
@@ -159,10 +161,6 @@ void main() {
   // micro ChainLink green accents on some entries
   float accent = step(0.96, noise(vec2(rowId * 0.7, hp.x * 4.0)));
   col += vec3(0.0, 0.9, 0.6) * accent * 0.25 * hLines;
-
-  // vignette
-  float vig = smoothstep(1.2, 0.4, length(p));
-  col *= vig;
 
   gl_FragColor = vec4(col, 1.0);
 }
