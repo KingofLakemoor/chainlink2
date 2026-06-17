@@ -1446,5 +1446,47 @@
     "preview": "BadBeatAvatarRing",
     "order": 33,
     "collectionId": ""
+  },
+  {
+    "id": "banner_responsible_gambler",
+    "name": "The Responsible Gambler",
+    "description": "A soft whisper from the ChainLink cloud. A gentle reminder that variance is undefeated. The odds don’t hate you — they just don’t care.",
+    "cost": 3000,
+    "type": "PROFILE_BANNER",
+    "active": true,
+    "forSale": false,
+    "image": "ResponsibleGamblerBanner",
+    "featured": true,
+    "preview": "ResponsibleGamblerBanner",
+    "order": 16,
+    "collectionId": "responsible_gambler"
+  },
+  {
+    "id": "ring_responsible_gambler",
+    "name": "The Responsible Gambler",
+    "description": "A soft whisper from the ChainLink cloud.",
+    "cost": 1500,
+    "type": "AVATAR_RING",
+    "active": true,
+    "forSale": false,
+    "image": "ResponsibleGamblerAvatarRing",
+    "featured": true,
+    "preview": "ResponsibleGamblerAvatarRing",
+    "order": 17,
+    "collectionId": "responsible_gambler"
+  },
+  {
+    "id": "title_responsible_gambler",
+    "name": "The Responsible Gambler",
+    "description": "A soft whisper from the ChainLink cloud.",
+    "cost": 2500,
+    "type": "TITLE",
+    "active": true,
+    "forSale": false,
+    "image": "ResponsibleGamblerTitle",
+    "featured": true,
+    "preview": "ResponsibleGamblerTitle",
+    "order": 82,
+    "collectionId": "responsible_gambler"
   }
 ]
