@@ -6,7 +6,7 @@ export const SignalFloorTitle = ({ className = "" }) => (
     <div className="relative font-mono text-[14px] sm:text-[18px] md:text-[22px] tracking-[0.35em] uppercase
       text-emerald-300 drop-shadow-[0_0_12px_rgba(16,185,129,0.9)]
       animate-signal-title-glow">
-      CHAINLINK PRO // SIGNAL FLOOR
+      SIGNAL FLOOR
     </div>
     <div className="pointer-events-none absolute inset-0 opacity-40 mix-blend-screen
       bg-[linear-gradient(to_bottom,rgba(148,163,184,0.35)_1px,transparent_1px)]

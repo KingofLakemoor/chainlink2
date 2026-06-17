@@ -23,7 +23,7 @@ export function SignalFloorBanner({
       uniforms: {
         uTime: { value: 0 },
         uResolution: {
-          value: new Color(gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height),
+          value: new Color(gl.canvas.width, gl.canvas.height, gl.canvas.height ? Math.max(1.0, Math.min(gl.canvas.width / gl.canvas.height, 3.0)) : 1.0),
         },
       },
       transparent: true,
@@ -34,11 +34,13 @@ export function SignalFloorBanner({
     function resize() {
       if (!container.current) return;
       renderer.setSize(container.current.offsetWidth, container.current.offsetHeight);
-      program.uniforms.uResolution.value = new Color(
-        gl.canvas.width,
-        gl.canvas.height,
-        gl.canvas.width / gl.canvas.height
-      );
+      if (program.uniforms.uResolution) {
+        program.uniforms.uResolution.value = new Color(
+          gl.canvas.width,
+          gl.canvas.height,
+          gl.canvas.height ? Math.max(1.0, Math.min(gl.canvas.width / gl.canvas.height, 3.0)) : 1.0
+        );
+      }
     }
 
     window.addEventListener("resize", resize);
@@ -165,10 +167,6 @@ void main() {
   // tiny particles
   float particles = step(0.995, noise(p * 8.0 + uTime * 0.9));
   col += vec3(0.8, 1.0, 0.9) * particles * 0.15;
-
-  // vignette
-  float vig = smoothstep(1.2, 0.4, length(p));
-  col *= vig;
 
   gl_FragColor = vec4(col, 1.0);
 }
