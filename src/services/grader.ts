@@ -200,14 +200,19 @@ export async function gradeSingleMatchup(matchup: any) {
             earned = true;
           } else if (ach.type === 'CHAINLOSS' && chainData.chain <= -threshold) {
             earned = true;
-          } else if (ach.type === 'WINS' && stats.wins >= threshold) {
+          } else if (ach.type === 'WINS' && allTimeStats.wins >= threshold) {
             earned = true;
-          } else if (ach.type === 'LOSS' && stats.losses >= threshold) {
+          } else if (ach.type === 'LOSS' && allTimeStats.losses >= threshold) {
+            earned = true;
+          } else if (ach.type === 'PUSH' && allTimeStats.pushes >= threshold) {
+            earned = true;
+          } else if (ach.type === 'MONTHLYWIN' && stats.wins >= threshold) {
+            earned = true;
+          } else if (ach.type === 'MONTHLYLOSS' && stats.losses >= threshold) {
+            earned = true;
+          } else if (ach.type === 'MONTHLYPUSH' && stats.pushes >= threshold) {
             earned = true;
           }
-          // Note: MONTHLYWIN, MONTHLYLOSS, MONTHLYPUSH logic can be added here,
-          // but typically requires looking at picks within the month.
-          // Assuming basic chain and lifetime stats for now based on available data in this transaction.
 
           if (earned) {
             earnedAchievements.push(ach);
