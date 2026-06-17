@@ -50,11 +50,12 @@ const ADMIN_MENU = [
       { id: 'matchups-all', label: 'All Matchups', path: '/admin/matchups' },
       { id: 'matchups-picks', label: 'Picks', path: '/admin/picks' },
       { id: 'matchups-create', label: 'Create Matchup', path: '/admin/matchups/create' },
+      { id: 'matchups-pga', label: 'PGA Builder', path: '/admin/pga-builder' },
+      { id: 'matchups-scraper', label: 'Scraper Settings', path: '/admin/settings/scraper' }
     ]
   },
-{ id: 'pickem', label: "Pick'em", icon: Layers, path: '/admin/pickem' },
+  { id: 'pickem', label: "Pick'em", icon: Layers, path: '/admin/pickem' },
   { id: 'brackets', label: 'Brackets', icon: GitMerge, path: '/admin/brackets' },
-  { id: 'pga-builder', label: 'PGA Builder', icon: Flag, path: '/admin/pga-builder' },
   { id: 'announcements', label: 'Announcements', icon: FileText, path: '/admin/announcements' },
   {
     id: 'sponsors',
@@ -77,12 +78,18 @@ const ADMIN_MENU = [
   },
   { id: 'challenges', label: 'Challenges', icon: Target, path: '/admin/challenges' },
   { id: 'link4', label: 'Link4', icon: Target, path: '/admin/link4' },
-
-  { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
-  { id: 'premium', label: 'Premium Status', icon: Diamond, path: '/admin/premium' },
-  { id: 'users-cosmetics', label: 'User Cosmetics', icon: Users, path: '/admin/users/cosmetics' },
-  { id: 'users-links', label: 'Manage Links', icon: Link2, path: '/admin/users/links' },
-  { id: 'referrals', label: 'Referrals', icon: Users, path: '/admin/referrals' },
+  {
+    id: 'users',
+    label: 'Users',
+    icon: Users,
+    subItems: [
+      { id: 'users-all', label: 'All Users', path: '/admin/users' },
+      { id: 'users-premium', label: 'Premium Status', path: '/admin/premium' },
+      { id: 'users-cosmetics', label: 'User Cosmetics', path: '/admin/users/cosmetics' },
+      { id: 'users-links', label: 'Manage Links', path: '/admin/users/links' },
+      { id: 'users-referrals', label: 'Referrals', path: '/admin/referrals' }
+    ]
+  },
   { id: 'notifications', label: 'Notifications', icon: Bell, path: '/admin/notifications' },
   {
     id: 'shopItems',
@@ -91,14 +98,6 @@ const ADMIN_MENU = [
     subItems: [
       { id: 'shopItems-all', label: 'All Shop Items', path: '/admin/shopItems' },
       { id: 'shopItems-create', label: 'Create Shop Item', path: '/admin/shopItems/create' }
-    ]
-  },
-  {
-    id: 'settings',
-    label: 'Settings',
-    icon: Settings,
-    subItems: [
-      { id: 'settings-scraper', label: 'Scraper Settings', path: '/admin/settings/scraper' }
     ]
   },
   { id: 'guide', label: 'Operating Guide', icon: BookOpen, path: '/admin/guide' },
