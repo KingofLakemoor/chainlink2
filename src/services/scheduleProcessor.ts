@@ -461,7 +461,6 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               const pendingPicksSnap = await adminDb.collection('picks')
                 .where('matchupId', '==', gameId)
                 .where('status', '==', 'PENDING')
-                .limit(1)
                 .get();
 
               if (pendingPicksSnap.empty) {
@@ -469,6 +468,21 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                 updateData.active = false;
                 flattenedUpdate.abandoned = true;
                 flattenedUpdate.active = false;
+              } else if (scrapedMatchup.status === 'STATUS_IN_PROGRESS') {
+                for (const pickDoc of pendingPicksSnap.docs) {
+                    const pickData = pickDoc.data();
+                    const userPicksSnap = await adminDb.collection('picks').where('userId', '==', pickData.userId).where('status', '==', 'PENDING').orderBy('createdAt', 'asc').get();
+                    if (userPicksSnap.size > 1 && userPicksSnap.docs[1].id === pickDoc.id) {
+                        batch.delete(pickDoc.ref);
+                        const userRef = adminDb.collection('users').doc(pickData.userId);
+                        const userDoc = await userRef.get();
+                        if (userDoc.exists && pickData.links > 0) {
+                            const userData = userDoc.data()!;
+                            batch.update(userRef, { links: (userData.links || 0) + pickData.links, updatedAt: Date.now() });
+                        }
+                        opCount += 2;
+                    }
+                }
               }
             }
 
