@@ -7,39 +7,98 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Helper function to deeply compare two objects for changes
+function hasChanges(newData: any, dbData: any): boolean {
+  for (const key in newData) {
+    // We don't care about comparing timestamps when checking for actual data changes
+    if (key === 'createdAt' || key === 'updatedAt') continue;
+
+    // Simple deep comparison (handles primitives, arrays, and plain objects well enough for this schema)
+    if (JSON.stringify(newData[key]) !== JSON.stringify(dbData[key])) {
+      return true;
+    }
+  }
+  return false;
+}
+
 async function seed() {
   if (!adminDb) {
     console.error("Admin DB not initialized. Please ensure GOOGLE_APPLICATION_CREDENTIALS is set, or run this script in an environment with Application Default Credentials (e.g. Cloud Run or a logged-in dev environment).");
     process.exit(1);
   }
 
+  // Parse command line arguments
+  const args = process.argv.slice(2);
+  const isNewOnly = args.includes('--new-only');
+  const isChangedOnly = args.includes('--changed-only');
+  const isForce = args.includes('--force');
+
   const catalogPath = path.resolve(__dirname, '../shop_items.json');
   const items = JSON.parse(fs.readFileSync(catalogPath, 'utf-8'));
 
-  let count = 0;
+  let createdCount = 0;
+  let updatedCount = 0;
+  let skippedCount = 0;
+
   for (const item of items) {
     const { id, ...data } = item;
     const docRef = adminDb.collection("shopItems").doc(id);
     const doc = await docRef.get();
 
     const timestamp = Date.now();
-    const itemData = {
-        ...data,
-        createdAt: doc.exists ? doc.data()?.createdAt : timestamp,
-        updatedAt: timestamp
-    };
 
     if (doc.exists) {
-        await docRef.update(itemData);
-        console.log(`Updated shop item: ${item.name} (${id})`);
+      if (isNewOnly) {
+        console.log(`Skipped existing shop item: ${item.name} (${id}) [--new-only]`);
+        skippedCount++;
+        continue;
+      }
+
+      const dbData = doc.data() || {};
+
+      // Unless --force is passed, preserve mutable properties managed in the admin dashboard
+      let itemData: any = {
+          ...data,
+          createdAt: dbData.createdAt || timestamp,
+          updatedAt: timestamp
+      };
+
+      if (!isForce) {
+        itemData = {
+          ...itemData,
+          active: dbData.active !== undefined ? dbData.active : data.active,
+          forSale: dbData.forSale !== undefined ? dbData.forSale : data.forSale,
+          featured: dbData.featured !== undefined ? dbData.featured : data.featured,
+          premiumOnly: dbData.premiumOnly !== undefined ? dbData.premiumOnly : data.premiumOnly,
+        };
+      }
+
+      if (isChangedOnly && !hasChanges(itemData, dbData)) {
+        console.log(`Skipped unchanged shop item: ${item.name} (${id}) [--changed-only]`);
+        skippedCount++;
+        continue;
+      }
+
+      await docRef.update(itemData);
+      console.log(`Updated shop item: ${item.name} (${id})`);
+      updatedCount++;
     } else {
-        await docRef.set(itemData);
-        console.log(`Created shop item: ${item.name} (${id})`);
+      const itemData = {
+          ...data,
+          createdAt: timestamp,
+          updatedAt: timestamp
+      };
+
+      await docRef.set(itemData);
+      console.log(`Created shop item: ${item.name} (${id})`);
+      createdCount++;
     }
-    count++;
   }
 
-  console.log(`Successfully seeded/updated ${count} shop items.`);
+  console.log(`\nSeed Complete!`);
+  console.log(`Created: ${createdCount}`);
+  console.log(`Updated: ${updatedCount}`);
+  console.log(`Skipped: ${skippedCount}`);
 }
 
 seed();
