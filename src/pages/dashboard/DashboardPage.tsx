@@ -42,6 +42,7 @@ import { TitleMap } from '../../components/ui/titles';
 import { cn } from '../../lib/utils';
 
 const AvatarRingMap: Record<string, React.FC<any>> = {
+  "ResponsibleGamblerAvatarRing": ResponsibleGamblerAvatarRing,
   'Hexagons': Hexagons,
   'Hip': Hip,
   'Inferno': Inferno,
@@ -58,7 +59,12 @@ const AvatarRingMap: Record<string, React.FC<any>> = {
   'BadBeatAvatarRing': BadBeatAvatarRing
 };
 
+import { ResponsibleGamblerBanner } from "../../components/ui/profile-banners/responsible-gambler/ResponsibleGamblerBanner";
+import { ResponsibleGamblerAvatarRing } from "../../components/ui/avatar-rings/responsible-gambler/ResponsibleGamblerAvatarRing";
+import { ResponsibleGamblerTitle } from "../../components/ui/titles/responsible-gambler/ResponsibleGamblerTitle";
+
 const ProfileBannerMap: Record<string, React.FC<any>> = {
+  "ResponsibleGamblerBanner": ResponsibleGamblerBanner,
   'BoardRoomBanner': BoardRoomBanner,
   'InfernoBanner': InfernoBanner,
   'OceanBanner': OceanBanner,
