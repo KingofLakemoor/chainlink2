@@ -1,3 +1,0 @@
-1. **Always register Service Worker in `useNotifications.ts`**: The `beforeinstallprompt` event for PWA requires a registered Service Worker. Currently, `useNotifications.ts` only registers the Service Worker (`/sw.js`) if the user has already granted push notification permissions. We should register the Service Worker immediately, and then conditionally ask for/use push tokens.
-2. **Handle cases when notifications are disabled**: If `profile.notificationsEnabled === false`, the hook currently returns early, which skips registering the Service Worker entirely. We'll make sure the SW is still registered.
-3. **Pre-commit Checks**: Run tests and linting.
