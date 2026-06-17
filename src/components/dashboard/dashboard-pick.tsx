@@ -134,10 +134,10 @@ export const DashboardPick = React.memo(function DashboardPick({ activePick, act
                    {currentSponsor.image ? (
                      <div className="text-sm font-medium text-zinc-300 flex items-center gap-3">
                          <FirebaseImage src={currentSponsor.image} fallback="/logo.png" alt={currentSponsor.name} className="h-6 object-contain" loading="lazy" />
-                         Your Brand & Link Here
+                         {currentSponsor.description || "Your Brand & Link Here"}
                      </div>
                    ) : (
-                     <div className="text-sm font-medium text-zinc-300">Your Brand & Link Here</div>
+                     <div className="text-sm font-medium text-zinc-300">{currentSponsor.description || "Your Brand & Link Here"}</div>
                    )}
                    <div className="bg-white text-black font-bold text-xs py-1.5 px-3 rounded-full flex items-center shadow-lg hover:bg-zinc-200 transition-colors">
                      Click Me
