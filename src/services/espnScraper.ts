@@ -467,7 +467,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
 
           const descLower = finalStatusDesc.toLowerCase();
           const detailLower = (competition.status?.type?.detail || "").toLowerCase();
-          const hasLinescores = (homeCompetitor.linescores && homeCompetitor.linescores.length > 0) || (awayCompetitor.linescores && awayCompetitor.linescores.length > 0);
+          const hasLinescores = (home.linescores && home.linescores.length > 0) || (away.linescores && away.linescores.length > 0);
 
           if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus) || descLower.includes('postponed') || descLower.includes('canceled') || descLower.includes('cancelled') || descLower.includes('abandoned') || detailLower.includes('postponed') || detailLower.includes('canceled') || detailLower.includes('cancelled') || detailLower.includes('abandoned')) {
               finalStatus = "STATUS_POSTPONED";
