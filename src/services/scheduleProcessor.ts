@@ -295,7 +295,9 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
           const existingData = existingDoc.data();
 
           if (existingData.abandoned && scrapedMatchup.league !== 'ATP' && scrapedMatchup.league !== 'WTA') {
-            continue;
+            if (existingData.status !== 'STATUS_SCHEDULED') {
+              continue;
+            }
           }
 
           const newTitle = existingData.hasCustomTitle ? existingData.title : scrapedMatchup.title;
