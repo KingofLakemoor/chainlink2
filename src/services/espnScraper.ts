@@ -114,6 +114,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
       case "ATP": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard?dates=${date}`);
       case "WTA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard?dates=${date}`);
       case "CRICKET": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/cricket/21266/scoreboard?dates=${date}&limit=300`);
+      case "NWSL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/nwsl.1/scoreboard?dates=${date}`);
       default: throw new Error(`Unsupported league: ${league}`);
     }
   }
@@ -136,6 +137,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
     case "CBASE": return [`https://cdn.espn.com/core/college-baseball/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "WNBA": return [`https://cdn.espn.com/core/wnba/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "CRICKET": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/cricket/21266/scoreboard?dates=${date}`);
+    case "NWSL": return [`https://cdn.espn.com/core/soccer/schedule/_/league/nwsl.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     default: throw new Error(`Unsupported league: ${league}`);
   }
 }
