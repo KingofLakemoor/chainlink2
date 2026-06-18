@@ -7,8 +7,11 @@ const leagueIconMap: Record<string, string> = {
   NBA: '🏀',
   MBB: '🏀',
   WBB: '🏀',
+  WNBA: '🏀',
   MLB: '⚾',
+  CBASE: '⚾',
   NFL: '🏈',
+  CFB: '🏈',
   'COLLEGE-FOOTBALL': '🏈',
   NHL: '🏒',
   EPL: '⚽',
@@ -16,7 +19,15 @@ const leagueIconMap: Record<string, string> = {
   TUR: '⚽',
   RPL: '⚽',
   CSL: '⚽',
-  WNBA: '🏀',
+  FIFA: '⚽',
+  FRA: '⚽',
+  CHN: '⚽',
+  NWSL: '⚽',
+  PGA: '⛳',
+  ATP: '🎾',
+  WTA: '🎾',
+  CRICKET: '🏏',
+  UNKNOWN: '❓'
 };
 
 interface LifetimeStatsProps {

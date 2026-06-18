@@ -24,11 +24,14 @@ const fetchMatchupsForPicks = async (fetchedPicks: any[]) => {
     }
 
     const fetchedMatchups = [];
-    for (const chunk of chunks) {
+    const promises = chunks.map(async (chunk) => {
       const q = query(collection(db, 'matchups'), where('gameId', 'in', chunk));
       const snap = await getDocs(q);
-      snap.docs.forEach(d => fetchedMatchups.push({id: d.id, ...d.data()}));
-    }
+      return snap.docs.map(d => ({id: d.id, ...d.data()}));
+    });
+
+    const results = await Promise.all(promises);
+    results.forEach(res => fetchedMatchups.push(...res));
 
     return fetchedMatchups;
   };
@@ -44,6 +47,56 @@ const fetchMatchupsForPicks = async (fetchedPicks: any[]) => {
   const [isLoadingPicks, setIsLoadingPicks] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMorePicks, setHasMorePicks] = useState(true);
+
+  // States for League Stats
+  const [computedLeagueStats, setComputedLeagueStats] = useState<Record<string, { wins: number, losses: number, pushes: number }> | null>(null);
+  const [isLoadingLeagueStats, setIsLoadingLeagueStats] = useState(false);
+
+
+  useEffect(() => {
+    if (activeTab === 'LEAGUE_STATS' && !computedLeagueStats && user) {
+      const fetchAllLeagueStats = async () => {
+        setIsLoadingLeagueStats(true);
+        try {
+          // Fetch all picks
+          const q = query(
+            collection(db, 'picks'),
+            where('userId', '==', user.uid)
+          );
+          const snap = await getDocs(q);
+          const allPicks = snap.docs.map(doc => ({ id: doc.id, ...(doc.data() as object) } as any));
+
+          // Fetch all associated matchups
+          const allMatchups = await fetchMatchupsForPicks(allPicks);
+          const matchupsMap = new Map(allMatchups.map(m => [m.gameId, m]));
+
+          // Calculate stats
+          const stats: Record<string, { wins: number, losses: number, pushes: number }> = {};
+
+          allPicks.forEach(pick => {
+            const matchup = matchupsMap.get(pick.matchupId);
+            const league = matchup?.league || 'UNKNOWN';
+
+            if (!stats[league]) {
+              stats[league] = { wins: 0, losses: 0, pushes: 0 };
+            }
+
+            if (pick.status === 'WIN') stats[league].wins++;
+            else if (pick.status === 'LOSS') stats[league].losses++;
+            else if (pick.status === 'PUSH') stats[league].pushes++;
+          });
+
+          setComputedLeagueStats(stats);
+        } catch (e) {
+          console.error("Error computing league stats", e);
+        } finally {
+          setIsLoadingLeagueStats(false);
+        }
+      };
+
+      fetchAllLeagueStats();
+    }
+  }, [activeTab, user, computedLeagueStats]);
 
   // States for Medals
   const [achievements, setAchievements] = useState<any[]>([]);
@@ -236,7 +289,11 @@ const fetchMatchupsForPicks = async (fetchedPicks: any[]) => {
       </div>
 
       {activeTab === 'LEAGUE_STATS' && (
-        <LifetimeStats userStats={profile?.statsByLeague || {}} />
+        isLoadingLeagueStats ? (
+          <div className="p-8 text-center text-zinc-400">Computing Lifetime League Stats...</div>
+        ) : (
+          <LifetimeStats userStats={computedLeagueStats || profile?.statsByLeague || {}} />
+        )
       )}
 
       {activeTab === 'MEDALS' && (

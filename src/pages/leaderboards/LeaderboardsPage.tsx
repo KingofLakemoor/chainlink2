@@ -39,7 +39,12 @@ import { SignalFloorBanner } from '../../components/ui/profile-banners/signal-fl
 import { EdgeLedgerBanner } from '../../components/ui/profile-banners/edge-ledger/EdgeLedgerBanner';
 import { BadBeatBanner } from '../../components/ui/profile-banners/bad-beat';
 
+import { ResponsibleGamblerBanner } from "../../components/ui/profile-banners/responsible-gambler/ResponsibleGamblerBanner";
+import { ResponsibleGamblerAvatarRing } from "../../components/ui/avatar-rings/responsible-gambler/ResponsibleGamblerAvatarRing";
+import { ResponsibleGamblerTitle } from "../../components/ui/titles/responsible-gambler/ResponsibleGamblerTitle";
+
 const ProfileBannerMap: Record<string, React.FC<any>> = {
+  "ResponsibleGamblerBanner": ResponsibleGamblerBanner,
   'BoardRoomBanner': BoardRoomBanner,
   'InfernoBanner': InfernoBanner,
   'OceanBanner': OceanBanner,
@@ -58,6 +63,7 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
 };
 
 const AvatarRingMap: Record<string, React.FC<any>> = {
+  "ResponsibleGamblerAvatarRing": ResponsibleGamblerAvatarRing,
   'Hexagons': Hexagons,
   'Hip': Hip,
   'Inferno': Inferno,

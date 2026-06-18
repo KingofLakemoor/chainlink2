@@ -32,13 +32,22 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
         }
       }
 
-      const matchupsRef = adminDb.collection('matchups');
-      const existingSnap = await matchupsRef.where('league', '==', league).get();
-
       const existingMap = new Map<string, any>();
-      existingSnap.docs.forEach(d => {
-        existingMap.set(d.data().gameId, d);
-      });
+      const gameIds = response.data.map(m => m.gameId).filter(id => id);
+
+      // Batch fetch existing matchups using 'in' query (max 30 per chunk)
+      if (gameIds.length > 0) {
+        const matchupsRef = adminDb.collection('matchups');
+        for (let i = 0; i < gameIds.length; i += 30) {
+          const chunk = gameIds.slice(i, i + 30);
+          const chunkSnap = await matchupsRef.where('gameId', 'in', chunk).get();
+          chunkSnap.docs.forEach(d => {
+            if (d.data().league === league) {
+              existingMap.set(d.data().gameId, d);
+            }
+          });
+        }
+      }
 
       let batch = adminDb.batch();
       let opCount = 0;
@@ -468,7 +477,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                 updateData.active = false;
                 flattenedUpdate.abandoned = true;
                 flattenedUpdate.active = false;
-              } else if (scrapedMatchup.status === 'STATUS_IN_PROGRESS') {
+              } else if (scrapedMatchup.status === 'STATUS_IN_PROGRESS' || scrapedMatchup.status === 'STATUS_FINAL') {
                 for (const pickDoc of pendingPicksSnap.docs) {
                     const pickData = pickDoc.data();
                     const userPicksSnap = await adminDb.collection('picks').where('userId', '==', pickData.userId).where('status', '==', 'PENDING').orderBy('createdAt', 'asc').get();
@@ -481,6 +490,19 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                             batch.update(userRef, { links: (userData.links || 0) + pickData.links, updatedAt: Date.now() });
                         }
                         opCount += 2;
+
+                        const notificationsRef = adminDb.collection('notifications').doc();
+                        const gameTitle = updateData.title || (updateData.awayTeam?.name + ' @ ' + updateData.homeTeam?.name);
+                        batch.set(notificationsRef, {
+                            title: 'Queued Pick Cancelled ⏱️',
+                            body: `Your queued pick on ${gameTitle} was cancelled because the game started before it became your active pick. Your wager of ${pickData.links || 0} links was refunded.`,
+                            audience: 'USER',
+                            targetUserId: pickData.userId,
+                            status: 'PENDING',
+                            scheduledTime: Date.now(),
+                            createdAt: Date.now()
+                        });
+                        opCount++;
                     }
                 }
               }

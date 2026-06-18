@@ -1,3 +1,4 @@
+import { ResponsibleGamblerTitle } from "./responsible-gambler/ResponsibleGamblerTitle";
 import React from 'react';
 import { V1OriginatorTitle } from './v1-originator';
 import { OpulentoTitle } from './opulento';
@@ -9,6 +10,7 @@ import { EdgeLedgerTitle } from './edge-ledger';
 import { BadBeatTitle } from './bad-beat';
 
 export const TitleMap: Record<string, React.FC<any>> = {
+  "ResponsibleGamblerTitle": ResponsibleGamblerTitle,
   'V1OriginatorTitle': V1OriginatorTitle,
   'OpulentoTitle': OpulentoTitle,
   'ZeroZeroTitle': ZeroZeroTitle,

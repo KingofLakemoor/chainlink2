@@ -41,6 +41,7 @@ import { BadBeatBanner } from '../../components/ui/profile-banners/bad-beat';
 import { TitleMap } from '../../components/ui/titles';
 
 const AvatarRingMap: Record<string, React.FC<any>> = {
+  "ResponsibleGamblerAvatarRing": ResponsibleGamblerAvatarRing,
   'Hexagons': Hexagons,
   'Hip': Hip,
   'Inferno': Inferno,
@@ -57,7 +58,12 @@ const AvatarRingMap: Record<string, React.FC<any>> = {
   'BadBeatAvatarRing': BadBeatAvatarRing
 };
 
+import { ResponsibleGamblerBanner } from "../../components/ui/profile-banners/responsible-gambler/ResponsibleGamblerBanner";
+import { ResponsibleGamblerAvatarRing } from "../../components/ui/avatar-rings/responsible-gambler/ResponsibleGamblerAvatarRing";
+import { ResponsibleGamblerTitle } from "../../components/ui/titles/responsible-gambler/ResponsibleGamblerTitle";
+
 const ProfileBannerMap: Record<string, React.FC<any>> = {
+  "ResponsibleGamblerBanner": ResponsibleGamblerBanner,
   'BoardRoomBanner': BoardRoomBanner,
   'InfernoBanner': InfernoBanner,
   'OceanBanner': OceanBanner,
@@ -108,6 +114,7 @@ export default function ShopPage() {
             { id: 'banner_neon', name: 'Neon Banner', description: 'Brighten up your profile header.', cost: 1000, type: 'PROFILE_BANNER', active: true, image: 'InfernoBanner' },
 
             { id: 'merch_level_one_tee', name: 'ChainLink Level One Tee', description: 'The official ChainLink Level One Tee.', cost: 1000, type: 'MERCH', active: true, image: '/images/merch/tee-banner.png' },
+            { id: 'merch_trucker_hat', name: 'ChainLink Trucker Hat', description: 'The official ChainLink Trucker Hat.', cost: 850, type: 'MERCH', active: true, image: '/images/merch/trucker banner.png' },
           ]);
           setLoading(false);
           return;
@@ -558,13 +565,11 @@ export default function ShopPage() {
 
         <section>
           <h2 className="text-2xl font-bold text-zinc-200 mb-4 border-b border-zinc-800 pb-2">Merch</h2>
-          {merchItems.length === 0 ? (
-            <div className="bg-[#121212] border border-zinc-800 rounded-xl p-8 text-center text-zinc-500">
-              No merch available right now.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {merchItems.map(item => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* 1. Existing Tee Card */}
+            {merchItems.find(i => i.id === 'merch_level_one_tee') && (() => {
+              const item = merchItems.find(i => i.id === 'merch_level_one_tee')!;
+              return (
                 <div key={item.id} className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
                   <div className="h-40 bg-zinc-900 flex items-center justify-center relative overflow-hidden border-b border-zinc-800">
                      {item.image ? (
@@ -597,10 +602,68 @@ export default function ShopPage() {
                     </div>
                   </div>
                 </div>
-              ))}
+              );
+            })()}
+
+            {/* 2. Custom Link Card for Club 602 Merch Shop */}
+            <div className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
+              <div className="h-40 bg-zinc-900 flex items-center justify-center relative overflow-hidden border-b border-zinc-800">
+                <img loading="lazy" src="/images/merch/602 Merch Banner.jpeg" alt="Club 602 Merch" className="w-full h-full object-cover" />
+              </div>
+              <div className="p-5 flex flex-col flex-1">
+                <h3 className="text-xl font-bold text-zinc-200 mb-2">Club 602 Merch Shop</h3>
+                <p className="text-sm text-zinc-400 flex-1 mb-6">Browse the full collection of Club 602 gear.</p>
+                <div className="flex items-center justify-end">
+                  <a href="https://www.club602.com/merch" target="_blank" rel="noopener noreferrer" className="w-full">
+                    <Button variant="outline" className="w-full border-zinc-700 hover:bg-zinc-800 text-zinc-200">
+                      Visit Shop
+                    </Button>
+                  </a>
+                </div>
+              </div>
             </div>
-          )}
-        </section>
+
+            {/* 3. New Trucker Hat Card */}
+            {merchItems.find(i => i.id === 'merch_trucker_hat') && (() => {
+              const item = merchItems.find(i => i.id === 'merch_trucker_hat')!;
+              return (
+                <div key={item.id} className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden flex flex-col">
+                  <div className="h-40 bg-zinc-900 flex items-center justify-center relative overflow-hidden border-b border-zinc-800">
+                     {item.image ? (
+                        <img loading="lazy" src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                     ) : (
+                        <>
+                           <div className="absolute inset-0 bg-zinc-800"></div>
+                           <div className="text-6xl z-10">🧢</div>
+                        </>
+                     )}
+                  </div>
+                  <div className="p-5 flex flex-col flex-1">
+                    <h3 className="text-xl font-bold text-zinc-200 mb-2">{item.name}</h3>
+                    <p className="text-sm text-zinc-400 flex-1 mb-6">{item.description}</p>
+                    <div className="flex items-center justify-between">
+                      <div className="font-mono font-bold text-cyan-400 flex items-center gap-1">
+                        <Coins className="w-4 h-4" /> {item.cost.toLocaleString()}
+                      </div>
+                      <Button
+                         variant="default"
+                         className="bg-[#22c55e] hover:bg-[#16a34a] text-white"
+                         disabled={buyLoading === item.id || !user || (profile?.links || 0) < item.cost}
+                         onClick={() => {
+                           setSelectedMerchItem(item);
+                           setIsMerchModalOpen(true);
+                         }}
+                      >
+                         {buyLoading === item.id ? 'Processing...' : 'Buy Now'}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+
+</section>
 
       <Modal isOpen={isMerchModalOpen} onClose={() => setIsMerchModalOpen(false)}>
         <div className="p-6 max-h-[90vh] overflow-y-auto">
@@ -649,6 +712,43 @@ export default function ShopPage() {
                 </div>
              </div>
           )}
+
+          {selectedMerchItem?.id === 'merch_trucker_hat' && (
+             <div className="mb-6">
+                <div className="aspect-square bg-zinc-900 rounded-lg overflow-hidden mb-3 border border-zinc-800 flex items-center justify-center">
+                   <img loading="lazy"
+                    src={activePreviewImage || selectedMerchItem.image}
+                    alt="Product Preview"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                {/* Thumbnails */}
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-zinc-900">
+                  {[
+                    { color: 'Kelly Green Front', src: '/images/merch/5-panel-trucker-cap-kelly-white-kelly-front-6a32e56ba13ce.png' },
+                    { color: 'Kelly Green Side', src: '/images/merch/5-panel-trucker-cap-kelly-white-kelly-right-front-6a32e56ba1613.png' },
+                    { color: 'Black Front', src: '/images/merch/5-panel-trucker-cap-black-white-black-front-6a32e56ba11e1.png' },
+                    { color: 'Black Side', src: '/images/merch/5-panel-trucker-cap-black-white-black-left-front-6a32e56ba1803.png' }
+                  ].map((img, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        setActivePreviewImage(img.src);
+                        // Extract color base
+                        const colorBase = img.color.includes('Kelly') ? 'Kelly Green' : 'Black';
+                        setShippingInfo({...shippingInfo, color: colorBase});
+                      }}
+                      className={`w-16 h-16 rounded-md bg-zinc-800 border-2 shrink-0 overflow-hidden ${(activePreviewImage === img.src) ? 'border-emerald-500' : 'border-zinc-700 hover:border-zinc-500'}`}
+                    >
+                       <img loading="lazy" src={img.src} alt={img.color} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerText = img.color; e.currentTarget.parentElement!.className += ' text-xs text-center flex items-center justify-center p-1' }} />
+                    </button>
+                  ))}
+                </div>
+             </div>
+          )}
+
 
           <p className="text-zinc-400 text-sm mb-4">
             Please enter your shipping information below. This is required for physical merchandise.
@@ -706,6 +806,32 @@ export default function ShopPage() {
                   </div>
                 </div>
               )}
+
+              {selectedMerchItem?.id === 'merch_trucker_hat' && (
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label htmlFor="color" className="block text-sm font-medium text-zinc-400 mb-1">Color</label>
+                    <select
+                      id="color"
+                      value={shippingInfo.color}
+                      onChange={(e) => {
+                         const val = e.target.value;
+                         setShippingInfo({...shippingInfo, color: val});
+                         const imgMap: Record<string, string> = {
+                           'Black': '/images/merch/5-panel-trucker-cap-black-white-black-front-6a32e56ba11e1.png',
+                           'Kelly Green': '/images/merch/5-panel-trucker-cap-kelly-white-kelly-front-6a32e56ba13ce.png'
+                         };
+                         if (imgMap[val]) setActivePreviewImage(imgMap[val]);
+                      }}
+                      className="w-full rounded-md bg-zinc-900 border border-zinc-800 text-zinc-100 py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    >
+                      <option value="Black">Black</option>
+                      <option value="Kelly Green">Kelly Green</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
 
               <div>
                 <label htmlFor="fullName" className="block text-sm font-medium text-zinc-400 mb-1">Full Name</label>

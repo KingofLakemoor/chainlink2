@@ -181,3 +181,21 @@
     animation: badbeat-ring-pulse 5s ease-in-out infinite;
   }
 }
+
+@layer utilities {
+  @keyframes responsible-title-glow {
+    0%,100% { filter: drop-shadow(0 0 8px rgba(94,234,212,0.6)); }
+    50% { filter: drop-shadow(0 0 18px rgba(94,234,212,1)); }
+  }
+  .animate-responsible-title-glow {
+    animation: responsible-title-glow 4.2s ease-in-out infinite;
+  }
+
+  @keyframes responsible-ring-pulse {
+    0%,100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.08); }
+  }
+  .animate-responsible-ring-pulse {
+    animation: responsible-ring-pulse 5s ease-in-out infinite;
+  }
+}
