@@ -441,6 +441,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
             // Flatten update properties specifically for batch.update when NOT migrating
             const flattenedUpdate: any = {
+              abandoned: updateData.abandoned,
               title: updateData.title,
               league: updateData.league,
               active: updateData.active,
