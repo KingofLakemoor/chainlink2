@@ -467,6 +467,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
 
           const descLower = finalStatusDesc.toLowerCase();
           const detailLower = (competition.status?.type?.detail || "").toLowerCase();
+          const hasLinescores = (homeCompetitor.linescores && homeCompetitor.linescores.length > 0) || (awayCompetitor.linescores && awayCompetitor.linescores.length > 0);
 
           if (MATCHUP_POSTPONED_STATUSES.includes(rawStatus) || descLower.includes('postponed') || descLower.includes('canceled') || descLower.includes('cancelled') || descLower.includes('abandoned') || detailLower.includes('postponed') || detailLower.includes('canceled') || detailLower.includes('cancelled') || detailLower.includes('abandoned')) {
               finalStatus = "STATUS_POSTPONED";
@@ -474,7 +475,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
               finalStatus = "STATUS_DELAYED";
           } else if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || (competition.status?.type?.completed === true && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus)) || (descLower.includes('final') && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus))) {
               finalStatus = "STATUS_FINAL";
-          } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || competition.status?.type?.state === 'in' || (rawStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0 || (competition.status?.type?.state !== 'pre' && competition.status?.period && competition.status?.period > 0)))) {
+          } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || competition.status?.type?.state === 'in' || (rawStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0 || hasLinescores || (competition.status?.type?.state !== 'pre' && competition.status?.period && competition.status?.period > 0)))) {
               finalStatus = "STATUS_IN_PROGRESS";
               if (league === "MLB" || league === "CBASE") {
                   const detailStr = competition.status?.type?.detail || competition.status?.type?.shortDetail;
