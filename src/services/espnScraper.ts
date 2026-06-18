@@ -114,6 +114,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
       case "ATP": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard?dates=${date}`);
       case "WTA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard?dates=${date}`);
       case "CRICKET": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/cricket/21266/scoreboard?dates=${date}&limit=300`);
+      case "NWSL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/nwsl.1/scoreboard?dates=${date}`);
       default: throw new Error(`Unsupported league: ${league}`);
     }
   }
@@ -136,6 +137,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
     case "CBASE": return [`https://cdn.espn.com/core/college-baseball/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "WNBA": return [`https://cdn.espn.com/core/wnba/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "CRICKET": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/cricket/21266/scoreboard?dates=${date}`);
+    case "NWSL": return [`https://cdn.espn.com/core/soccer/schedule/_/league/nwsl.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     default: throw new Error(`Unsupported league: ${league}`);
   }
 }
@@ -320,7 +322,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                       finalStatus = "STATUS_DELAYED";
                   } else if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || (comp.status?.type?.completed === true && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus)) || (descLower.includes('final') && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus))) {
                       finalStatus = "STATUS_FINAL";
-                  } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || compState === 'in' || (rawStatus === 'STATUS_SCHEDULED' && compState !== 'pre' && (hasLinescores || (comp.status?.period && comp.status?.period > 0)))) {
+                  } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || compState === 'in' || (rawStatus === 'STATUS_SCHEDULED' && (hasLinescores || (compState !== 'pre' && comp.status?.period && comp.status?.period > 0)))) {
                       finalStatus = "STATUS_IN_PROGRESS";
                       if (comp.status?.type?.detail && !comp.status.type.detail.toLowerCase().match(/\b(am|pm|edt|est|pdt|pst|cst|cdt)\b/)) {
                           finalStatusDesc = comp.status.type.detail;
@@ -472,7 +474,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
               finalStatus = "STATUS_DELAYED";
           } else if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || (competition.status?.type?.completed === true && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus)) || (descLower.includes('final') && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus))) {
               finalStatus = "STATUS_FINAL";
-          } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || competition.status?.type?.state === 'in' || (rawStatus === "STATUS_SCHEDULED" && competition.status?.type?.state !== 'pre' && (homeScore > 0 || awayScore > 0 || (competition.status?.period && competition.status?.period > 0)))) {
+          } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || competition.status?.type?.state === 'in' || (rawStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0 || (competition.status?.type?.state !== 'pre' && competition.status?.period && competition.status?.period > 0)))) {
               finalStatus = "STATUS_IN_PROGRESS";
               if (league === "MLB" || league === "CBASE") {
                   const detailStr = competition.status?.type?.detail || competition.status?.type?.shortDetail;

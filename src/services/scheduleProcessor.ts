@@ -32,13 +32,22 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
         }
       }
 
-      const matchupsRef = adminDb.collection('matchups');
-      const existingSnap = await matchupsRef.where('league', '==', league).get();
-
       const existingMap = new Map<string, any>();
-      existingSnap.docs.forEach(d => {
-        existingMap.set(d.data().gameId, d);
-      });
+      const gameIds = response.data.map(m => m.gameId).filter(id => id);
+
+      // Batch fetch existing matchups using 'in' query (max 30 per chunk)
+      if (gameIds.length > 0) {
+        const matchupsRef = adminDb.collection('matchups');
+        for (let i = 0; i < gameIds.length; i += 30) {
+          const chunk = gameIds.slice(i, i + 30);
+          const chunkSnap = await matchupsRef.where('gameId', 'in', chunk).get();
+          chunkSnap.docs.forEach(d => {
+            if (d.data().league === league) {
+              existingMap.set(d.data().gameId, d);
+            }
+          });
+        }
+      }
 
       let batch = adminDb.batch();
       let opCount = 0;
