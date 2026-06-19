@@ -512,7 +512,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
             }
 
             if (existingDoc.id !== gameId) {
-              const newDocRef = matchupsRef.doc(gameId);
+              const newDocRef = adminDb.collection("matchups").doc(gameId);
               batch.set(newDocRef, updateData);
               batch.delete(existingDoc.ref);
               opCount += 2;
@@ -530,7 +530,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
             }
           }
         } else {
-          const newDocRef = matchupsRef.doc(gameId);
+          const newDocRef = adminDb.collection("matchups").doc(gameId);
 
           let abandoned = false;
           let active = scrapedMatchup.active && defaultActive;
