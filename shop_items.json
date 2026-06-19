@@ -1243,7 +1243,8 @@
     "featured": true,
     "preview": "/images/merch/tee-banner.png",
     "order": 99,
-    "collectionId": ""
+    "collectionId": "",
+    "requiresShipping": true
   },
   {
     "id": "banner_novatrix_code",
@@ -1488,5 +1489,20 @@
     "preview": "ResponsibleGamblerTitle",
     "order": 82,
     "collectionId": "responsible_gambler"
+  },
+  {
+    "id": "merch_trucker_hat",
+    "name": "ChainLink Trucker Hat",
+    "description": "The official ChainLink Trucker Hat.",
+    "cost": 850,
+    "type": "MERCH",
+    "requiresShipping": true,
+    "active": true,
+    "forSale": false,
+    "image": "/images/merch/trucker banner.png",
+    "featured": true,
+    "preview": "/images/merch/trucker banner.png",
+    "order": 100,
+    "collectionId": ""
   }
 ]
