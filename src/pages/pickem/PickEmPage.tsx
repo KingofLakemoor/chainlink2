@@ -2,7 +2,7 @@ import { FirebaseImage } from '../../components/ui/FirebaseImage';
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { collection, getDocs, doc, query, where, setDoc, getDoc, deleteDoc, documentId } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { db, auth } from '../../lib/firebase';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
 import { Layers, CheckCircle, Trophy } from 'lucide-react';
@@ -143,7 +143,10 @@ export default function PickEmPage() {
           const usersMap: Record<string, any> = {};
 
           // Fetch public user profiles via API endpoint to avoid permission denied errors
-          const res = await fetch(`/api/users/public?uids=${participantIds.join(',')}`);
+          const token = await auth.currentUser?.getIdToken();
+          const res = await fetch(`/api/users/public?uids=${participantIds.join(',')}`, {
+             headers: { 'Authorization': `Bearer ${token}` }
+          });
           if (res.ok) {
             const data = await res.json();
             const usersList = data.users || [];

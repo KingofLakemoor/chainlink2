@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../lib/auth-context';
-import { db } from '../../lib/firebase';
+import { db, auth } from '../../lib/firebase';
 import { collection, getDocs, query, where, documentId } from 'firebase/firestore';
 import { Button } from '../../components/ui/button';
 import { cn } from '../../lib/utils';
@@ -157,7 +157,10 @@ export default function LeaderboardsPage() {
            return;
         }
 
-        const usersRes = await fetch('/api/users/public');
+        const token = await auth.currentUser?.getIdToken();
+        const usersRes = await fetch('/api/users/public', {
+           headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (!usersRes.ok) throw new Error("Failed to fetch leaderboard data");
         const usersData = await usersRes.json();
         const usersList = usersData.users || [];

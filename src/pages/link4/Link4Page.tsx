@@ -2,7 +2,7 @@ import { FirebaseImage } from '../../components/ui/FirebaseImage';
 import React, { useState, useEffect } from 'react';
 import { Grid, Clock, Trophy, Lock, X } from 'lucide-react';
 import { collection, query, where, getDocs, orderBy, limit, doc, setDoc } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { db, auth } from '../../lib/firebase';
 import { MatchupCard } from '../../components/ui/MatchupCard';
 import { onSnapshot } from 'firebase/firestore';
 import { useAuth } from '../../lib/auth-context';
@@ -182,7 +182,10 @@ export default function Link4Page() {
              }
 
              for (const chunk of chunkedUids) {
-                const res = await fetch(`/api/users/public?uids=${chunk.join(',')}`);
+                const token = await auth.currentUser?.getIdToken();
+                const res = await fetch(`/api/users/public?uids=${chunk.join(',')}`, {
+                   headers: { 'Authorization': `Bearer ${token}` }
+                });
                 if (res.ok) {
                    const data = await res.json();
                    data.users.forEach((u: any) => {
