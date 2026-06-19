@@ -11,6 +11,27 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
 
 export const apiRouter = express.Router();
 
+const validateAuth = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const idToken = authHeader.split('Bearer ')[1];
+    if (!adminAuth) return res.status(500).json({ success: false, error: "admin tools not initialized" });
+
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    (req as any).uid = decodedToken.uid;
+    next();
+  } catch (e: any) {
+    console.error("Auth validation error:", e.message);
+    res.status(401).json({ success: false, error: 'Unauthorized' });
+  }
+};
+
+
+
 apiRouter.get("/users/check-username", async (req, res) => {
   try {
     const { username } = req.query;
@@ -25,7 +46,7 @@ apiRouter.get("/users/check-username", async (req, res) => {
   }
 });
 
-apiRouter.get("/users/public", async (req, res) => {
+apiRouter.get("/users/public", validateAuth, async (req, res) => {
   try {
     const { uids } = req.query;
     let snap;
