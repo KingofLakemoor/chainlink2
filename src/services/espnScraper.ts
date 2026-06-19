@@ -360,13 +360,13 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                      homeTeam: {
                        id: String(homeCompetitor.id),
                        name: homeName,
-                       image: (league === "CRICKET" ? MLC_LOGOS[String(homeCompetitor.id)] : undefined) || homeCompetitor?.athlete?.flag?.href || homeCompetitor?.team?.logo || "/icons/icon-256x256.png",
+                       image: (league as any === "CRICKET" ? MLC_LOGOS[String(homeCompetitor.id)] : undefined) || homeCompetitor?.athlete?.flag?.href || homeCompetitor?.team?.logo || "/icons/icon-256x256.png",
                        score: homeScore
                      },
                      awayTeam: {
                        id: String(awayCompetitor.id),
                        name: awayName,
-                       image: (league === "CRICKET" ? MLC_LOGOS[String(awayCompetitor.id)] : undefined) || awayCompetitor?.athlete?.flag?.href || awayCompetitor?.team?.logo || "/icons/icon-256x256.png",
+                       image: (league as any === "CRICKET" ? MLC_LOGOS[String(awayCompetitor.id)] : undefined) || awayCompetitor?.athlete?.flag?.href || awayCompetitor?.team?.logo || "/icons/icon-256x256.png",
                        score: awayScore
                      },
                      cost: 0,

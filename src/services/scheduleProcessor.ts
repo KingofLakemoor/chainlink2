@@ -133,6 +133,10 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                  return count;
               };
 
+              const isTournamentPost = scrapedMatchup.competition?.status?.type?.state === 'post';
+              const isHomeWD = homeComp?.status?.type?.name === 'STATUS_WITHDRAWN' || homeComp?.status?.type?.name === 'STATUS_CUT' || homeComp?.status?.type?.name === 'STATUS_DQ';
+              const isAwayWD = awayComp?.status?.type?.name === 'STATUS_WITHDRAWN' || awayComp?.status?.type?.name === 'STATUS_CUT' || awayComp?.status?.type?.name === 'STATUS_DQ';
+
               if (isRoundScore || isThruHolesMatchup) {
                  const homeLs = homeComp.linescores?.find((ls: any) => ls.period === period);
                  const awayLs = awayComp.linescores?.find((ls: any) => ls.period === period);
@@ -159,10 +163,10 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                  // Note: ESPN doesn't always cleanly mark individual rounds as 'post', so we rely on teeTimes and general status if needed
                  // But typically if they are on a later round, the previous round is final.
                  const currentRound = homeComp.status?.period || 1;
-                 const isHomeRoundDone = homeComp.status?.type?.state === 'post' || currentRound > period || (currentRound === period && homeComp.status?.type?.completed);
+                 const isHomeRoundDone = isTournamentPost || isHomeWD || (currentRound === period && homeComp.status?.type?.state === 'post') || currentRound > period || (currentRound === period && homeComp.status?.type?.completed);
 
                  const awayCurrentRound = awayComp.status?.period || 1;
-                 const isAwayRoundDone = awayComp.status?.type?.state === 'post' || awayCurrentRound > period || (awayCurrentRound === period && awayComp.status?.type?.completed);
+                 const isAwayRoundDone = isTournamentPost || isAwayWD || (awayCurrentRound === period && awayComp.status?.type?.state === 'post') || awayCurrentRound > period || (awayCurrentRound === period && awayComp.status?.type?.completed);
 
                  if (isThruHolesMatchup) {
                     if (isHomeRoundDone || (currentRound === period && (homeComp.status?.thru || 0) >= holes)) {
@@ -180,8 +184,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                  homeScore = parseGolfScore(homeComp.score?.displayValue || homeComp.score?.value || homeComp.score);
                  awayScore = parseGolfScore(awayComp.score?.displayValue || awayComp.score?.value || awayComp.score);
 
-                 if (homeComp.status?.type?.state === 'post') homeFinal = true;
-                 if (awayComp.status?.type?.state === 'post') awayFinal = true;
+                 if (isTournamentPost || isHomeWD) homeFinal = true;
+                 if (isTournamentPost || isAwayWD) awayFinal = true;
 
                  if (homeComp.status?.type?.state === 'in' || homeFinal) homeStarted = true;
                  if (awayComp.status?.type?.state === 'in' || awayFinal) awayStarted = true;
