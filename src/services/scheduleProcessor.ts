@@ -47,6 +47,20 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
             }
           });
         }
+      } else if (league === 'PGA') {
+        // PGA scraped data doesn't have gameIds, so we need to fetch all active PGA matchups recently scheduled
+        const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        const pgaSnap = await adminDb.collection('matchups')
+          .where('league', '==', 'PGA')
+          .where('active', '==', true)
+          .get();
+
+        pgaSnap.docs.forEach(d => {
+          const data = d.data();
+          if (data.startTime && data.startTime > sevenDaysAgo && !data.abandoned) {
+             existingMap.set(data.gameId, d);
+          }
+        });
       }
 
       let batch = adminDb.batch();
@@ -132,8 +146,14 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                  }
 
                  const now = Date.now();
-                 homeStarted = !!(homeLs?.teeTime && new Date(homeLs.teeTime).getTime() <= now);
-                 awayStarted = !!(awayLs?.teeTime && new Date(awayLs.teeTime).getTime() <= now);
+
+                 const hasHomeHoles = homeLs?.holes && homeLs.holes.length > 0;
+                 const isHomeRoundIn = homeComp.status?.period === period && homeComp.status?.type?.state === 'in';
+                 homeStarted = !!(homeLs?.teeTime && new Date(homeLs.teeTime).getTime() <= now) || hasHomeHoles || isHomeRoundIn;
+
+                 const hasAwayHoles = awayLs?.holes && awayLs.holes.length > 0;
+                 const isAwayRoundIn = awayComp.status?.period === period && awayComp.status?.type?.state === 'in';
+                 awayStarted = !!(awayLs?.teeTime && new Date(awayLs.teeTime).getTime() <= now) || hasAwayHoles || isAwayRoundIn;
 
                  // If the whole tournament is post or they have finished their specific round
                  // Note: ESPN doesn't always cleanly mark individual rounds as 'post', so we rely on teeTimes and general status if needed
