@@ -157,6 +157,7 @@ export async function payoutLink4Segment(segmentId: string) {
 
     // Find the winner
     let highestScore = -Infinity;
+    let maxWins = -1;
     let winnerId = null;
 
     for (const entry of allPicks) {
@@ -189,10 +190,16 @@ export async function payoutLink4Segment(segmentId: string) {
           }
        }
 
-       if (wins === 4 && !stillPending) {
-          if (score > highestScore) {
+       if (!stillPending && rawPicks.length === 4) {
+          if (wins > maxWins) {
+             maxWins = wins;
              highestScore = score;
              winnerId = entry.userId;
+          } else if (wins === maxWins) {
+             if (score > highestScore) {
+                 highestScore = score;
+                 winnerId = entry.userId;
+             }
           }
        }
     }
