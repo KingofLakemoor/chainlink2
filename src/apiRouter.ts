@@ -88,20 +88,43 @@ apiRouter.get("/users/public", validateAuth, async (req, res) => {
   }
 });
 
-apiRouter.post("/referral/increment", async (req, res) => {
+apiRouter.post("/referral/increment", validateAuth, async (req, res) => {
   try {
     const { referrerId } = req.body;
+    const uid = (req as any).uid;
+
     if (!referrerId || typeof referrerId !== 'string') {
       return res.status(400).json({ success: false });
     }
+
+    if (uid === referrerId) {
+      return res.status(400).json({ success: false, error: 'Cannot refer yourself' });
+    }
+
+    if (!adminDb) return res.status(500).json({ success: false, error: "admin tools not initialized" });
+
     const { FieldValue } = await import('firebase-admin/firestore');
-    await adminDb.collection('users').doc(referrerId).update({
-      referralsCount: FieldValue.increment(1)
+
+    await adminDb.runTransaction(async (transaction: any) => {
+      const userRef = adminDb.collection('users').doc(uid);
+      const userDoc = await transaction.get(userRef);
+      if (!userDoc.exists) throw new Error("User not found");
+
+      const userData = userDoc.data();
+      if (userData?.referralGranted) {
+        throw new Error("Referral already granted by this user");
+      }
+
+      const referrerRef = adminDb.collection('users').doc(referrerId);
+
+      transaction.update(userRef, { referralGranted: true });
+      transaction.update(referrerRef, { referralsCount: FieldValue.increment(1) });
     });
+
     return res.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error incrementing referral', error);
-    return res.status(500).json({ success: false, error: 'Internal server error' });
+    return res.status(500).json({ success: false, error: error.message || 'Internal server error' });
   }
 });
 

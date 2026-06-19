@@ -69,9 +69,13 @@ const ensureUserProfile = async (user: User, username?: string, referrerId?: str
     // If they were referred, update the referrer's count via API
     if (referrerId) {
       try {
+        const idToken = await user.getIdToken();
         await fetch('/api/referral/increment', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`
+          },
           body: JSON.stringify({ referrerId })
         });
       } catch (e) {
