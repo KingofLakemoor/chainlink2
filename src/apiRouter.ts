@@ -203,7 +203,7 @@ apiRouter.post('/stripe/create-checkout-session', async (req, res) => {
       priceData = {
         currency: 'usd',
         product: 'prod_Ubebt3HfTCfFfc',
-        unit_amount: 1049,
+        unit_amount: 499,
         recurring: {
           interval: 'month',
         },
