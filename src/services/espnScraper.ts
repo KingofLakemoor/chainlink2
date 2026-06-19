@@ -339,6 +339,10 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                       } else {
                           finalStatusDesc = "In Progress";
                       }
+
+                      if (league === "CRICKET" && comp.status?.period) {
+                          finalStatusDesc = `Thru ${comp.status.period}`;
+                      }
                   } else {
                       finalStatus = "STATUS_SCHEDULED";
                       finalStatusDesc = "Upcoming";
@@ -498,6 +502,8 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                           finalStatusDesc = detailStr;
                       }
                   }
+              } else if (league === "CRICKET" && competition.status?.period) {
+                  finalStatusDesc = `Thru ${competition.status.period}`;
               }
           } else {
               finalStatus = "STATUS_SCHEDULED";
