@@ -506,7 +506,7 @@ export default function ShopPage() {
                     disabled={buyLoading === 'premium-undefined' || !user || profile?.premium}
                     className="w-full bg-purple-600 hover:bg-purple-500 text-white"
                   >
-                    {profile?.premium ? 'Active' : buyLoading === 'premium-undefined' ? 'Loading...' : '$10.49 / mo'}
+                    {profile?.premium ? 'Active' : buyLoading === 'premium-undefined' ? 'Loading...' : '$4.99 / mo'}
                   </Button>
                 </div>
               </div>
