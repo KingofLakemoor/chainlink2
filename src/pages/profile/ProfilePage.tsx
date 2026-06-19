@@ -118,7 +118,12 @@ export default function ProfilePage() {
 
       // Check if username is taken (if it changed)
       if (newUsername !== profile?.username) {
-        const res = await fetch(`/api/users/check-username?username=${encodeURIComponent(newUsername)}`);
+        const token = await auth.currentUser?.getIdToken();
+        const res = await fetch(`/api/users/check-username?username=${encodeURIComponent(newUsername)}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         if (!res.ok) throw new Error("Failed to check username availability.");
         const data = await res.json();
         if (data.exists) {
