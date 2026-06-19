@@ -149,11 +149,11 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
                  const hasHomeHoles = homeLs?.holes && homeLs.holes.length > 0;
                  const isHomeRoundIn = homeComp.status?.period === period && homeComp.status?.type?.state === 'in';
-                 homeStarted = !!(homeLs?.teeTime && new Date(homeLs.teeTime).getTime() <= now) || hasHomeHoles || isHomeRoundIn;
+                 homeStarted = hasHomeHoles || isHomeRoundIn;
 
                  const hasAwayHoles = awayLs?.holes && awayLs.holes.length > 0;
                  const isAwayRoundIn = awayComp.status?.period === period && awayComp.status?.type?.state === 'in';
-                 awayStarted = !!(awayLs?.teeTime && new Date(awayLs.teeTime).getTime() <= now) || hasAwayHoles || isAwayRoundIn;
+                 awayStarted = hasAwayHoles || isAwayRoundIn;
 
                  // If the whole tournament is post or they have finished their specific round
                  // Note: ESPN doesn't always cleanly mark individual rounds as 'post', so we rely on teeTimes and general status if needed
