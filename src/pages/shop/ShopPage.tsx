@@ -497,7 +497,7 @@ export default function ShopPage() {
                     <li>Exclusive <strong>Advanced Metrics</strong> tracking</li>
                     <li>Access to <strong>Pro-exclusive shop items</strong></li>
                     <li>A special <strong>Pro Only cosmetic set</strong> every month</li>
-                    <li>Full access to <strong>ScriptLess Premium</strong></li>
+                    <li>Full access to <strong><a href="https://scriptless.club602.com/premium" target="_blank" rel="noopener noreferrer" className="underline hover:text-purple-300">ScriptLess Premium</a></strong></li>
                   </ul>
                 </div>
                 <div className="w-full">
