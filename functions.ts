@@ -6,7 +6,7 @@ import express from 'express';
 import cors from 'cors';
 import { apiRouter } from './src/apiRouter.js';
 
-const LEAGUES_TO_SYNC = ["NBA", "NHL", "MLB", "PGA", "WNBA", "NFL", "WBB", "MBB", "MLS", "EPL", "NWSL", "CFB", "CBASE", "FIFA", "FRA", "TUR", "RPL", "CHN", "ATP", "WTA"];
+const LEAGUES_TO_SYNC = ["NBA", "NHL", "MLB", "PGA", "WNBA", "NFL", "WBB", "MBB", "MLS", "EPL", "NWSL", "CFB", "CBASE", "FIFA", "FRA", "TUR", "RPL", "CHN", "ATP", "WTA", "CRICKET"];
 
 export const frequentSync = onSchedule({ schedule: "every 2 minutes", timeoutSeconds: 300 }, async (event) => {
   console.log(`[Cron] Starting frequent (scoreboard-only) sync cycle...`);
