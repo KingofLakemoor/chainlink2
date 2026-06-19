@@ -60,6 +60,16 @@ export interface LeagueResponse {
   data: any[];
 }
 
+
+const MLC_LOGOS: Record<string, string> = {
+  "1381353": "https://upload.wikimedia.org/wikipedia/en/thumb/2/23/Texas_Super_Kings_Logo.svg/250px-Texas_Super_Kings_Logo.svg.png",
+  "1381354": "https://upload.wikimedia.org/wikipedia/en/thumb/3/39/Los_Angeles_Knight_Riders_official_logo.svg/250px-Los_Angeles_Knight_Riders_official_logo.svg.png",
+  "1381355": "https://upload.wikimedia.org/wikipedia/en/2/2c/MI_New_York_logo.png",
+  "1381357": "https://upload.wikimedia.org/wikipedia/en/thumb/f/f4/San_Francisco_Unicorns_Logo_official.svg/250px-San_Francisco_Unicorns_Logo_official.svg.png",
+  "1381359": "https://upload.wikimedia.org/wikipedia/en/thumb/1/1f/Seattle_Orcas_Logo.svg/250px-Seattle_Orcas_Logo.svg.png",
+  "1381360": "https://upload.wikimedia.org/wikipedia/en/thumb/d/db/Washington_Freedom_Logo.svg/250px-Washington_Freedom_Logo.svg.png"
+};
+
 export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = false) {
   const today = new Date();
   const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
@@ -350,13 +360,13 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                      homeTeam: {
                        id: String(homeCompetitor.id),
                        name: homeName,
-                       image: homeCompetitor?.athlete?.flag?.href || homeCompetitor?.team?.logo || "/icons/icon-256x256.png",
+                       image: (league === "CRICKET" ? MLC_LOGOS[String(homeCompetitor.id)] : undefined) || homeCompetitor?.athlete?.flag?.href || homeCompetitor?.team?.logo || "/icons/icon-256x256.png",
                        score: homeScore
                      },
                      awayTeam: {
                        id: String(awayCompetitor.id),
                        name: awayName,
-                       image: awayCompetitor?.athlete?.flag?.href || awayCompetitor?.team?.logo || "/icons/icon-256x256.png",
+                       image: (league === "CRICKET" ? MLC_LOGOS[String(awayCompetitor.id)] : undefined) || awayCompetitor?.athlete?.flag?.href || awayCompetitor?.team?.logo || "/icons/icon-256x256.png",
                        score: awayScore
                      },
                      cost: 0,
@@ -507,13 +517,13 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
              homeTeam: {
                id: String(home.id),
                name: home.team.name || "Home Team",
-               image: home.team.logo || "/icons/icon-256x256.png",
+               image: (league === "CRICKET" ? MLC_LOGOS[String(home.id)] : undefined) || home.team.logo || "/icons/icon-256x256.png",
                score: parseFloat(home.score !== undefined && home.score !== null && home.score !== "" ? home.score : "0")
              },
              awayTeam: {
                id: String(away.id),
                name: away.team.name || "Away Team",
-               image: away.team.logo || "/icons/icon-256x256.png",
+               image: (league === "CRICKET" ? MLC_LOGOS[String(away.id)] : undefined) || away.team.logo || "/icons/icon-256x256.png",
                score: parseFloat(away.score !== undefined && away.score !== null && away.score !== "" ? away.score : "0")
              },
              cost: 0,
