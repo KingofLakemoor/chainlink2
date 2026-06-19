@@ -499,12 +499,10 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                 .where('status', '==', 'PENDING')
                 .get();
 
-              if (pendingPicksSnap.empty) {
-                updateData.abandoned = true;
-                updateData.active = false;
-                flattenedUpdate.abandoned = true;
-                flattenedUpdate.active = false;
-              } else if (scrapedMatchup.status === 'STATUS_IN_PROGRESS' || scrapedMatchup.status === 'STATUS_FINAL') {
+              let hasValidPicks = !pendingPicksSnap.empty;
+
+              if (!pendingPicksSnap.empty && (scrapedMatchup.status === 'STATUS_IN_PROGRESS' || scrapedMatchup.status === 'STATUS_FINAL')) {
+                hasValidPicks = false; // We will prove there is a valid pick below
                 for (const pickDoc of pendingPicksSnap.docs) {
                     const pickData = pickDoc.data();
                     const userPicksSnap = await adminDb.collection('picks').where('userId', '==', pickData.userId).where('status', '==', 'PENDING').orderBy('createdAt', 'asc').get();
@@ -530,8 +528,17 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                             createdAt: Date.now()
                         });
                         opCount++;
+                    } else {
+                        hasValidPicks = true;
                     }
                 }
+              }
+
+              if (!hasValidPicks) {
+                updateData.abandoned = true;
+                updateData.active = false;
+                flattenedUpdate.abandoned = true;
+                flattenedUpdate.active = false;
               }
             }
 
