@@ -207,13 +207,12 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
               let newStatus = data.status;
               let newActive = data.active;
+              let newAbandoned = data.abandoned;
 
               if (homeFinal && awayFinal) {
                 newStatus = 'STATUS_FINAL';
-                newActive = false;
               } else if (homeStarted || awayStarted) {
                 newStatus = 'STATUS_IN_PROGRESS';
-                newActive = false;
               }
 
               let currentThruDesc = 'In Progress';
@@ -249,6 +248,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                   data.homeTeam?.score !== homeScore ||
                   data.awayTeam?.score !== awayScore ||
                   data.active !== newActive ||
+                  data.abandoned !== newAbandoned ||
                   isMetadataChanged;
 
               if (needsUpdate) {
@@ -257,6 +257,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                   status: newStatus,
                   statusDesc: newStatus === 'STATUS_FINAL' ? 'Final' : newStatus === 'STATUS_IN_PROGRESS' ? currentThruDesc : 'Upcoming',
                   active: newActive,
+                  abandoned: newAbandoned,
                   homeTeam: {
                       ...data.homeTeam,
                       score: homeScore
@@ -284,6 +285,23 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                   'awayTeam.score': updateData.awayTeam.score,
                   updatedAt: updateData.updatedAt
                 };
+                if (updateData.abandoned !== undefined) {
+                    flattenedUpdate.abandoned = updateData.abandoned;
+                }
+
+                if (data.status === 'STATUS_SCHEDULED' && (newStatus === 'STATUS_IN_PROGRESS' || newStatus === 'STATUS_FINAL' || newStatus === 'STATUS_POSTPONED')) {
+                  const pendingPicksSnap = await adminDb.collection('picks')
+                    .where('matchupId', '==', existingGameId)
+                    .where('status', '==', 'PENDING')
+                    .get();
+
+                  if (pendingPicksSnap.empty) {
+                    updateData.abandoned = true;
+                    updateData.active = false;
+                    flattenedUpdate.abandoned = true;
+                    flattenedUpdate.active = false;
+                  }
+                }
 
                 if (isThruHolesMatchup) {
                     if (homeFrozenScore !== undefined) flattenedUpdate['metadata.homeFinalScore'] = homeFrozenScore;
