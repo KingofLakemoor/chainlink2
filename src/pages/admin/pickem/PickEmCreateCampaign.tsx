@@ -22,7 +22,7 @@ export default function PickEmCreateCampaign() {
   const [themeLogoUrl, setThemeLogoUrl] = useState('');
 
 
-  const availableLeagues = ['CFB', 'CBASE', 'NFL', 'NBA'];
+  const availableLeagues = ['CFB', 'CBASE', 'NFL', 'NBA', 'MLB'];
 
   const handleLeagueToggle = (league: string) => {
     setLeagues(prev =>
