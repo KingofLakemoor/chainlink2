@@ -330,6 +330,9 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                       finalStatus = "STATUS_POSTPONED";
                   } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus) || descLower.includes('suspended') || detailLower.includes('suspended') || descLower.includes('delayed') || detailLower.includes('delayed')) {
                       finalStatus = "STATUS_DELAYED";
+                      if (comp.status?.type?.detail) {
+                          finalStatusDesc = comp.status.type.detail;
+                      }
                   } else if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || (comp.status?.type?.completed === true && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus)) || (descLower.includes('final') && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus))) {
                       finalStatus = "STATUS_FINAL";
                   } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || compState === 'in' || (rawStatus === 'STATUS_SCHEDULED' && (hasLinescores || (compState !== 'pre' && comp.status?.period && comp.status?.period > 0)))) {
@@ -338,10 +341,6 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                           finalStatusDesc = comp.status.type.detail;
                       } else {
                           finalStatusDesc = "In Progress";
-                      }
-
-                      if (league === "CRICKET" && comp.status?.period) {
-                          finalStatusDesc = `Thru ${comp.status.period}`;
                       }
                   } else {
                       finalStatus = "STATUS_SCHEDULED";
@@ -487,6 +486,9 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
               finalStatus = "STATUS_POSTPONED";
           } else if (MATCHUP_DELAYED_STATUSES.includes(rawStatus) || descLower.includes('suspended') || detailLower.includes('suspended') || descLower.includes('delayed') || detailLower.includes('delayed')) {
               finalStatus = "STATUS_DELAYED";
+              if (competition.status?.type?.detail) {
+                  finalStatusDesc = competition.status.type.detail;
+              }
           } else if (MATCHUP_FINAL_STATUSES.includes(rawStatus) || (competition.status?.type?.completed === true && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus)) || (descLower.includes('final') && !MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus))) {
               finalStatus = "STATUS_FINAL";
           } else if (MATCHUP_IN_PROGRESS_STATUSES.includes(rawStatus) || competition.status?.type?.state === 'in' || (rawStatus === "STATUS_SCHEDULED" && (homeScore > 0 || awayScore > 0 || hasLinescores || (competition.status?.type?.state !== 'pre' && competition.status?.period && competition.status?.period > 0)))) {
