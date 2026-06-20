@@ -46,6 +46,13 @@ export default function PickEmPage() {
           }
         }
 
+        const now = Date.now();
+        // Filter out campaigns that are outside their active date bounds
+        camps = camps.filter(c => {
+          if (!c.startDate || !c.endDate) return true; // Keep legacy campaigns without dates
+          return now >= c.startDate && now <= c.endDate;
+        });
+
         setCampaigns(camps);
 
         let initialCampaign = camps.length > 0 ? camps[0] : null;

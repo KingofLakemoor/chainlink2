@@ -16,6 +16,8 @@ export default function PickEmCampaignDetail() {
   const [matchups, setMatchups] = useState<any[]>([]);
   const [selectedWeek, setSelectedWeek] = useState<number>(1);
   const [loading, setLoading] = useState(true);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [matchupsLoading, setMatchupsLoading] = useState(false);
 
   const [themePrimaryColor, setThemePrimaryColor] = useState('#22c55e');
@@ -34,6 +36,15 @@ export default function PickEmCampaignDetail() {
         const data = docSnap.data();
         setCampaign({ id: docSnap.id, ...data });
         setSelectedWeek(data.currentWeek || 1);
+
+        if (data.startDate) {
+          const start = new Date(data.startDate);
+          setStartDate(new Date(start.getTime() - (start.getTimezoneOffset() * 60000)).toISOString().slice(0, 16));
+        }
+        if (data.endDate) {
+          const end = new Date(data.endDate);
+          setEndDate(new Date(end.getTime() - (end.getTimezoneOffset() * 60000)).toISOString().slice(0, 16));
+        }
 
         setThemePrimaryColor(data.theme?.primaryColor || '#22c55e');
         setThemeTitle(data.theme?.title || '');
@@ -90,6 +101,8 @@ export default function PickEmCampaignDetail() {
 
       await updateDoc(doc(db, 'pickemCampaigns', id), {
         currentWeek: selectedWeek,
+        startDate: startDate ? new Date(startDate).getTime() : Date.now(),
+        endDate: endDate ? new Date(endDate).getTime() : Date.now() + 1000 * 60 * 60 * 24 * 30 * 6,
 
       theme: {
         primaryColor: themePrimaryColor,
@@ -99,7 +112,7 @@ export default function PickEmCampaignDetail() {
       }
 
       });
-      setCampaign(prev => ({ ...prev, currentWeek: selectedWeek, theme: { primaryColor: themePrimaryColor, title: themeTitle, subtitle: themeSubtitle, logoUrl: finalLogoUrl } }));
+      setCampaign(prev => ({ ...prev, currentWeek: selectedWeek, startDate: startDate ? new Date(startDate).getTime() : prev.startDate, endDate: endDate ? new Date(endDate).getTime() : prev.endDate, theme: { primaryColor: themePrimaryColor, title: themeTitle, subtitle: themeSubtitle, logoUrl: finalLogoUrl } }));
       alert(`Campaign updated`);
     } catch (err) {
       console.error(err);
@@ -282,7 +295,25 @@ export default function PickEmCampaignDetail() {
           <p className="text-zinc-400">Active Week: <span className="text-white font-medium">{campaign.currentWeek}</span></p>
         </div>
 
-        <div className="flex items-end gap-4">
+                <div className="flex flex-wrap items-end gap-4 mt-6 md:mt-0 col-span-2">
+          <div>
+            <label className="block text-sm font-medium text-zinc-400 mb-1">Start Date</label>
+            <input
+              type="datetime-local"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="bg-[#18181A] border border-zinc-800 rounded-lg px-4 py-2 text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-zinc-400 mb-1">End Date</label>
+            <input
+              type="datetime-local"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-[#18181A] border border-zinc-800 rounded-lg px-4 py-2 text-white"
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-zinc-400 mb-1">Manage Week</label>
             <select
