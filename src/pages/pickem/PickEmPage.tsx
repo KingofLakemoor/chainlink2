@@ -28,6 +28,13 @@ export default function PickEmPage() {
         const snap = await getDocs(collection(db, 'pickemCampaigns'));
         let camps = snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
 
+        const now = Date.now();
+        camps = camps.filter((c: any) => {
+          const hasDates = c.startDate && c.endDate;
+          if (!hasDates) return true; // Keep legacy campaigns
+          return now >= c.startDate && now <= c.endDate;
+        });
+
         // Mock for local dev
         if (import.meta.env.DEV && (!db?.app?.options?.apiKey || db?.app?.options?.apiKey === 'MY_FIREBASE_API_KEY')) {
           if (campaignId === 'charity') {

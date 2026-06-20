@@ -24,6 +24,9 @@ export default function PickEmCampaignDetail() {
   const [themeLogoFile, setThemeLogoFile] = useState<File | null>(null);
   const [themeLogoUrl, setThemeLogoUrl] = useState('');
 
+  const [startDateStr, setStartDateStr] = useState('');
+  const [endDateStr, setEndDateStr] = useState('');
+
 
   const fetchCampaign = async () => {
     if (!id) return;
@@ -39,6 +42,15 @@ export default function PickEmCampaignDetail() {
         setThemeTitle(data.theme?.title || '');
         setThemeSubtitle(data.theme?.subtitle || '');
         setThemeLogoUrl(data.theme?.logoUrl || '');
+
+        if (data.startDate) {
+          const d = new Date(data.startDate);
+          setStartDateStr(new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16));
+        }
+        if (data.endDate) {
+          const d = new Date(data.endDate);
+          setEndDateStr(new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16));
+        }
 
       }
     } catch (err) {
@@ -90,6 +102,8 @@ export default function PickEmCampaignDetail() {
 
       await updateDoc(doc(db, 'pickemCampaigns', id), {
         currentWeek: selectedWeek,
+        startDate: startDateStr ? new Date(startDateStr).getTime() || campaign.startDate || Date.now() : campaign.startDate || Date.now(),
+        endDate: endDateStr ? new Date(endDateStr).getTime() || campaign.endDate || Date.now() : campaign.endDate || Date.now(),
 
       theme: {
         primaryColor: themePrimaryColor,
@@ -297,6 +311,32 @@ export default function PickEmCampaignDetail() {
           </div>
           <Button onClick={updateCurrentWeek} variant="secondary">Update Campaign</Button>
         </div>
+
+
+          {/* Campaign Schedule */}
+          <div className="pt-6 border-t border-zinc-800 w-full mt-6 col-span-2">
+            <h3 className="text-lg font-medium text-white mb-4">Campaign Schedule</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">Start Date</label>
+                <input
+                  type="datetime-local"
+                  value={startDateStr}
+                  onChange={e => setStartDateStr(e.target.value)}
+                  className="w-full bg-[#18181A] border border-zinc-800 rounded-lg px-4 py-2 text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">End Date</label>
+                <input
+                  type="datetime-local"
+                  value={endDateStr}
+                  onChange={e => setEndDateStr(e.target.value)}
+                  className="w-full bg-[#18181A] border border-zinc-800 rounded-lg px-4 py-2 text-white"
+                />
+              </div>
+            </div>
+          </div>
 
           {/* Theme Settings */}
           <div className="pt-6 border-t border-zinc-800 w-full mt-6 col-span-2">

@@ -21,6 +21,16 @@ export default function PickEmCreateCampaign() {
   const [themeLogoFile, setThemeLogoFile] = useState<File | null>(null);
   const [themeLogoUrl, setThemeLogoUrl] = useState('');
 
+  const [startDateStr, setStartDateStr] = useState(() => {
+    const d = new Date();
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  });
+  const [endDateStr, setEndDateStr] = useState(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 6);
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  });
+
 
   const availableLeagues = ['CFB', 'CBASE', 'NFL', 'NBA', 'MLB'];
 
@@ -57,8 +67,8 @@ export default function PickEmCreateCampaign() {
         type: 'STANDARD',
         defaultMatchType,
         scoringType: 'WIN_LOSS',
-        startDate: Date.now(),
-        endDate: Date.now() + 1000 * 60 * 60 * 24 * 30 * 6, // ~6 months
+        startDate: startDateStr ? new Date(startDateStr).getTime() || Date.now() : Date.now(),
+        endDate: endDateStr ? new Date(endDateStr).getTime() || Date.now() + 1000 * 60 * 60 * 24 * 30 * 6 : Date.now() + 1000 * 60 * 60 * 24 * 30 * 6,
         theme: {
           primaryColor: themePrimaryColor,
           title: themeTitle,
@@ -140,6 +150,34 @@ export default function PickEmCreateCampaign() {
             </select>
           </div>
 
+
+
+          {/* Campaign Schedule */}
+          <div className="pt-6 border-t border-zinc-800">
+            <h3 className="text-lg font-medium text-white mb-4">Campaign Schedule</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">Start Date</label>
+                <input
+                  type="datetime-local"
+                  value={startDateStr}
+                  onChange={e => setStartDateStr(e.target.value)}
+                  className="w-full bg-[#18181A] border border-zinc-800 rounded-lg px-4 py-2 text-white"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">End Date</label>
+                <input
+                  type="datetime-local"
+                  value={endDateStr}
+                  onChange={e => setEndDateStr(e.target.value)}
+                  className="w-full bg-[#18181A] border border-zinc-800 rounded-lg px-4 py-2 text-white"
+                  required
+                />
+              </div>
+            </div>
+          </div>
 
           {/* Theme Settings */}
           <div className="pt-6 border-t border-zinc-800">
