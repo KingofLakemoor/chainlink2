@@ -340,7 +340,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                           finalStatusDesc = "In Progress";
                       }
 
-                      if (league === "CRICKET" && comp.status?.period) {
+                      if ((league as any) === "CRICKET" && comp.status?.period) {
                           finalStatusDesc = `Thru ${comp.status.period}`;
                       }
                   } else {
@@ -502,7 +502,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                           finalStatusDesc = detailStr;
                       }
                   }
-              } else if (league === "CRICKET" && competition.status?.period) {
+              } else if ((league as any) === "CRICKET" && competition.status?.period) {
                   finalStatusDesc = `Thru ${competition.status.period}`;
               }
           } else {
@@ -523,13 +523,13 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
              homeTeam: {
                id: String(home.id),
                name: home.team.name || "Home Team",
-               image: (league === "CRICKET" ? MLC_LOGOS[String(home.id)] : undefined) || home.team.logo || "/icons/icon-256x256.png",
+               image: ((league as any) === "CRICKET" ? MLC_LOGOS[String(home.id)] : undefined) || home.team.logo || "/icons/icon-256x256.png",
                score: parseFloat(home.score !== undefined && home.score !== null && home.score !== "" ? home.score : "0")
              },
              awayTeam: {
                id: String(away.id),
                name: away.team.name || "Away Team",
-               image: (league === "CRICKET" ? MLC_LOGOS[String(away.id)] : undefined) || away.team.logo || "/icons/icon-256x256.png",
+               image: ((league as any) === "CRICKET" ? MLC_LOGOS[String(away.id)] : undefined) || away.team.logo || "/icons/icon-256x256.png",
                score: parseFloat(away.score !== undefined && away.score !== null && away.score !== "" ? away.score : "0")
              },
              cost: 0,
