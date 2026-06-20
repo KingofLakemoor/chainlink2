@@ -149,6 +149,33 @@ export default function PlayDashboard() {
     return filtered;
   }, [allFetchedMatchups, selectedSport, filterType]);
 
+
+  const handleForfeitPick = async (matchup: any) => {
+    if (!user || !profile) return;
+
+    if (window.confirm("Are you sure you want to forfeit this pick? You will receive a loss and lose your streak.")) {
+      try {
+        const idToken = await user.getIdToken();
+        const response = await fetch('/api/picks/forfeit-pick', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`
+          },
+          body: JSON.stringify({ matchupId: matchup.gameId })
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to forfeit pick');
+        }
+      } catch (error) {
+        console.error("Failed to forfeit pick", error);
+        alert(error.message || "Failed to forfeit pick.");
+      }
+    }
+  };
+
   const handleCancelPick = async (matchup: any) => {
     if (!user || !profile) return;
 
@@ -315,6 +342,7 @@ export default function PlayDashboard() {
               sponsors={sponsors}
               onMakePick={handleMakePick}
               onCancelPick={handleCancelPick}
+              onForfeitPick={handleForfeitPick}
               onShareMatchup={handleShareMatchup}
               sharingMatchupId={sharingMatchupId}
               isMyPick={true}
@@ -395,6 +423,7 @@ export default function PlayDashboard() {
                 sponsors={sponsors}
                 onMakePick={handleMakePick}
                 onCancelPick={handleCancelPick}
+              onForfeitPick={handleForfeitPick}
                 onShareMatchup={handleShareMatchup}
                 sharingMatchupId={sharingMatchupId}
                 isMyPick={false}
