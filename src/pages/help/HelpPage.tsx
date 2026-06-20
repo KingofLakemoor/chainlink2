@@ -49,7 +49,7 @@ export function HelpPage() {
               <strong>ChainLink Pro</strong> is our premium subscription that offers exclusive perks, deeper stats, and enhances your overall experience.
             </p>
             <ul className="list-disc pl-5 space-y-2">
-              <li><strong>Daily Links:</strong> Receive 10 bonus Links every single day.</li>
+              <li><strong>Daily Links:</strong> Claim 10 bonus Links every single day in the Shop.</li>
               <li><strong>Future Pick Queuing:</strong> Premium members can queue up future picks in advance, automatically locking them in when the previous pick resolves.</li>
               <li><strong>Advanced Metrics:</strong> Unlock the "Advanced Metrics" page to view detailed win/loss/push records by sport, view your all-time pick history, and track achievement medal distribution.</li>
               <li><strong>Exclusive Shop Items:</strong> Get access to purchase Pro-only premium cosmetics, banners, and rings in the Shop.</li>
@@ -160,7 +160,7 @@ export function HelpPage() {
             </div>
              <div className="space-y-2">
               <h3 className="font-bold text-white text-lg">How do I get more Links?</h3>
-              <p>You can earn links by winning picks, completing achievements, logging in daily, or referring friends using your unique referral code found on your Profile page.</p>
+              <p>You can earn links by winning picks, completing achievements, claiming your daily Pro links in the Shop, or referring friends using your unique referral code found on your Profile page.</p>
             </div>
           </div>
         </section>
