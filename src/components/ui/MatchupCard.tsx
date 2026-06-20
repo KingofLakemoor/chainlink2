@@ -14,6 +14,7 @@ interface MatchupCardProps {
   sponsors: any[];
   onMakePick: (matchup: any, team: any) => void;
   onCancelPick: (matchup: any) => void;
+  onForfeitPick?: (matchup: any) => void;
   onShareMatchup: (gameId: string) => void;
   sharingMatchupId: string | null;
   isMyPick?: boolean;
@@ -30,6 +31,7 @@ export const MatchupCard = React.memo(function MatchupCard({
   sponsors,
   onMakePick,
   onCancelPick,
+  onForfeitPick,
   onShareMatchup,
   sharingMatchupId,
   isMyPick = false,
@@ -320,6 +322,10 @@ export const MatchupCard = React.memo(function MatchupCard({
                 isScheduled || (m.league === 'PGA' && m.status === 'STATUS_IN_PROGRESS' && (m.statusDesc === 'In Progress' || m.statusDesc === 'Delayed')) ? (
                   <button onClick={() => onCancelPick(m)} className="text-xs font-bold text-red-500 uppercase tracking-wide flex items-center gap-1 hover:text-red-400">
                      <X className="w-3 h-3" /> Cancel
+                  </button>
+                ) : profile?.premium && onForfeitPick && m.status !== 'STATUS_FINAL' && m.status !== 'STATUS_CANCELED' && m.status !== 'STATUS_POSTPONED' && !m.statusDesc?.toLowerCase().includes('final') ? (
+                  <button onClick={() => onForfeitPick(m)} className="text-xs font-bold text-orange-500 uppercase tracking-wide flex items-center gap-1 hover:text-orange-400">
+                     <X className="w-3 h-3" /> Forfeit
                   </button>
                 ) : (
                   <span className="text-xs font-bold text-red-500 uppercase tracking-wide">Locked</span>
