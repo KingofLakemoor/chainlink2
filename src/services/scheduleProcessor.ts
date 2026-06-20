@@ -442,6 +442,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               existingData.active !== finalActive ||
               existingData.abandoned !== false ||
               existingData.metadata?.overUnder !== scrapedMatchup.metadata?.overUnder ||
+              existingData.metadata?.mlHome !== scrapedMatchup.metadata?.mlHome ||
+              existingData.metadata?.mlAway !== scrapedMatchup.metadata?.mlAway ||
               JSON.stringify(existingData.metadata?.homeLinescores) !== JSON.stringify(scrapedMatchup.metadata?.homeLinescores) ||
               JSON.stringify(existingData.metadata?.awayLinescores) !== JSON.stringify(scrapedMatchup.metadata?.awayLinescores) ||
               (existingData.type !== 'SPREAD' && existingData.metadata?.spread !== scrapedMatchup.metadata?.spread);
@@ -473,6 +475,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               metadata: {
                   ...(existingData.metadata || {}),
                   overUnder: scrapedMatchup.metadata?.overUnder,
+                  mlHome: scrapedMatchup.metadata?.mlHome,
+                  mlAway: scrapedMatchup.metadata?.mlAway,
                   spread: existingData.type === 'SPREAD' ? existingData.metadata?.spread : scrapedMatchup.metadata?.spread,
                   homeLinescores: scrapedMatchup.metadata?.homeLinescores,
                   awayLinescores: scrapedMatchup.metadata?.awayLinescores,
@@ -499,6 +503,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               'awayTeam.image': updateData.awayTeam.image,
               'awayTeam.score': updateData.awayTeam.score,
               'metadata.overUnder': updateData.metadata.overUnder,
+              'metadata.mlHome': updateData.metadata.mlHome,
+              'metadata.mlAway': updateData.metadata.mlAway,
               'metadata.spread': updateData.metadata.spread,
               'metadata.homeLinescores': updateData.metadata.homeLinescores,
               'metadata.awayLinescores': updateData.metadata.awayLinescores,
