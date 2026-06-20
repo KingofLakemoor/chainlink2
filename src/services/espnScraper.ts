@@ -340,8 +340,18 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                           finalStatusDesc = "In Progress";
                       }
 
-                      if (league === "CRICKET" && comp.status?.period) {
-                          finalStatusDesc = `Thru ${comp.status.period}`;
+                      if ((league as string) === "CRICKET" && comp.status?.period) {
+                          let currentOvers = null;
+                          for (const competitor of comp.competitors || []) {
+                              const battingLinescore = (competitor.linescores || []).find(
+                                  (ls: any) => ls.isBatting === true && ls.period === comp.status.period
+                              );
+                              if (battingLinescore && battingLinescore.overs !== undefined) {
+                                  currentOvers = battingLinescore.overs;
+                                  break;
+                              }
+                          }
+                          finalStatusDesc = currentOvers !== null ? `Thru ${currentOvers}` : `Thru ${comp.status.period}`;
                       }
                   } else {
                       finalStatus = "STATUS_SCHEDULED";
@@ -502,8 +512,18 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                           finalStatusDesc = detailStr;
                       }
                   }
-              } else if (league === "CRICKET" && competition.status?.period) {
-                  finalStatusDesc = `Thru ${competition.status.period}`;
+              } else if ((league as string) === "CRICKET" && competition.status?.period) {
+                  let currentOvers = null;
+                  for (const competitor of competition.competitors || []) {
+                      const battingLinescore = (competitor.linescores || []).find(
+                          (ls: any) => ls.isBatting === true && ls.period === competition.status.period
+                      );
+                      if (battingLinescore && battingLinescore.overs !== undefined) {
+                          currentOvers = battingLinescore.overs;
+                          break;
+                      }
+                  }
+                  finalStatusDesc = currentOvers !== null ? `Thru ${currentOvers}` : `Thru ${competition.status.period}`;
               }
           } else {
               finalStatus = "STATUS_SCHEDULED";
