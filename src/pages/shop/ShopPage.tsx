@@ -87,6 +87,7 @@ export default function ShopPage() {
   const { user, profile } = useAuth();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [claimLoading, setClaimLoading] = useState(false);
 
   const [buyLoading, setBuyLoading] = useState<string | null>(null);
   const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
@@ -145,6 +146,33 @@ export default function ShopPage() {
       window.history.replaceState(null, '', window.location.pathname);
     }
   }, []);
+
+
+  const handleClaimDaily = async () => {
+    if (!user) return;
+    setClaimLoading(true);
+    setMessage(null);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/shop/claim-daily', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setMessage({ text: "Successfully claimed 10 daily links!", type: 'success' });
+      } else {
+        setMessage({ text: data.error || "Failed to claim links.", type: 'error' });
+      }
+    } catch (e) {
+      setMessage({ text: "An error occurred.", type: 'error' });
+    } finally {
+      setClaimLoading(false);
+    }
+  };
 
   const handleStripeCheckout = async (itemType: string, amount?: number) => {
     if (!user) {
@@ -468,11 +496,31 @@ export default function ShopPage() {
             {/* Premium Subscription / Pro Shop */}
             {profile?.premium ? (
               <div className="bg-gradient-to-b from-purple-900/40 to-[#121212] border border-purple-500/30 rounded-xl p-6 flex flex-col items-center text-center sm:col-span-2 lg:col-span-4 w-full">
-                <div className="w-16 h-16 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center mb-4 mx-auto">
-                  <Crown className="w-8 h-8" />
+                <div className="flex flex-col md:flex-row items-center justify-between w-full mb-6">
+                  <div className="flex items-center gap-4 mb-4 md:mb-0">
+                    <div className="w-16 h-16 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center">
+                      <Crown className="w-8 h-8" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="text-2xl font-bold text-white">ChainLink Pro</h3>
+                      <p className="text-purple-300/70 text-sm">Thanks for being a Pro member!</p>
+                    </div>
+                  </div>
+                  <div className="bg-[#121212]/80 border border-purple-500/20 rounded-xl p-4 flex flex-col items-center w-full md:w-auto min-w-[200px]">
+                    <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider mb-2">Daily Bonus</span>
+                    <Button
+                      onClick={handleClaimDaily}
+                      disabled={claimLoading || profile?.lastDailyClaim === new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York' })}
+                      className="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold"
+                    >
+                      {claimLoading ? 'Claiming...' : profile?.lastDailyClaim === new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York' }) ? 'Claimed Today' : 'Claim 10 Links'}
+                    </Button>
+                  </div>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-6">ChainLink Pro</h3>
 
+                <div className="w-full border-t border-purple-500/20 my-6"></div>
+
+                <h4 className="text-lg font-bold text-white mb-4 self-start">Pro Exclusive Items</h4>
                 {proItems.length === 0 ? (
                   <div className="text-purple-300/60 p-4 border border-purple-500/20 rounded-lg w-full">
                     New Pro cosmetics coming soon!
@@ -492,7 +540,7 @@ export default function ShopPage() {
                 <div className="text-purple-200/70 text-sm mb-6 flex-1 text-left space-y-1 w-full max-w-sm">
                   <p className="mb-2 text-center">Unlock the ultimate ChainLink experience:</p>
                   <ul className="list-disc pl-5 space-y-1">
-                    <li><strong>10 Links</strong> daily just for logging in</li>
+                    <li><strong>Claim 10 Links</strong> daily in the Shop</li>
                     <li><strong>Queue future picks</strong> automatically</li>
                     <li>Exclusive <strong>Advanced Metrics</strong> tracking</li>
                     <li>Access to <strong>Pro-exclusive shop items</strong></li>
