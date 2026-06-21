@@ -176,7 +176,7 @@ export default function DashboardPage() {
             {
                 id: 'mock-1',
                 gameId: 'mock-1',
-                title: 'Who will win? Mock Team A @ Mock Team B',
+                title: 'Mock Team A @ Mock Team B',
                 league: 'EPL',
                 status: 'STATUS_SCHEDULED',
                 startTime: Date.now() + 1000000,
