@@ -83,13 +83,39 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
 };
 
 export default function DashboardPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, chain } = useAuth();
   const [picks, setPicks] = React.useState<any[]>([]);
   const [inventoryItems, setInventoryItems] = React.useState<any[]>([]);
   const [allFetchedMatchups, setAllFetchedMatchups] = React.useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [sponsors, setSponsors] = React.useState<any[]>([]);
   const [announcements, setAnnouncements] = React.useState<any[]>([]);
+
+
+  const handleMulligan = async () => {
+    if (!user) return;
+    if (window.confirm("Are you sure you want to use your Mulligan? This will cost 100 links and restore your previous chain.")) {
+      try {
+        const idToken = await user.getIdToken();
+        const response = await fetch('/api/picks/mulligan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`
+          }
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to use Mulligan');
+        }
+        alert("Mulligan used successfully! Your previous chain has been restored.");
+      } catch (error: any) {
+        console.error("Failed to use Mulligan", error);
+        alert(error.message);
+      }
+    }
+  };
 
   React.useEffect(() => {
     const fetchAnnouncements = async () => {
@@ -375,6 +401,13 @@ export default function DashboardPage() {
                           <span className={cn("text-2xl font-bold", currentMonthStats.streak > 0 ? "text-green-500" : currentMonthStats.streak < 0 ? "text-red-500" : "text-zinc-500")}>
                              {currentMonthStats.streak > 0 ? `W${currentMonthStats.streak}` : currentMonthStats.streak < 0 ? `L${Math.abs(currentMonthStats.streak)}` : '-'}
                           </span>
+                          { profile?.premium && new Date().getDate() <= 15 && (chain?.chain ?? 0) < 0 && profile?.lastMulliganMonth !== `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}` && (
+                              <div className="w-full mt-2">
+                                <Button size="sm" onClick={handleMulligan} className="w-full bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold text-xs h-7 px-2">
+                                  Use Mulligan (100 links)
+                                </Button>
+                              </div>
+                            )}
                       </div>
                   </div>
               </div>

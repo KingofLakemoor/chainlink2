@@ -415,6 +415,62 @@ apiRouter.post("/link4/submit", async (req, res) => {
 });
 
 
+apiRouter.post("/picks/mulligan", validateAuth, async (req, res) => {
+  try {
+    const adminDb = (await import('./lib/firebase-admin.js')).adminDb;
+    if (!adminDb) return res.status(500).json({ success: false, error: "admin tools not initialized" });
+    const uid = (req as any).uid;
+
+    await adminDb.runTransaction(async (transaction) => {
+      const userRef = adminDb.collection('users').doc(uid);
+      const userDoc = await transaction.get(userRef);
+      if (!userDoc.exists) throw new Error("User not found");
+      const userData = userDoc.data();
+
+      if (!userData.premium) {
+        throw new Error("Must be a ChainLink Pro member to use a Mulligan.");
+      }
+
+      if (userData.links < 100) {
+        throw new Error("Not enough links!");
+      }
+
+      const now = new Date();
+      if (now.getDate() > 15) {
+        throw new Error("Mulligan is only available in the first 15 days of the month.");
+      }
+
+      const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      if (userData.lastMulliganMonth === currentMonthKey) {
+        throw new Error("You have already used your Mulligan this month.");
+      }
+
+      const chainRef = adminDb.collection('chains').doc(`${uid}_current`);
+      const chainDoc = await transaction.get(chainRef);
+      if (!chainDoc.exists) throw new Error("Chain not found");
+      const chainData = chainDoc.data();
+
+      if (chainData.chain >= 0) {
+        throw new Error("Mulligan can only be used to reset a negative chain.");
+      }
+
+      transaction.update(userRef, {
+        links: userData.links - 100,
+        lastMulliganMonth: currentMonthKey
+      });
+
+      transaction.update(chainRef, {
+        chain: chainData.previousChain || 0
+      });
+    });
+
+    return res.json({ success: true });
+  } catch (e: any) {
+    console.error("Mulligan error:", e.message);
+    return res.status(400).json({ success: false, error: e.message });
+  }
+});
+
 apiRouter.post("/picks/forfeit-pick", async (req, res) => {
   try {
     const { matchupId } = req.body;
@@ -500,6 +556,7 @@ apiRouter.post("/picks/forfeit-pick", async (req, res) => {
       // Update chain
       if (chainDoc.exists) {
          let chainData = chainDoc.data();
+         chainData.previousChain = chainData.chain > 0 ? chainData.chain : (chainData.previousChain || 0);
          chainData.chain = chainData.chain > 0 ? -1 : (chainData.chain === 0 ? -1 : chainData.chain - 1);
          chainData.losses = (chainData.losses || 0) + 1;
          transaction.update(chainRef, chainData);

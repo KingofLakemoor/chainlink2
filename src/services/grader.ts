@@ -176,6 +176,7 @@ export async function gradeSingleMatchup(matchup: any) {
           stats.losses += 1;
           allTimeStats.losses += 1;
           statsByLeague[matchupLeague].losses += 1;
+          chainData.previousChain = chainData.chain > 0 ? chainData.chain : (chainData.previousChain || 0);
           chainData.chain = chainData.chain > 0 ? -1 : (chainData.chain === 0 ? -1 : chainData.chain - 1);
           chainData.losses += 1;
         } else if (pickStatus === 'PUSH') {
