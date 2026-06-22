@@ -133,6 +133,7 @@ export default function ProfilePage() {
 
       await updateDoc(userRef, {
         username: newUsername,
+        usernameLower: newUsername.toLowerCase(),
         name: newName
       });
       setSettingsMessage({ type: 'success', text: 'Profile information updated successfully.' });

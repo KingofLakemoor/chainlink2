@@ -56,7 +56,7 @@ describe('apiRouter GET /users/check-username', () => {
     expect(response.status).toBe(500);
     expect(response.body).toEqual({ error: 'Internal server error' });
     expect(adminDb.collection).toHaveBeenCalledWith('users');
-    expect(mockWhere).toHaveBeenCalledWith('username', '==', 'testuser');
+    expect(mockWhere).toHaveBeenCalledWith('usernameLower', '==', 'testuser');
   });
 
   it('should return exists: false when username is not provided', async () => {
@@ -83,6 +83,7 @@ describe('apiRouter GET /users/check-username', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ exists: true });
+    expect(mockWhere).toHaveBeenCalledWith('usernameLower', '==', 'existinguser');
   });
 
   it('should return exists: false when user is not found', async () => {
@@ -100,5 +101,6 @@ describe('apiRouter GET /users/check-username', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ exists: false });
+    expect(mockWhere).toHaveBeenCalledWith('usernameLower', '==', 'nonexistentuser');
   });
 });
