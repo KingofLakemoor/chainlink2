@@ -1,0 +1,61 @@
+const fs = require('fs');
+
+let content = fs.readFileSync('src/pages/admin/referrals/ReferralsAdminPage.tsx', 'utf-8');
+
+// Replace 1
+content = content.replace(
+  'const usersWithReferrals = users.filter(u => referredMap[u.id] && referredMap[u.id].length > 0);',
+  'const usersWithReferrals = users.filter(u => referredMap[u.id] && referredMap[u.id].length > 0);\n  const rootUsers = usersWithReferrals.filter(u => !u.referrerId || !usersWithReferrals.find(x => x.id === u.referrerId));'
+);
+
+// Replace 2
+content = content.replace(
+  '<ul className={`pl-${depth > 0 ? \'6\' : \'0\'} mt-2 space-y-2 border-l border-zinc-800/50`}>',
+  '<ul className={depth > 0 ? "pl-6 mt-2 space-y-2 border-l border-zinc-800/50" : "mt-2 space-y-2"}>'
+);
+
+// Replace 3
+const oldBlock = `{usersWithReferrals.filter(u => !u.referrerId).map(rootUser => (
+                  <div key={rootUser.id} className="bg-zinc-800/20 rounded-lg p-4 border border-zinc-800/50">
+                     <div className="flex items-center gap-2 mb-2">
+                        <span className="text-purple-400 font-bold">{rootUser.username || rootUser.name || 'Anonymous'}</span>
+                        <span className="text-xs text-zinc-500 font-mono">({rootUser.id})</span>
+                        <span className="text-xs px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full font-bold">
+                           {referredMap[rootUser.id].length} Direct
+                        </span>
+                     </div>
+                     {renderTree(rootUser.id)}
+                  </div>
+               ))}
+
+               {/* Render orphaned chains if someone has referrals but their referrer is also in the list,
+                   Wait, the filter \`!u.referrerId\` above only catches true roots.
+                   If there are users who HAVE a referrerId but the referrer doesn't exist, we should catch them. */}
+               {usersWithReferrals.filter(u => u.referrerId && !users.find(x => x.id === u.referrerId)).map(orphanRoot => (
+                  <div key={orphanRoot.id} className="bg-zinc-800/20 rounded-lg p-4 border border-zinc-800/50">
+                     <div className="flex items-center gap-2 mb-2">
+                        <span className="text-orange-400 font-bold">{orphanRoot.username || orphanRoot.name || 'Anonymous'}</span>
+                        <span className="text-xs text-zinc-500 font-mono">(Orphaned: {orphanRoot.id})</span>
+                     </div>
+                     {renderTree(orphanRoot.id)}
+                  </div>
+               ))}`;
+
+const newBlock = `{rootUsers.map(rootUser => (
+                  <div key={rootUser.id} className="bg-zinc-800/20 rounded-lg p-4 border border-zinc-800/50">
+                     <div className="flex items-center gap-2 mb-2">
+                        <span className={rootUser.referrerId ? "text-orange-400 font-bold" : "text-purple-400 font-bold"}>
+                           {rootUser.username || rootUser.name || 'Anonymous'}
+                        </span>
+                        <span className="text-xs text-zinc-500 font-mono">({rootUser.referrerId ? \`Orphaned: \${rootUser.id}\` : rootUser.id})</span>
+                        <span className="text-xs px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full font-bold">
+                           {referredMap[rootUser.id].length} Direct
+                        </span>
+                     </div>
+                     {renderTree(rootUser.id)}
+                  </div>
+               ))}`;
+
+content = content.replace(oldBlock, newBlock);
+
+fs.writeFileSync('src/pages/admin/referrals/ReferralsAdminPage.tsx', content);

@@ -1,0 +1,21 @@
+<<<<<<< SEARCH
+  const renderTree = (userId: string, depth = 0) => {
+    const referredUsers = referredMap[userId] || [];
+    if (referredUsers.length === 0) return null;
+
+    return (
+      <ul className={`pl-${depth > 0 ? '6' : '0'} mt-2 space-y-2 border-l border-zinc-800/50`}>
+        {referredUsers.map(u => (
+          <li key={u.id} className="relative before:absolute before:left-[-1px] before:top-4 before:w-4 before:h-px before:bg-zinc-800/50">
+            <div className="flex items-center gap-2 pl-6">
+=======
+  const renderTree = (userId: string, depth = 0) => {
+    const referredUsers = referredMap[userId] || [];
+    if (referredUsers.length === 0) return null;
+
+    return (
+      <ul className={depth > 0 ? "pl-6 mt-2 space-y-2 border-l border-zinc-800/50" : "mt-2 space-y-2"}>
+        {referredUsers.map(u => (
+          <li key={u.id} className="relative before:absolute before:left-[-1px] before:top-4 before:w-4 before:h-px before:bg-zinc-800/50">
+            <div className="flex items-center gap-2 pl-6">
+>>>>>>> REPLACE
