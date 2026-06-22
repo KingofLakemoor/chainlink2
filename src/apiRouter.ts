@@ -38,7 +38,7 @@ apiRouter.get("/users/check-username", validateAuth, async (req, res) => {
     if (!username || typeof username !== 'string') {
       return res.json({ exists: false });
     }
-    const snap = await adminDb.collection('users').where('username', '==', username).limit(1).get();
+    const snap = await adminDb.collection('users').where('usernameLower', '==', username.toLowerCase()).limit(1).get();
     return res.json({ exists: !snap.empty });
   } catch (error) {
     console.error('Error checking username', error);

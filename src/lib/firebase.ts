@@ -47,10 +47,12 @@ const ensureUserProfile = async (user: User, username?: string, referrerId?: str
   const userRef = doc(db, 'users', user.uid);
   const userSnap = await getDoc(userRef);
   if (!userSnap.exists()) {
+    const resolvedUsername = username || 'User' + Math.floor(Math.random() * 1000000);
     const defaultData: any = {
       email: user.email,
       name: user.displayName || 'Anonymous',
-      username: username || 'User' + Math.floor(Math.random() * 1000000),
+      username: resolvedUsername,
+      usernameLower: resolvedUsername.toLowerCase(),
       image: user.photoURL || '',
       links: 10, // starting links
       role: 'USER', // Defaulting to USER for security
