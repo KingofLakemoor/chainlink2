@@ -54,6 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           role: 'ADMIN', // Make mock user an ADMIN for testing locally
           status: 'ACTIVE',
           stats: { wins: 0, losses: 0, pushes: 0 },
+          referralsCount: 42,
         };
 
         const chainData = {

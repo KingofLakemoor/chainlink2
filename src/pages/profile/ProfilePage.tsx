@@ -624,6 +624,12 @@ export default function ProfilePage() {
          <p className="text-sm text-zinc-400 mb-4">
             Invite friends to join using your personal link. Build your referral network!
          </p>
+         {profile?.referralsCount !== undefined && (
+            <div className="mb-4 pb-4 border-b border-zinc-800 flex items-center justify-between">
+               <span className="text-zinc-400 text-sm">Total Referrals</span>
+               <span className="font-bold text-lg text-purple-400">{profile.referralsCount}</span>
+            </div>
+         )}
          <div className="flex items-center gap-3 bg-zinc-800/50 p-3 rounded-lg border border-zinc-700">
             <div className="flex-1 font-mono text-sm text-zinc-300 truncate">
                {window.location.origin}/?ref={profile?.id}
@@ -641,12 +647,6 @@ export default function ProfilePage() {
                <Copy className="w-4 h-4" /> Copy
             </Button>
          </div>
-         {profile?.referralsCount !== undefined && (
-            <div className="mt-4 pt-4 border-t border-zinc-800 flex items-center justify-between">
-               <span className="text-zinc-400 text-sm">Total Referrals</span>
-               <span className="font-bold text-lg text-purple-400">{profile.referralsCount}</span>
-            </div>
-         )}
       </div>
 
 
