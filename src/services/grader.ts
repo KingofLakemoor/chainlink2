@@ -6,8 +6,7 @@ export function setAdminDbMock(mock: any) { getAdminDb = () => mock; }
 
 export async function gradeMatchups(matchups: any[]) {
   if (!getAdminDb()) {
-    console.warn("[Grader] adminDb is not initialized. Skipping grading.");
-    return;
+    throw new Error("[Grader] adminDb is not initialized. Skipping grading.");
   }
 
   const finalMatchups = matchups.filter(m => m.status === 'STATUS_FINAL' || m.status === 'STATUS_POSTPONED');
@@ -24,7 +23,9 @@ export async function gradeMatchups(matchups: any[]) {
 
 export async function gradeSingleMatchup(matchup: any) {
   const adminDb = getAdminDb();
-  if (!adminDb) return;
+  if (!adminDb) {
+    throw new Error("[Grader] adminDb is not initialized. Skipping grading.");
+  }
 
   const picksRef = adminDb.collection('picks');
   const pendingPicksSnap = await picksRef
