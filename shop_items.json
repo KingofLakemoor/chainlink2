@@ -294,6 +294,20 @@
     "collectionId": ""
   },
   {
+    "id": "title_beta_tester",
+    "name": "Beta Tester",
+    "description": "Helped find bugs during the beta.",
+    "cost": 0,
+    "type": "TITLE",
+    "active": true,
+    "forSale": false,
+    "image": "BetaTesterTitle",
+    "featured": true,
+    "preview": "BetaTesterTitle",
+    "order": 21,
+    "collectionId": ""
+  },
+  {
     "id": "banner_zero_zero_zero",
     "name": "The 0:00",
     "description": "A banner featuring a glowing, red digital clock hitting zero, representing the buzzer-beater wins.",

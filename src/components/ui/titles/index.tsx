@@ -8,9 +8,11 @@ import { NovatrixQuantTitle } from './novatrix-quant';
 import { SignalFloorTitle } from './signal-floor';
 import { EdgeLedgerTitle } from './edge-ledger';
 import { BadBeatTitle } from './bad-beat';
+import { BetaTesterTitle } from './beta-tester';
 
 export const TitleMap: Record<string, React.FC<any>> = {
   "ResponsibleGamblerTitle": ResponsibleGamblerTitle,
+  "BetaTesterTitle": BetaTesterTitle,
   'V1OriginatorTitle': V1OriginatorTitle,
   'OpulentoTitle': OpulentoTitle,
   'ZeroZeroTitle': ZeroZeroTitle,
