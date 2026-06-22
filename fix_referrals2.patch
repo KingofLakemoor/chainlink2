@@ -1,0 +1,12 @@
+<<<<<<< SEARCH
+  // Find root users (those who referred someone but weren't referred themselves, OR were referred but we want to show all top-level trees)
+  // To avoid circular or missing roots, let's just list everyone who HAS referrals
+  const usersWithReferrals = users.filter(u => referredMap[u.id] && referredMap[u.id].length > 0);
+=======
+  // Find root users (those who referred someone but weren't referred themselves, OR were referred but we want to show all top-level trees)
+  // To avoid circular or missing roots, let's just list everyone who HAS referrals
+  const usersWithReferrals = users.filter(u => referredMap[u.id] && referredMap[u.id].length > 0);
+
+  // A user should be considered a root if they have referrals AND (they have no referrer OR their referrer is NOT in the usersWithReferrals list)
+  const rootUsers = usersWithReferrals.filter(u => !u.referrerId || !usersWithReferrals.find(x => x.id === u.referrerId));
+>>>>>>> REPLACE
