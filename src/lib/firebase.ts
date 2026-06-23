@@ -209,8 +209,17 @@ export const loginWithDiscord = async () => {
       }
       throw new Error('An account already exists with different credentials. Please sign in using the original method to link accounts.');
     }
-    console.error('Discord login failed', error);
-    throw error;
+    if (error.code === 'auth/popup-closed-by-user') {
+      console.warn('Popup closed by user.');
+      return;
+    }
+    console.warn('Popup login failed, falling back to redirect', error);
+    try {
+      await signInWithRedirect(auth, discordProvider);
+    } catch (redirectError: any) {
+      console.error('Redirect login failed', redirectError);
+      throw redirectError;
+    }
   }
 };
 
