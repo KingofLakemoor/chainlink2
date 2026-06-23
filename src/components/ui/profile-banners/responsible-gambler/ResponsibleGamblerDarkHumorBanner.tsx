@@ -1,14 +1,59 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Renderer, Triangle, Program, Mesh, Color } from "ogl";
 
-export function ResponsibleGamblerBanner({
+const PSA_LINES = [
+  // Light Roast
+  "Chances are you’re about to donate.",
+  "Think. Is this a bet… or a cry for help?",
+  "What’s gambling really costing you? (Don’t answer.)",
+  "Imagine what you could be buying instead.",
+  "You win some. You lose more. Math is undefeated.",
+
+  // Medium Roast
+  "What are you prepared to lose today? (Wrong answer: everything.)",
+  "This pick won’t fix your life.",
+  "Your bankroll called. It’s filing a missing persons report.",
+  "Hope is not a strategy. But it is your strategy.",
+  "If vibes were profitable, you’d be retired.",
+
+  // Full Roast
+  "You’re not chasing losses. You’re collecting them.",
+  "This is the part where you say ‘one more.’",
+  "Your luck isn’t bad — it’s consistent.",
+  "At this point, the house should send you a fruit basket.",
+  "You’re not gambling with money. You’re gambling with dignity.",
+
+  // ChainLink-Specific Roast
+  "The ChainLink sees all. It sees this pick. It is disappointed.",
+  "Variance isn’t your enemy. Your decision-making is.",
+  "The model predicted this outcome: pain.",
+  "ChainLink recommends: closing the app.",
+  "Your win probability just filed for bankruptcy."
+];
+
+export function ResponsibleGamblerDarkHumorBanner({
   isStatic = false,
   ...props
 }: { isStatic?: boolean } & React.HTMLAttributes<HTMLDivElement>) {
-  const container = useRef<HTMLDivElement | null>(null);
 
+  const container = useRef<HTMLDivElement | null>(null);
+  const [index, setIndex] = useState(0);
+
+  // Cycle readable PSA text (randomized)
+  useEffect(() => {
+    const id = setInterval(() => {
+      setIndex(prev => {
+        let next = Math.floor(Math.random() * PSA_LINES.length);
+        while (next === prev) next = Math.floor(Math.random() * PSA_LINES.length);
+        return next;
+      });
+    }, 3500);
+    return () => clearInterval(id);
+  }, []);
+
+  // Shader setup
   useEffect(() => {
     if (!container.current) return;
 
@@ -19,7 +64,7 @@ export function ResponsibleGamblerBanner({
     const geometry = new Triangle(gl);
     const program = new Program(gl, {
       vertex: vert,
-      fragment: fragResponsible,
+      fragment: fragResponsibleReadable,
       uniforms: {
         uTime: { value: 0 },
         uResolution: {
@@ -33,7 +78,6 @@ export function ResponsibleGamblerBanner({
 
     function resize() {
       if (!container.current) return;
-      // Use clientWidth/clientHeight or bounding rect to avoid pinholing issues
       const rect = container.current.getBoundingClientRect();
       renderer.setSize(rect.width, rect.height);
       program.uniforms.uResolution.value = new Color(
@@ -73,12 +117,19 @@ export function ResponsibleGamblerBanner({
   }, [isStatic]);
 
   return (
-    <div
-      ref={container}
-      className="absolute inset-0"
-      style={{ width: "100%", height: "100%", borderRadius: 8, overflow: "hidden" }}
-      {...props}
-    />
+    <div className="relative w-full h-full overflow-hidden rounded-lg" style={{ width: "100%", height: "100%" }} {...props}>
+      <div ref={container} className="absolute inset-0" />
+
+      {/* Readable PSA text overlay */}
+      <div className="absolute left-6 top-1/2 -translate-y-1/2 w-[55%] pointer-events-none">
+        <div
+          key={index}
+          className="text-emerald-100 text-[26px] font-light leading-snug opacity-0 animate-psa-fade"
+        >
+          {PSA_LINES[index]}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -92,14 +143,13 @@ void main() {
 }
 `;
 
-const fragResponsible = `
+const fragResponsibleReadable = `
 precision highp float;
 
 uniform float uTime;
 uniform vec3 uResolution;
 varying vec2 vUv;
 
-// noise helpers
 float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453123); }
 float noise(vec2 p){
   vec2 i=floor(p), f=fract(p);
@@ -116,13 +166,6 @@ float fbm(vec2 p){
   return f;
 }
 
-// soft text mask (fake glyph fog)
-float textFog(vec2 p, float seed){
-  float n = fbm(p*3.0 + seed);
-  return smoothstep(0.55, 0.7, n);
-}
-
-// chainlink hex emblem
 float hex(vec2 p){
   p = abs(p);
   return max(p.x*0.8660254 + p.y*0.5, p.y) - 0.3;
@@ -130,45 +173,26 @@ float hex(vec2 p){
 
 void main(){
   vec2 uv = vUv;
-
-  // NOTE: Aspect ratio calculation based on screen dimensions
-  vec2 aspect = vec2(uResolution.z, 1.0);
+  vec2 aspect = vec2(uResolution.z,1.0);
   vec2 p = (uv*2.0-1.0)*aspect;
 
-  // background
   float base = fbm(p*1.2 + uTime*0.02);
   vec3 col = mix(vec3(0.02,0.03,0.04), vec3(0.05,0.08,0.1), base*0.6);
 
-  // ethereal cloud
   float cloud = fbm(p*0.8 - vec2(0.0,uTime*0.03));
   col += vec3(0.4,0.9,0.7) * cloud * 0.25;
 
-  // PSA text fog (cycling)
-  float t = floor(mod(uTime*0.25, 7.0));
-  float fog = textFog(p + vec2(0.0,0.3), t*3.17);
-  vec3 fogCol = vec3(0.9,1.0,0.95);
-  col = mix(col, fogCol, fog * 0.35);
-
-  // chainlink emblem on right
-  vec2 ep = p - vec2(0.55 * aspect.x, 0.0); // Adjust position based on aspect ratio
+  vec2 ep = p - vec2(0.55 * aspect.x, 0.0);
   float h = hex(ep*1.4);
   float emblem = smoothstep(0.02,0.0,h);
   vec3 emblemCol = vec3(0.0,1.0,0.7);
   col = mix(col, emblemCol, emblem);
 
-  // glow around emblem
   float glow = smoothstep(0.6,0.0,length(ep));
   col += emblemCol * glow * 0.25;
 
-  // FIX: Vignette calculation adjustment to avoid pinholing on wide banners
-  // Scale the coordinate based on aspect to make vignette oval instead of strict circle
   vec2 vig_p = uv * 2.0 - 1.0;
-  // Make vignette wider
   float vig = smoothstep(1.5, 0.4, length(vig_p * vec2(1.0, 1.5)));
-
-  // alternative vignette approach if the first still pinholes too much:
-  // float vig = 1.0 - smoothstep(0.4, 1.5, length(p/aspect));
-
   col *= vig;
 
   gl_FragColor = vec4(col,1.0);
