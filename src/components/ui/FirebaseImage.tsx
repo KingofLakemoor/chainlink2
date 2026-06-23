@@ -30,8 +30,19 @@ export function FirebaseImage({ src, fallback, ...props }: FirebaseImageProps) {
 
           const storage = getStorage(app);
           let adjustedSrc = src;
-          // Clean up the URL format
-          adjustedSrc = adjustedSrc.replace('gs://chainlink-2-72590.firebasestorage.app/', '');
+
+          try {
+            const parsedUrl = new URL(src);
+            let path = decodeURIComponent(parsedUrl.pathname);
+            if (path.startsWith('/')) {
+              path = path.substring(1);
+            }
+            adjustedSrc = path;
+          } catch (e) {
+            // Fallback to basic string replacement if URL parsing fails
+            adjustedSrc = adjustedSrc.replace('gs://chainlink-2-72590.firebasestorage.app/', '').replace('gs://chainlink-2-72590.appspot.com/', '');
+          }
+
           adjustedSrc = adjustedSrc.replace(/sponsors\/scriptless\.png/i, "Sponsors/scriptless.png");
           const imageRef = ref(storage, adjustedSrc);
           const url = await getDownloadURL(imageRef);
