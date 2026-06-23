@@ -39,12 +39,12 @@ import { SignalFloorBanner } from '../../components/ui/profile-banners/signal-fl
 import { EdgeLedgerBanner } from '../../components/ui/profile-banners/edge-ledger/EdgeLedgerBanner';
 import { BadBeatBanner } from '../../components/ui/profile-banners/bad-beat';
 
-import { ResponsibleGamblerBanner } from "../../components/ui/profile-banners/responsible-gambler/ResponsibleGamblerBanner";
+import { ResponsibleGamblerReadableBanner } from "../../components/ui/profile-banners/responsible-gambler/ResponsibleGamblerReadableBanner";
 import { ResponsibleGamblerAvatarRing } from "../../components/ui/avatar-rings/responsible-gambler/ResponsibleGamblerAvatarRing";
 import { ResponsibleGamblerTitle } from "../../components/ui/titles/responsible-gambler/ResponsibleGamblerTitle";
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {
-  "ResponsibleGamblerBanner": ResponsibleGamblerBanner,
+  "ResponsibleGamblerBanner": ResponsibleGamblerReadableBanner,
   'BoardRoomBanner': BoardRoomBanner,
   'InfernoBanner': InfernoBanner,
   'OceanBanner': OceanBanner,
