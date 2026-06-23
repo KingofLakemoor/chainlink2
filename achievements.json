@@ -2,7 +2,7 @@
   {
     "name": "Lose 5 in a row",
     "description": "You lost 5 games in a row.",
-    "image": "/icons/icon-256x256.png",
+    "image": "gs://chainlink-2-72590.firebasestorage.app/Achievements/Wins Losses In A Row/L5 (1).svg",
     "imageStorageId": "default",
     "coins": 100,
     "weight": 1,
@@ -62,7 +62,7 @@
   {
     "name": "Win 10 in a row",
     "description": "You won 10 games in a row!",
-    "image": "gs://chainlink-2-72590.firebasestorage.app/W10.png",
+    "image": "gs://chainlink-2-72590.firebasestorage.app/Achievements/Wins Losses In A Row/W10.svg",
     "imageStorageId": "default",
     "coins": 1000,
     "weight": 3,
