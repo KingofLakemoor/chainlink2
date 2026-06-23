@@ -64,13 +64,15 @@ async function seed() {
       };
 
       if (!isForce) {
-        itemData = {
-          ...itemData,
-          active: dbData.active !== undefined ? dbData.active : data.active,
-          forSale: dbData.forSale !== undefined ? dbData.forSale : data.forSale,
-          featured: dbData.featured !== undefined ? dbData.featured : data.featured,
-          premiumOnly: dbData.premiumOnly !== undefined ? dbData.premiumOnly : data.premiumOnly,
-        };
+        if (dbData.active !== undefined) itemData.active = dbData.active;
+        if (dbData.forSale !== undefined) itemData.forSale = dbData.forSale;
+        if (dbData.featured !== undefined) itemData.featured = dbData.featured;
+        if (dbData.premiumOnly !== undefined) itemData.premiumOnly = dbData.premiumOnly;
+
+        if (itemData.active === undefined) delete itemData.active;
+        if (itemData.forSale === undefined) delete itemData.forSale;
+        if (itemData.featured === undefined) delete itemData.featured;
+        if (itemData.premiumOnly === undefined) delete itemData.premiumOnly;
       }
 
       if (isChangedOnly && !hasChanges(itemData, dbData)) {
