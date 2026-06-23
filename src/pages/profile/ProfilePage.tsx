@@ -61,12 +61,14 @@ const AvatarRingMap: Record<string, React.FC<any>> = {
   'BadBeatAvatarRing': BadBeatAvatarRing
 };
 
-import { ResponsibleGamblerReadableBanner } from "../../components/ui/profile-banners/responsible-gambler/ResponsibleGamblerReadableBanner";
+import { ResponsibleGamblerBaseBanner, ResponsibleGamblerReadableBanner, ResponsibleGamblerDarkHumorBanner } from "../../components/ui/profile-banners/responsible-gambler";
 import { ResponsibleGamblerAvatarRing } from "../../components/ui/avatar-rings/responsible-gambler/ResponsibleGamblerAvatarRing";
 import { ResponsibleGamblerTitle } from "../../components/ui/titles/responsible-gambler/ResponsibleGamblerTitle";
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {
-  "ResponsibleGamblerBanner": ResponsibleGamblerReadableBanner,
+  "ResponsibleGamblerBanner": ResponsibleGamblerBaseBanner,
+  "ResponsibleGamblerReadableBanner": ResponsibleGamblerReadableBanner,
+  "ResponsibleGamblerDarkHumorBanner": ResponsibleGamblerDarkHumorBanner,
   'BoardRoomBanner': BoardRoomBanner,
   'InfernoBanner': InfernoBanner,
   'OceanBanner': OceanBanner,
@@ -290,6 +292,7 @@ export default function ProfilePage() {
     }
   };
 
+
   const handleEquip = async (itemId: string | null, type: string) => {
     if (!user) return;
     setEquipLoading(type);
@@ -315,6 +318,28 @@ export default function ProfilePage() {
       setEquipLoading(null);
     }
   };
+
+  const handleUpdateVariant = async (variant: string) => {
+    if (!user) return;
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/user/update-variant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ variant })
+      });
+
+      if (!res.ok) {
+        console.error("Variant update failed", res.status);
+      }
+    } catch (e) {
+      console.error("Variant update error", e);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -400,7 +425,10 @@ export default function ProfilePage() {
 
   const equippedBannerItem = inventoryItems.find(i => i.id === profile?.equippedCosmetics?.PROFILE_BANNER);
   const equippedBannerImage = equippedBannerItem?.image;
-  const BannerComponent = ProfileBannerMap[equippedBannerImage || ''];
+  let BannerComponent = ProfileBannerMap[equippedBannerImage || ''];
+  if (equippedBannerItem?.id === 'banner_responsible_gambler' && profile?.equippedCosmetics?.BANNER_VARIANT) {
+    BannerComponent = ProfileBannerMap[profile.equippedCosmetics.BANNER_VARIANT] || BannerComponent;
+  }
 
   const equippedRingItem = inventoryItems.find(i => i.id === profile?.equippedCosmetics?.AVATAR_RING);
   const equippedRingImage = equippedRingItem?.image;
@@ -685,6 +713,7 @@ export default function ProfilePage() {
                         </div>
                         <p className="text-xs text-zinc-500 mb-4 flex-1">{item.description}</p>
 
+
                         <Button
                            onClick={() => handleEquip(isEquipped ? null : item.id, item.type)}
                            disabled={equipLoading === item.type}
@@ -694,6 +723,39 @@ export default function ProfilePage() {
                         >
                            {equipLoading === item.type ? 'Processing...' : isEquipped ? 'Unequip' : 'Equip'}
                         </Button>
+
+                        {isEquipped && item.id === 'banner_responsible_gambler' && (
+                          <div className="mt-4 border-t border-zinc-800 pt-4">
+                            <p className="text-xs text-zinc-500 mb-2 font-semibold">Select Variant:</p>
+                            <div className="flex flex-col gap-2">
+                              <Button
+                                onClick={() => handleUpdateVariant('ResponsibleGamblerBanner')}
+                                variant="outline"
+                                size="sm"
+                                className={`justify-start ${profile?.equippedCosmetics?.BANNER_VARIANT === 'ResponsibleGamblerBanner' || !profile?.equippedCosmetics?.BANNER_VARIANT ? 'border-cyan-500 text-cyan-400 bg-cyan-500/10' : 'border-zinc-700 text-zinc-400'}`}
+                              >
+                                Base Banner
+                              </Button>
+                              <Button
+                                onClick={() => handleUpdateVariant('ResponsibleGamblerReadableBanner')}
+                                variant="outline"
+                                size="sm"
+                                className={`justify-start ${profile?.equippedCosmetics?.BANNER_VARIANT === 'ResponsibleGamblerReadableBanner' ? 'border-cyan-500 text-cyan-400 bg-cyan-500/10' : 'border-zinc-700 text-zinc-400'}`}
+                              >
+                                Readable PSA
+                              </Button>
+                              <Button
+                                onClick={() => handleUpdateVariant('ResponsibleGamblerDarkHumorBanner')}
+                                variant="outline"
+                                size="sm"
+                                className={`justify-start ${profile?.equippedCosmetics?.BANNER_VARIANT === 'ResponsibleGamblerDarkHumorBanner' ? 'border-cyan-500 text-cyan-400 bg-cyan-500/10' : 'border-zinc-700 text-zinc-400'}`}
+                              >
+                                Dark Humor
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+
                      </div>
                   );
                })}

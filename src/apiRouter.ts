@@ -892,6 +892,44 @@ apiRouter.post("/user/equip" , async (req, res) => {
   }
 });
 
+
+apiRouter.post("/user/update-variant" , async (req, res) => {
+  try {
+    const { variant } = req.body;
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const idToken = authHeader.split('Bearer ')[1];
+    if (!adminAuth || !adminDb) return res.status(500).json({ success: false, error: "admin tools not initialized" });
+
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    const uid = decodedToken.uid;
+
+    await adminDb.runTransaction(async (transaction: any) => {
+      const userRef = adminDb.collection('users').doc(uid);
+      const userDoc = await transaction.get(userRef);
+      if (!userDoc.exists) throw new Error("User not found");
+
+      const profile = userDoc.data()!;
+      const equippedCosmetics = profile.equippedCosmetics || {};
+
+      const updateData: any = {
+        updatedAt: Date.now(),
+        equippedCosmetics: { ...equippedCosmetics, BANNER_VARIANT: variant }
+      };
+
+      transaction.update(userRef, updateData);
+    });
+
+    res.json({ success: true });
+  } catch (e: any) {
+    console.error("Update variant error:", e.message, e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 apiRouter.post("/admin/grade-matchup", validateAdmin, async (req, res) => {
   try {
     const { gameId } = req.body;
