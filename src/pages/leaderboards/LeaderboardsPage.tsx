@@ -39,12 +39,14 @@ import { SignalFloorBanner } from '../../components/ui/profile-banners/signal-fl
 import { EdgeLedgerBanner } from '../../components/ui/profile-banners/edge-ledger/EdgeLedgerBanner';
 import { BadBeatBanner } from '../../components/ui/profile-banners/bad-beat';
 
-import { ResponsibleGamblerReadableBanner } from "../../components/ui/profile-banners/responsible-gambler/ResponsibleGamblerReadableBanner";
+import { ResponsibleGamblerBaseBanner, ResponsibleGamblerReadableBanner, ResponsibleGamblerDarkHumorBanner } from "../../components/ui/profile-banners/responsible-gambler";
 import { ResponsibleGamblerAvatarRing } from "../../components/ui/avatar-rings/responsible-gambler/ResponsibleGamblerAvatarRing";
 import { ResponsibleGamblerTitle } from "../../components/ui/titles/responsible-gambler/ResponsibleGamblerTitle";
 
 const ProfileBannerMap: Record<string, React.FC<any>> = {
-  "ResponsibleGamblerBanner": ResponsibleGamblerReadableBanner,
+  "ResponsibleGamblerBanner": ResponsibleGamblerBaseBanner,
+  "ResponsibleGamblerReadableBanner": ResponsibleGamblerReadableBanner,
+  "ResponsibleGamblerDarkHumorBanner": ResponsibleGamblerDarkHumorBanner,
   'BoardRoomBanner': BoardRoomBanner,
   'InfernoBanner': InfernoBanner,
   'OceanBanner': OceanBanner,
@@ -380,7 +382,10 @@ export default function LeaderboardsPage() {
 
     const bannerItem = inventoryItems.find(i => i.id === player.equippedCosmetics?.PROFILE_BANNER);
     const bannerImage = bannerItem?.image;
-    const BannerComponent = ProfileBannerMap[bannerImage || ''];
+    let BannerComponent = ProfileBannerMap[bannerImage || ''];
+    if (bannerItem?.id === 'banner_responsible_gambler' && player.equippedCosmetics?.BANNER_VARIANT) {
+      BannerComponent = ProfileBannerMap[player.equippedCosmetics.BANNER_VARIANT] || BannerComponent;
+    }
 
     const ringItem = inventoryItems.find(i => i.id === player.equippedCosmetics?.AVATAR_RING);
     const ringImage = ringItem?.image;
