@@ -160,17 +160,19 @@ export default function LeaderboardsPage() {
         }
 
         const token = await auth.currentUser?.getIdToken();
-        const usersRes = await fetch('/api/users/public', {
-           headers: { 'Authorization': `Bearer ${token}` }
-        });
+
+        const [usersRes, chainsSnap, pendingPicksSnap, shopItemsSnap] = await Promise.all([
+           fetch('/api/users/public', {
+              headers: { 'Authorization': `Bearer ${token}` }
+           }),
+           getDocs(collection(db, 'chains')),
+           getDocs(query(collection(db, 'picks'), where('status', '==', 'PENDING'))),
+           getDocs(collection(db, 'shopItems'))
+        ]);
+
         if (!usersRes.ok) throw new Error("Failed to fetch leaderboard data");
         const usersData = await usersRes.json();
         const usersList = usersData.users || [];
-
-        const chainsSnap = await getDocs(collection(db, 'chains'));
-
-        // Fetch pending picks and all matchups to determine next pick
-        const pendingPicksSnap = await getDocs(query(collection(db, 'picks'), where('status', '==', 'PENDING')));
 
         const activePicksMap = new Map();
         const pendingMatchupIds = new Set<string>();
@@ -187,24 +189,27 @@ export default function LeaderboardsPage() {
         const matchupIdsArray = Array.from(pendingMatchupIds);
 
         const chunkSize = 30;
+        const matchupPromises = [];
         for (let i = 0; i < matchupIdsArray.length; i += chunkSize) {
             const chunk = matchupIdsArray.slice(i, i + chunkSize);
             if (chunk.length > 0) {
                 const matchupsQuery = query(collection(db, 'matchups'), where(documentId(), 'in', chunk));
-                const chunkSnap = await getDocs(matchupsQuery);
-                chunkSnap.docs.forEach(doc => {
-                    matchupsMap.set(doc.id, doc.data());
-                });
+                matchupPromises.push(getDocs(matchupsQuery));
             }
         }
+
+        const chunkSnaps = await Promise.all(matchupPromises);
+        chunkSnaps.forEach(chunkSnap => {
+            chunkSnap.docs.forEach(doc => {
+                matchupsMap.set(doc.id, doc.data());
+            });
+        });
 
         const chainsMap = new Map();
         chainsSnap.docs.forEach(doc => {
             const data = doc.data();
             chainsMap.set(data.userId, data);
         });
-
-        const shopItemsSnap = await getDocs(collection(db, 'shopItems'));
         const items = shopItemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setInventoryItems(items);
 
