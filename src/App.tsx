@@ -316,8 +316,12 @@ const TopStats = React.memo(function TopStats() {
 });
 
 function MainLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const location = useLocation();
+
+  if (profile?.needsOnboarding && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" />;
+  }
   useNotifications();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -372,10 +376,20 @@ function MainLayout({ children }: { children: React.ReactNode }) {
   );
 }
 
-function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+function PrivateRoute({ children, allowOnboarding = false }: { children: React.ReactNode, allowOnboarding?: boolean }) {
+  const { user, profile, loading } = useAuth();
   if (loading) return null;
-  return user ? <>{children}</> : <Navigate to="/login" />;
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  // Force onboarding if they need it and they aren't already on the onboarding page
+  if (profile?.needsOnboarding && !allowOnboarding) {
+    return <Navigate to="/onboarding" />;
+  }
+
+  return <>{children}</>;
 }
 
 const PlayDashboard = React.lazy(() => import('./pages/play/PlayDashboard'));
@@ -391,6 +405,7 @@ const Link4Page = React.lazy(() => import('./pages/link4/Link4Page'));
 const PickEmPage = React.lazy(() => import('./pages/pickem/PickEmPage'));
 const SponsorPage = React.lazy(() => import('./pages/SponsorPage'));
 const HelpPage = React.lazy(() => import('./pages/help/HelpPage'));
+const OnboardingPage = React.lazy(() => import('./pages/onboarding/OnboardingPage'));
 
 export default function App() {
   return (
@@ -400,6 +415,7 @@ export default function App() {
         <React.Suspense fallback={<div className="flex items-center justify-center h-screen text-zinc-500">Loading...</div>}>
         <Routes>
           <Route path="/login" element={<Landing />} />
+          <Route path="/onboarding" element={<PrivateRoute allowOnboarding={true}><OnboardingPage /></PrivateRoute>} />
           <Route path="/" element={<MainLayout><PlayDashboard /></MainLayout>} />
           <Route path="/admin/*" element={<AdminDashboard />} />
           <Route path="/dashboard" element={<PrivateRoute><MainLayout><DashboardPage /></MainLayout></PrivateRoute>} />
