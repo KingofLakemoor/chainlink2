@@ -21,15 +21,15 @@ import {
 const chartConfig = {
   wins: {
     label: "wins",
-    color: "hsl(var(--chart-5))",
+    color: "var(--color-chart-5)",
   },
   losses: {
     label: "losses",
-    color: "hsl(var(--chart-2))",
+    color: "var(--color-chart-2)",
   },
   pushes: {
     label: "pushes",
-    color: "hsl(var(--chart-3) / 0.3)",
+    color: "color-mix(in oklch, var(--color-chart-3) 30%, transparent)",
   },
 } satisfies ChartConfig;
 
