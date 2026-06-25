@@ -38,6 +38,7 @@ interface Link4Pick {
   name: string;
   sport: string;
   startTime?: string;
+  score?: number;
 }
 
 export default function Link4Page() {
@@ -581,7 +582,7 @@ export default function Link4Page() {
               const processedStatus = processedPick?.status || 'PENDING';
               let pickScore = processedPick?.score;
               if (pickScore === undefined || pickScore === 0) {
-                 pickScore = pick.score;
+                 pickScore = pick?.score;
               }
               pickScore = pickScore || 0;
 
