@@ -243,11 +243,19 @@ export default function Link4Page() {
                     score += pickScore;
                  } else if (pickMatchup) {
                     // Fallback to recalculating if we still have the matchup locally but grader hasn't set score
-                    // Add Moneyline logic for calculating score
                     const pickedHome = pick.name === pickMatchup.homeTeam.name;
                     const ml = pickedHome ? pickMatchup.metadata?.mlHome : pickMatchup.metadata?.mlAway;
                     if (ml !== undefined && ml !== null) {
                        score += ml;
+                       pickScore = ml;
+                    }
+                 }
+              } else if (status === 'PENDING') {
+                 if (pickScore !== 0) {
+                 } else if (pickMatchup) {
+                    const pickedHome = pick.name === pickMatchup.homeTeam.name;
+                    const ml = pickedHome ? pickMatchup.metadata?.mlHome : pickMatchup.metadata?.mlAway;
+                    if (ml !== undefined && ml !== null) {
                        pickScore = ml;
                     }
                  }
@@ -268,14 +276,16 @@ export default function Link4Page() {
            // Calculate potential score by assuming PENDING games are WINs
            processedPicks.forEach((pick: any) => {
               if (pick.status === 'PENDING') {
-                 const pickMatchup = allMatchups.find(m => m.gameId === pick.id.replace('pick-', ''));
-                 if (pickMatchup) {
-                    const pickedHome = pick.name === pickMatchup.homeTeam.name;
-                    const ml = pickedHome ? pickMatchup.metadata?.mlHome : pickMatchup.metadata?.mlAway;
-                    if (ml !== undefined && ml !== null && ml > 0) {
-                       potentialScore += ml;
-                    } else if (ml !== undefined && ml !== null && ml < 0) {
-                       potentialScore += ml;
+                 if (pick.score !== undefined && pick.score !== null && pick.score !== 0) {
+                    potentialScore += pick.score;
+                 } else {
+                    const pickMatchup = allMatchups.find(m => m.gameId === pick.id.replace('pick-', ''));
+                    if (pickMatchup) {
+                       const pickedHome = pick.name === pickMatchup.homeTeam.name;
+                       const ml = pickedHome ? pickMatchup.metadata?.mlHome : pickMatchup.metadata?.mlAway;
+                       if (ml !== undefined && ml !== null) {
+                          potentialScore += ml;
+                       }
                     }
                  }
               }
@@ -361,12 +371,16 @@ export default function Link4Page() {
   const handleMakePick = (matchup: any, team: any) => {
     if (nextPickIndex === -1 || hasSubmitted || hasLoss) return;
 
+    const pickedHome = team.name === matchup.homeTeam.name;
+    const ml = pickedHome ? matchup.metadata?.mlHome : matchup.metadata?.mlAway;
+
     const newPicks = [...picks];
     newPicks[nextPickIndex] = {
       id: `pick-${matchup.gameId}`,
       name: team.name,
       sport: matchup.league,
       startTime: matchup.startTime,
+      score: ml || 0,
     };
     setPicks(newPicks);
     setIsSelectingPick(false);
@@ -565,7 +579,11 @@ export default function Link4Page() {
               const myEntry = leaderboardData.find(entry => entry.userId === user?.uid);
               const processedPick = pick ? myEntry?.picks.find(p => p.id === pick.id) : null;
               const processedStatus = processedPick?.status || 'PENDING';
-              const pickScore = processedPick?.score || 0;
+              let pickScore = processedPick?.score;
+              if (pickScore === undefined || pickScore === 0) {
+                 pickScore = pick.score;
+              }
+              pickScore = pickScore || 0;
 
               const isWin = processedStatus === 'WIN';
               const isLoss = processedStatus === 'LOSS';
@@ -645,11 +663,13 @@ export default function Link4Page() {
                         {pick.sport}
                       </div>
                       <h3 className={`font-bold text-lg break-words ${textClass}`}>{pick.name}</h3>
-                      {isWin && (
-                        <div className="mt-2 text-green-500 font-bold">{pickScore > 0 ? `+${pickScore}` : pickScore}</div>
+                      {(isWin || processedStatus === 'PENDING' || isLoss) && pickScore !== undefined && pickScore !== null && (
+                        <div className={`mt-2 font-bold ${isWin ? 'text-green-500' : isLoss ? 'text-red-500 line-through' : 'text-zinc-500'}`}>
+                          {pickScore > 0 ? `+${pickScore}` : pickScore}
+                        </div>
                       )}
                       {isLoss && (
-                        <div className="mt-2 text-red-500 font-bold uppercase">Loss</div>
+                        <div className="mt-1 text-red-500 font-bold uppercase text-sm">Loss</div>
                       )}
                     </div>
                   ) : isActive ? (
