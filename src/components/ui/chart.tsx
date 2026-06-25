@@ -128,19 +128,20 @@ function ChartTooltipContent({
   color,
   nameKey,
   labelKey,
-}: any & { payload?: any } &
-  React.ComponentProps<"div"> & {
-    hideLabel?: boolean
-    hideIndicator?: boolean
-    indicator?: "line" | "dot" | "dashed"
-    nameKey?: string
-    labelKey?: string
-  } & Omit<
-    any /*
-
-      TooltipNameType > */ ,
-    "accessibilityLayer"
-  >) {
+}: React.ComponentProps<"div"> & {
+  active?: boolean;
+  payload?: any[];
+  hideLabel?: boolean;
+  hideIndicator?: boolean;
+  indicator?: "line" | "dot" | "dashed";
+  nameKey?: string;
+  labelKey?: string;
+  label?: any;
+  labelFormatter?: (value: any, payload: any[]) => React.ReactNode;
+  labelClassName?: string;
+  formatter?: (value: any, name: any, item: any, index: number, payload: any) => React.ReactNode;
+  color?: string;
+}) {
   const { config } = useChart()
 
   const tooltipLabel = React.useMemo(() => {
@@ -278,7 +279,7 @@ function ChartLegendContent({
 }: React.ComponentProps<"div"> & {
   hideIcon?: boolean
   nameKey?: string
-} & RechartsPrimitive.DefaultLegendContentProps) {
+} & Partial<RechartsPrimitive.DefaultLegendContentProps>) {
   const { config } = useChart()
 
   if (!payload?.length) {
