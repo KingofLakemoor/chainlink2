@@ -1518,5 +1518,19 @@
     "preview": "/images/merch/trucker banner.png",
     "order": 100,
     "collectionId": ""
+  },
+  {
+    "id": "banner_fourth_of_july",
+    "name": "Fourth of July",
+    "description": "Patriotic wave.",
+    "cost": 5000,
+    "type": "PROFILE_BANNER",
+    "active": true,
+    "forSale": true,
+    "image": "FourthOfJulyBanner",
+    "featured": true,
+    "preview": "FourthOfJulyBanner",
+    "order": 1,
+    "collectionId": ""
   }
 ]

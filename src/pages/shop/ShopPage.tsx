@@ -23,6 +23,7 @@ import { GlobalStageBanner } from '../../components/ui/profile-banners/global-st
 import { OpulentoVaultBanner } from '../../components/ui/profile-banners/opulento';
 import { ZeroZeroShaderBanner } from "../../components/ui/profile-banners/zero-zero/ZeroZeroShaderBanner";
 import { BoardRoomBanner } from '../../components/ui/profile-banners/board-room/BoardRoomBanner';
+import { FourthOfJulyBanner } from '../../components/ui/profile-banners/fourth-of-july/FourthOfJulyBanner';
 import { DaisyChainBanner } from '../../components/ui/profile-banners/daisy-chain/DaisyChainBanner';
 import { XenonTerminalBanner } from '../../components/ui/profile-banners/xenon-terminal';
 import { PrimeCircuitRing } from '../../components/ui/avatar-rings/prime-circuit-ring';
@@ -67,6 +68,7 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   "ResponsibleGamblerReadableBanner": ResponsibleGamblerReadableBanner,
   "ResponsibleGamblerDarkHumorBanner": ResponsibleGamblerDarkHumorBanner,
   'BoardRoomBanner': BoardRoomBanner,
+  'FourthOfJulyBanner': FourthOfJulyBanner,
   'InfernoBanner': InfernoBanner,
   'OceanBanner': OceanBanner,
   'PhantomStarBanner': PhantomStarBanner,
