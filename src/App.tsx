@@ -19,7 +19,7 @@ import {
 import { FaDiscord } from 'react-icons/fa';
 import { Download } from 'lucide-react';
 
-import { ErrorBoundary } from './components/ErrorBoundary';
+import { ErrorBoundaryWrapper } from './components/ErrorBoundary';
 
 const Sidebar = React.memo(function Sidebar({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
   const { user, profile } = useAuth();
@@ -395,7 +395,7 @@ const HelpPage = React.lazy(() => import('./pages/help/HelpPage'));
 export default function App() {
   return (
     <AuthProvider>
-      <ErrorBoundary>
+      <ErrorBoundaryWrapper>
       <BrowserRouter>
         <React.Suspense fallback={<div className="flex items-center justify-center h-screen text-zinc-500">Loading...</div>}>
         <Routes>
@@ -420,7 +420,7 @@ export default function App() {
         </Routes>
         </React.Suspense>
       </BrowserRouter>
-      </ErrorBoundary>
+      </ErrorBoundaryWrapper>
     </AuthProvider>
   );
 }
