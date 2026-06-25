@@ -60,6 +60,7 @@ const ensureUserProfile = async (user: User, username?: string, referrerId?: str
       stats: { wins: 0, losses: 0, pushes: 0 },
       createdAt: Date.now(),
       updatedAt: Date.now(),
+      needsOnboarding: username ? false : true,
     };
 
     if (referrerId) {
