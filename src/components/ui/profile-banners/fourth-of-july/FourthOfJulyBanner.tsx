@@ -171,7 +171,8 @@ void main(){
   col += shieldCol * glow * 0.25;
 
   // vignette
-  float vig = smoothstep(1.2,0.4,length(p));
+  vec2 vig_p = uv * 2.0 - 1.0;
+  float vig = smoothstep(1.5, 0.4, length(vig_p * vec2(1.0, 1.5)));
   col *= vig;
 
   gl_FragColor = vec4(col,1.0);
