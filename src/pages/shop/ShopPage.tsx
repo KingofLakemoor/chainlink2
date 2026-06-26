@@ -16,7 +16,7 @@ import { Mandala } from '../../components/ui/avatar-rings/mandala';
 import { Ocean } from '../../components/ui/avatar-rings/ocean';
 import { PhantomStar } from '../../components/ui/avatar-rings/phantomstar';
 import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
-import { OceanBanner } from '../../components/ui/profile-banners/ocean';
+import { AbyssalSwellBanner } from '../../components/ui/profile-banners/abyssal-swell/AbyssalSwellBanner';
 import { PhantomStarBanner } from '../../components/ui/profile-banners/phantom-star';
 import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-syndicate';
 import { GlobalStageBanner } from '../../components/ui/profile-banners/global-stage';
@@ -70,7 +70,7 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'BoardRoomBanner': BoardRoomBanner,
   'FourthOfJulyBanner': FourthOfJulyBanner,
   'InfernoBanner': InfernoBanner,
-  'OceanBanner': OceanBanner,
+  'AbyssalSwellBanner': AbyssalSwellBanner,
   'PhantomStarBanner': PhantomStarBanner,
   'GenesisSyndicate': GenesisSyndicate,
   'GlobalStageBanner': GlobalStageBanner,

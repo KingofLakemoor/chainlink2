@@ -203,9 +203,9 @@
     "type": "PROFILE_BANNER",
     "active": true,
     "forSale": false,
-    "image": "OceanBanner",
+    "image": "AbyssalSwellBanner",
     "featured": false,
-    "preview": "OceanBanner",
+    "preview": "AbyssalSwellBanner",
     "order": 15,
     "collectionId": "ocean"
   },
