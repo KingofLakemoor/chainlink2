@@ -186,6 +186,25 @@ export default function PickEmPage() {
     fetchLeaderboard();
   }, [selectedCampaign, activeTab]);
 
+  const handleClearPick = async (matchup: any) => {
+    if (!user || !selectedCampaign) return;
+    if (matchup.status !== 'STATUS_SCHEDULED') return;
+
+    try {
+      const pickId = `${selectedCampaign.id}_${selectedWeek}_${matchup.id}_${user.uid}`;
+      const pickRef = doc(db, 'pickemPicks', pickId);
+      await deleteDoc(pickRef);
+      setUserPicks(prev => {
+        const next = { ...prev };
+        delete next[matchup.id];
+        return next;
+      });
+    } catch (err) {
+      console.error(err);
+      alert('Failed to clear pick');
+    }
+  };
+
   const handlePick = async (matchup: any, teamId: string) => {
     if (!user || !selectedCampaign) return;
     if (matchup.status !== 'STATUS_SCHEDULED') return;
@@ -197,12 +216,7 @@ export default function PickEmPage() {
       const existingPick = userPicks[matchup.id];
       if (existingPick?.pick.teamId === teamId) {
         // Unselect if clicking the same team
-        await deleteDoc(pickRef);
-        setUserPicks(prev => {
-          const next = { ...prev };
-          delete next[matchup.id];
-          return next;
-        });
+        await handleClearPick(matchup);
         return;
       }
 
@@ -446,6 +460,15 @@ export default function PickEmPage() {
                         </div>
                         {pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) && <CheckCircle className="w-5 h-5" style={{ color: primaryColor }} />}
                       </button>
+
+                      {pick && !isLocked && (
+                        <button
+                          onClick={() => handleClearPick(m)}
+                          className="mt-2 text-xs text-zinc-500 hover:text-zinc-300 py-1 transition-colors underline"
+                        >
+                          Clear Pick
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
