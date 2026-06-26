@@ -24,7 +24,7 @@ import { EdgeLedgerAvatarRing } from '../../components/ui/avatar-rings/edge-ledg
 import { BadBeatAvatarRing } from '../../components/ui/avatar-rings/bad-beat';
 import { TitleMap } from '../../components/ui/titles';
 import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
-import { OceanBanner } from '../../components/ui/profile-banners/ocean';
+import { AbyssalSwellBanner } from '../../components/ui/profile-banners/abyssal-swell/AbyssalSwellBanner';
 import { PhantomStarBanner } from '../../components/ui/profile-banners/phantom-star';
 import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-syndicate';
 import { GlobalStageBanner } from '../../components/ui/profile-banners/global-stage';
@@ -51,7 +51,7 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'BoardRoomBanner': BoardRoomBanner,
   'FourthOfJulyBanner': FourthOfJulyBanner,
   'InfernoBanner': InfernoBanner,
-  'OceanBanner': OceanBanner,
+  'AbyssalSwellBanner': AbyssalSwellBanner,
   'PhantomStarBanner': PhantomStarBanner,
   'GenesisSyndicate': GenesisSyndicate,
   'GlobalStageBanner': GlobalStageBanner,
