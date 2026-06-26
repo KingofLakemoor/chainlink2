@@ -18,6 +18,7 @@ import { PhantomStar } from '../../components/ui/avatar-rings/phantomstar';
 import { InfernoBanner } from '../../components/ui/profile-banners/inferno';
 import { AbyssalSwellBanner } from '../../components/ui/profile-banners/abyssal-swell/AbyssalSwellBanner';
 import { PhantomStarBanner } from '../../components/ui/profile-banners/phantom-star';
+import { PhantomStaticBanner } from '../../components/ui/profile-banners/phantom-static/PhantomStaticBanner';
 import { GenesisSyndicate } from '../../components/ui/profile-banners/genesis-syndicate';
 import { GlobalStageBanner } from '../../components/ui/profile-banners/global-stage';
 import { OpulentoVaultBanner } from '../../components/ui/profile-banners/opulento';
@@ -73,6 +74,7 @@ const ProfileBannerMap: Record<string, React.FC<any>> = {
   'InfernoBanner': InfernoBanner,
   'AbyssalSwellBanner': AbyssalSwellBanner,
   'PhantomStarBanner': PhantomStarBanner,
+  'PhantomStaticBanner': PhantomStaticBanner,
   'GenesisSyndicate': GenesisSyndicate,
   'GlobalStageBanner': GlobalStageBanner,
   'OpulentoVaultBanner': OpulentoVaultBanner,
