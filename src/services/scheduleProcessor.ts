@@ -133,7 +133,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                  return count;
               };
 
-              const isTournamentPost = scrapedMatchup.competition?.status?.type?.state === 'post';
+              const isTournamentPost = scrapedMatchup.competition?.status?.type?.name === 'STATUS_FINAL' || scrapedMatchup.competition?.status?.type?.completed === true;
               const isHomeWD = homeComp?.status?.type?.name === 'STATUS_WITHDRAWN' || homeComp?.status?.type?.name === 'STATUS_CUT' || homeComp?.status?.type?.name === 'STATUS_DQ';
               const isAwayWD = awayComp?.status?.type?.name === 'STATUS_WITHDRAWN' || awayComp?.status?.type?.name === 'STATUS_CUT' || awayComp?.status?.type?.name === 'STATUS_DQ';
 
