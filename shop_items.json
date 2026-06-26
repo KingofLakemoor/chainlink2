@@ -156,7 +156,7 @@
   {
     "id": "banner_opulento_vault",
     "name": "Opulento Vault",
-    "description": "A static or animated background featuring cascading gold coins, velvet ropes, or double-layered amber chains.",
+    "description": "Wealth isn’t stored — it’s guarded.\nAnd every lock remembers who tried to open it.",
     "cost": 5000,
     "type": "PROFILE_BANNER",
     "active": true,
@@ -170,7 +170,7 @@
   {
     "id": "banner_inferno_board",
     "name": "Inferno Banner",
-    "description": "Deep red background with animated embers or a burning betting slip. Perfect for players on a win streak.",
+    "description": "Some slips burn slow. Some burn loud.\nEvery ember remembers the moment it turned against you.",
     "cost": 2000,
     "type": "PROFILE_BANNER",
     "active": true,
@@ -198,7 +198,7 @@
   {
     "id": "banner_abyssal_swell",
     "name": "Abyssal Swell",
-    "description": "Slow-moving, deep blue waves. Represents the calm, unbothered mindset of a bettor who never tilts.",
+    "description": "The deep doesn’t rage. It waits.\nPressure makes its own kind of calm.",
     "cost": 2000,
     "type": "PROFILE_BANNER",
     "active": true,
@@ -240,7 +240,7 @@
   {
     "id": "banner_phantom_static",
     "name": "Phantom Static",
-    "description": "A cool, minimalist gray static or fog effect. Very understated and ethereal.",
+    "description": "A dead channel that refuses to stay dead.\nThe noise knows your name.",
     "cost": 3000,
     "type": "PROFILE_BANNER",
     "active": true,
@@ -254,7 +254,7 @@
   {
     "id": "banner_daisy_chain",
     "name": "The Daisy Chain",
-    "description": "A clean, interlocking chain-link fence pattern that glows sequentially from left to right.",
+    "description": "A gentle loop in a brutal world.\nEven the chain has a soft link somewhere.",
     "cost": 3500,
     "type": "PROFILE_BANNER",
     "active": true,
@@ -268,7 +268,7 @@
   {
     "id": "banner_bad_beat",
     "name": "The Bad Beat",
-    "description": "A crumpled-up ticket stub or a cracked screen effect.",
+    "description": "The math was right. The moment wasn’t.\nA perfect read undone by a single cruel ripple in the odds.",
     "cost": 1500,
     "type": "PROFILE_BANNER",
     "active": true,
@@ -310,7 +310,7 @@
   {
     "id": "banner_zero_zero_zero",
     "name": "The 0:00",
-    "description": "A banner featuring a glowing, red digital clock hitting zero, representing the buzzer-beater wins.",
+    "description": "When the clock hits zero, truth shows up.\nNo time left means no lies left.",
     "cost": 4500,
     "type": "PROFILE_BANNER",
     "active": true,
@@ -338,7 +338,7 @@
   {
     "id": "banner_phantom_star",
     "name": "Phantom Star",
-    "description": "Ethereal and distant.",
+    "description": "A signal from nowhere, shining for no one.\nYou don’t follow it. It follows you.",
     "cost": 3000,
     "type": "PROFILE_BANNER",
     "active": true,
