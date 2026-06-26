@@ -72,7 +72,7 @@ export async function gradeLink4Matchups(matchups: any[]) {
              if (!pickedHome && awayScore > homeScore) won = true;
              status = won ? 'WIN' : 'LOSS';
 
-             if (won) {
+             if (pickScore === 0) {
                  const ml = pickedHome ? finalizedMatchup.metadata?.mlHome : finalizedMatchup.metadata?.mlAway;
                  if (ml !== undefined && ml !== null) {
                      pickScore = ml;
