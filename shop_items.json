@@ -245,9 +245,9 @@
     "type": "PROFILE_BANNER",
     "active": true,
     "forSale": false,
-    "image": "bg-gradient-to-tr from-zinc-800 to-zinc-600",
+    "image": "PhantomStaticBanner",
     "featured": false,
-    "preview": "bg-gradient-to-tr from-zinc-800 to-zinc-600",
+    "preview": "PhantomStaticBanner",
     "order": 17,
     "collectionId": "phantom"
   },
