@@ -1,18 +1,103 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../lib/auth-context';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 import { cn } from '../../lib/utils';
 
 interface WorldCupBracketProps {
   bracket: any; // The bracket document from Firestore
 }
 
+import { Coins, Loader2 } from 'lucide-react';
+
 export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
   const [selections, setSelections] = useState<Record<string, string>>({});
+  const [isPaid, setIsPaid] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
 
-  const handleSelect = (matchId: string, team: string) => {
-    setSelections(prev => {
-      const next = { ...prev, [matchId]: team };
-      return next;
-    });
+  const { user } = useAuth();
+
+  useEffect(() => {
+    async function loadSelections() {
+      if (!user || !bracket?.id) return;
+      try {
+        const docRef = doc(db, 'bracketGamePredictions', `${bracket.id}_${user.uid}`);
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.paid) setIsPaid(true);
+          if (data.selections) {
+            setSelections(data.selections);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load bracket predictions:", err);
+      }
+    }
+    loadSelections();
+  }, [user, bracket?.id]);
+
+  const handlePayToEnter = async () => {
+    if (!user || !bracket?.id || isPaying) return;
+    setIsPaying(true);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/brackets/enter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ bracketId: bracket.id })
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to enter bracket');
+      }
+      setIsPaid(true);
+    } catch (err: any) {
+      alert(err.message || "Failed to enter bracket. Check your links balance.");
+    } finally {
+      setIsPaying(false);
+    }
+  };
+
+  const handleSelect = async (matchId: string, team: string, isLocked: boolean) => {
+    if (isLocked || !isPaid) return;
+
+    const next = { ...selections };
+    const isDeselect = next[matchId] === team;
+
+    if (isDeselect) {
+      delete next[matchId];
+    } else {
+      next[matchId] = team;
+    }
+
+    const removedTeam = isDeselect ? team : (selections[matchId] && selections[matchId] !== team ? selections[matchId] : null);
+    if (removedTeam) {
+      for (const [mId, mTeam] of Object.entries(next)) {
+         if (mTeam === removedTeam && mId !== matchId) {
+           delete next[mId];
+         }
+      }
+    }
+
+    setSelections(next);
+
+    if (user && bracket?.id) {
+      try {
+        const docRef = doc(db, 'bracketGamePredictions', `${bracket.id}_${user.uid}`);
+        await setDoc(docRef, {
+          userId: user.uid,
+          bracketId: bracket.id,
+          selections: next,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+      } catch (err) {
+        console.error("Failed to save bracket prediction:", err);
+      }
+    }
   };
 
   const getMatchTeams = (round: number, globalMatchIndex: number) => {
@@ -35,20 +120,33 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
   const theme = bracket?.theme || {};
   const primaryColor = theme.primaryColor || "#22c55e";
 
+  const isMatchLocked = (round: number, matchId: string) => {
+    const now = new Date();
+    if (round === 0) {
+      const matchTime = bracket?.matchTimes?.[matchId];
+      if (matchTime) return now > new Date(matchTime);
+      return now > new Date('2026-06-28T19:00:00Z');
+    } else {
+      return now > new Date('2026-07-04T17:00:00Z');
+    }
+  };
+
   const renderMatch = (round: number, globalMatchIndex: number) => {
     const matchId = `r${round}-m${globalMatchIndex}`;
     const [team1, team2] = getMatchTeams(round, globalMatchIndex);
     const selectedTeam = selections[matchId];
 
+    const locked = isMatchLocked(round, matchId);
+
     return (
-      <div key={matchId} className="flex flex-col mb-4 bg-[#1a1a1a] border border-[#27272a] rounded-md overflow-hidden w-[160px] text-sm">
+      <div key={matchId} className={cn("flex flex-col mb-4 bg-[#1a1a1a] border border-[#27272a] rounded-md overflow-hidden w-[160px] text-sm", locked && "opacity-75")}>
         <button
-          onClick={() => team1 && handleSelect(matchId, team1)}
-          disabled={!team1}
+          onClick={() => team1 && handleSelect(matchId, team1, locked)}
+          disabled={!team1 || locked}
           className={cn(
             "p-2 text-left hover:bg-zinc-800 transition-colors border-b border-[#27272a] truncate",
             selectedTeam === team1 ? "bg-zinc-800 font-bold" : "text-zinc-300",
-            !team1 && "text-zinc-600 cursor-not-allowed"
+            (!team1 || locked) && "text-zinc-600 cursor-not-allowed"
           )}
           style={selectedTeam === team1 ? { color: primaryColor } : undefined}
           title={team1}
@@ -56,12 +154,12 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
           {team1 || 'TBD'}
         </button>
         <button
-          onClick={() => team2 && handleSelect(matchId, team2)}
-          disabled={!team2}
+          onClick={() => team2 && handleSelect(matchId, team2, locked)}
+          disabled={!team2 || locked}
           className={cn(
             "p-2 text-left hover:bg-zinc-800 transition-colors truncate",
             selectedTeam === team2 ? "bg-zinc-800 font-bold" : "text-zinc-300",
-            !team2 && "text-zinc-600 cursor-not-allowed"
+            (!team2 || locked) && "text-zinc-600 cursor-not-allowed"
           )}
           style={selectedTeam === team2 ? { color: primaryColor } : undefined}
           title={team2}
@@ -87,17 +185,31 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
   const champion = selections[finalWinnerId];
 
   return (
-    <div className="w-full overflow-x-auto pb-8 bg-[#0a0a0a] rounded-xl p-4 border border-[#27272a] relative">
-      {/* Overlay */}
-      <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 rounded-xl backdrop-blur-sm pointer-events-auto">
-        <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-xl max-w-md mx-4 text-center shadow-2xl">
-          <p className="text-white text-lg font-medium leading-relaxed">
-            We will launch our Bracket feature with the 2026 World Cup Knockout Round, beginning on June 28th
-          </p>
-        </div>
+    <div className="w-full flex flex-col items-center">
+      <div className="bg-[#1a1a1a] border border-[#27272a] rounded-xl p-4 mb-6 w-full max-w-2xl text-center">
+        <p className="text-zinc-300 text-sm">
+          <strong className="text-white">Lock Times:</strong> Round of 32 games lock at their scheduled time. Round of 16 locks July 4th at 10:00 AM AZ time.
+        </p>
       </div>
 
-      <div className="min-w-max flex items-stretch justify-center pointer-events-none select-none opacity-50">
+      {!isPaid && (
+        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-6 mb-8 w-full max-w-2xl text-center flex flex-col items-center">
+          <p className="text-yellow-200 mb-4 font-medium">
+            You must enter this bracket to make picks.
+          </p>
+          <button
+            onClick={handlePayToEnter}
+            disabled={isPaying}
+            className="flex items-center gap-2 bg-yellow-500 text-black px-6 py-2 rounded-lg font-bold hover:bg-yellow-400 transition-colors disabled:opacity-50"
+          >
+            {isPaying ? <Loader2 className="w-5 h-5 animate-spin" /> : <Coins className="w-5 h-5" />}
+            Pay {bracket?.cost || 10} Links to Enter
+          </button>
+        </div>
+      )}
+
+      <div className={cn("w-full overflow-x-auto pb-8 bg-[#0a0a0a] rounded-xl p-4 border border-[#27272a] relative transition-opacity", !isPaid && "opacity-50 pointer-events-none")}>
+        <div className="min-w-max flex items-stretch justify-center">
         {/* Left Side */}
         <div className="flex">
           {renderRound(0, 0, 8, "Round of 32")}
@@ -138,6 +250,7 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
            {renderRound(2, 2, 2, "Quarter-finals")}
            {renderRound(3, 1, 1, "Semi-finals")}
         </div>
+      </div>
       </div>
     </div>
   );

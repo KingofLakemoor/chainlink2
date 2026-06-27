@@ -1,61 +1,197 @@
 const fs = require('fs');
 
-let content = fs.readFileSync('src/pages/admin/referrals/ReferralsAdminPage.tsx', 'utf-8');
+const path = 'src/pages/brackets/WorldCupBracket.tsx';
+let content = fs.readFileSync(path, 'utf8');
 
-// Replace 1
+// 1. imports and useAuth
 content = content.replace(
-  'const usersWithReferrals = users.filter(u => referredMap[u.id] && referredMap[u.id].length > 0);',
-  'const usersWithReferrals = users.filter(u => referredMap[u.id] && referredMap[u.id].length > 0);\n  const rootUsers = usersWithReferrals.filter(u => !u.referrerId || !usersWithReferrals.find(x => x.id === u.referrerId));'
+  "import React, { useState } from 'react';",
+  "import React, { useState, useEffect } from 'react';\nimport { useAuth } from '../../lib/auth-context';\nimport { doc, getDoc, setDoc } from 'firebase/firestore';\nimport { db } from '../../lib/firebase';"
 );
 
-// Replace 2
-content = content.replace(
-  '<ul className={`pl-${depth > 0 ? \'6\' : \'0\'} mt-2 space-y-2 border-l border-zinc-800/50`}>',
-  '<ul className={depth > 0 ? "pl-6 mt-2 space-y-2 border-l border-zinc-800/50" : "mt-2 space-y-2"}>'
-);
+// 2. Add useAuth and useEffect, and replace handleSelect
+const originalHandleSelect = `  const handleSelect = (matchId: string, team: string) => {
+    setSelections(prev => {
+      const next = { ...prev, [matchId]: team };
+      return next;
+    });
+  };`;
 
-// Replace 3
-const oldBlock = `{usersWithReferrals.filter(u => !u.referrerId).map(rootUser => (
-                  <div key={rootUser.id} className="bg-zinc-800/20 rounded-lg p-4 border border-zinc-800/50">
-                     <div className="flex items-center gap-2 mb-2">
-                        <span className="text-purple-400 font-bold">{rootUser.username || rootUser.name || 'Anonymous'}</span>
-                        <span className="text-xs text-zinc-500 font-mono">({rootUser.id})</span>
-                        <span className="text-xs px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full font-bold">
-                           {referredMap[rootUser.id].length} Direct
-                        </span>
-                     </div>
-                     {renderTree(rootUser.id)}
-                  </div>
-               ))}
+const newHandleSelect = `  const { user } = useAuth();
 
-               {/* Render orphaned chains if someone has referrals but their referrer is also in the list,
-                   Wait, the filter \`!u.referrerId\` above only catches true roots.
-                   If there are users who HAVE a referrerId but the referrer doesn't exist, we should catch them. */}
-               {usersWithReferrals.filter(u => u.referrerId && !users.find(x => x.id === u.referrerId)).map(orphanRoot => (
-                  <div key={orphanRoot.id} className="bg-zinc-800/20 rounded-lg p-4 border border-zinc-800/50">
-                     <div className="flex items-center gap-2 mb-2">
-                        <span className="text-orange-400 font-bold">{orphanRoot.username || orphanRoot.name || 'Anonymous'}</span>
-                        <span className="text-xs text-zinc-500 font-mono">(Orphaned: {orphanRoot.id})</span>
-                     </div>
-                     {renderTree(orphanRoot.id)}
-                  </div>
-               ))}`;
+  useEffect(() => {
+    async function loadSelections() {
+      if (!user || !bracket?.id) return;
+      try {
+        const docRef = doc(db, 'bracketGamePredictions', \`\${bracket.id}_\${user.uid}\`);
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.selections) {
+            setSelections(data.selections);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load bracket predictions:", err);
+      }
+    }
+    loadSelections();
+  }, [user, bracket?.id]);
 
-const newBlock = `{rootUsers.map(rootUser => (
-                  <div key={rootUser.id} className="bg-zinc-800/20 rounded-lg p-4 border border-zinc-800/50">
-                     <div className="flex items-center gap-2 mb-2">
-                        <span className={rootUser.referrerId ? "text-orange-400 font-bold" : "text-purple-400 font-bold"}>
-                           {rootUser.username || rootUser.name || 'Anonymous'}
-                        </span>
-                        <span className="text-xs text-zinc-500 font-mono">({rootUser.referrerId ? \`Orphaned: \${rootUser.id}\` : rootUser.id})</span>
-                        <span className="text-xs px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full font-bold">
-                           {referredMap[rootUser.id].length} Direct
-                        </span>
-                     </div>
-                     {renderTree(rootUser.id)}
-                  </div>
-               ))}`;
+  const handleSelect = async (matchId: string, team: string, isLocked: boolean) => {
+    if (isLocked) return;
 
-content = content.replace(oldBlock, newBlock);
+    let newSelections = { ...selections };
+    setSelections(prev => {
+      const next = { ...prev };
+      const isDeselect = next[matchId] === team;
 
-fs.writeFileSync('src/pages/admin/referrals/ReferralsAdminPage.tsx', content);
+      if (isDeselect) {
+        delete next[matchId];
+      } else {
+        next[matchId] = team;
+      }
+
+      const removedTeam = isDeselect ? team : (prev[matchId] && prev[matchId] !== team ? prev[matchId] : null);
+      if (removedTeam) {
+        for (const [mId, mTeam] of Object.entries(next)) {
+           if (mTeam === removedTeam && mId !== matchId) {
+             delete next[mId];
+           }
+        }
+      }
+
+      newSelections = next;
+      return next;
+    });
+
+    if (user && bracket?.id) {
+      try {
+        const docRef = doc(db, 'bracketGamePredictions', \`\${bracket.id}_\${user.uid}\`);
+        await setDoc(docRef, {
+          userId: user.uid,
+          bracketId: bracket.id,
+          selections: newSelections,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+      } catch (err) {
+        console.error("Failed to save bracket prediction:", err);
+      }
+    }
+  };`;
+content = content.replace(originalHandleSelect, newHandleSelect);
+
+
+// 3. Add isMatchLocked logic
+const originalRenderMatch = `  const renderMatch = (round: number, globalMatchIndex: number) => {`;
+const newRenderMatch = `  const isMatchLocked = (round: number, matchId: string) => {
+    const now = new Date();
+    if (round === 0) {
+      const matchTime = bracket?.matchTimes?.[matchId];
+      if (matchTime) return now > new Date(matchTime);
+      return now > new Date('2026-06-28T19:00:00Z');
+    } else {
+      return now > new Date('2026-07-04T17:00:00Z');
+    }
+  };
+
+  const renderMatch = (round: number, globalMatchIndex: number) => {`;
+content = content.replace(originalRenderMatch, newRenderMatch);
+
+// 4. Update the match UI
+const matchUIOriginal = `    return (
+      <div key={matchId} className="flex flex-col mb-4 bg-[#1a1a1a] border border-[#27272a] rounded-md overflow-hidden w-[160px] text-sm">
+        <button
+          onClick={() => team1 && handleSelect(matchId, team1)}
+          disabled={!team1}
+          className={cn(
+            "p-2 text-left hover:bg-zinc-800 transition-colors border-b border-[#27272a] truncate",
+            selectedTeam === team1 ? "bg-zinc-800 font-bold" : "text-zinc-300",
+            !team1 && "text-zinc-600 cursor-not-allowed"
+          )}
+          style={selectedTeam === team1 ? { color: primaryColor } : undefined}
+          title={team1}
+        >
+          {team1 || 'TBD'}
+        </button>
+        <button
+          onClick={() => team2 && handleSelect(matchId, team2)}
+          disabled={!team2}
+          className={cn(
+            "p-2 text-left hover:bg-zinc-800 transition-colors truncate",
+            selectedTeam === team2 ? "bg-zinc-800 font-bold" : "text-zinc-300",
+            !team2 && "text-zinc-600 cursor-not-allowed"
+          )}
+          style={selectedTeam === team2 ? { color: primaryColor } : undefined}
+          title={team2}
+        >
+          {team2 || 'TBD'}
+        </button>
+      </div>
+    );`;
+
+const matchUINew = `    const locked = isMatchLocked(round, matchId);
+
+    return (
+      <div key={matchId} className={cn("flex flex-col mb-4 bg-[#1a1a1a] border border-[#27272a] rounded-md overflow-hidden w-[160px] text-sm", locked && "opacity-75")}>
+        <button
+          onClick={() => team1 && handleSelect(matchId, team1, locked)}
+          disabled={!team1 || locked}
+          className={cn(
+            "p-2 text-left hover:bg-zinc-800 transition-colors border-b border-[#27272a] truncate",
+            selectedTeam === team1 ? "bg-zinc-800 font-bold" : "text-zinc-300",
+            (!team1 || locked) && "text-zinc-600 cursor-not-allowed"
+          )}
+          style={selectedTeam === team1 ? { color: primaryColor } : undefined}
+          title={team1}
+        >
+          {team1 || 'TBD'}
+        </button>
+        <button
+          onClick={() => team2 && handleSelect(matchId, team2, locked)}
+          disabled={!team2 || locked}
+          className={cn(
+            "p-2 text-left hover:bg-zinc-800 transition-colors truncate",
+            selectedTeam === team2 ? "bg-zinc-800 font-bold" : "text-zinc-300",
+            (!team2 || locked) && "text-zinc-600 cursor-not-allowed"
+          )}
+          style={selectedTeam === team2 ? { color: primaryColor } : undefined}
+          title={team2}
+        >
+          {team2 || 'TBD'}
+        </button>
+      </div>
+    );`;
+content = content.replace(matchUIOriginal, matchUINew);
+
+
+// 5. Update main return
+const returnOriginal = `  return (
+    <div className="w-full overflow-x-auto pb-8 bg-[#0a0a0a] rounded-xl p-4 border border-[#27272a] relative">
+      {/* Overlay */}
+      <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 rounded-xl backdrop-blur-sm pointer-events-auto">
+        <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-xl max-w-md mx-4 text-center shadow-2xl">
+          <p className="text-white text-lg font-medium leading-relaxed">
+            We will launch our Bracket feature with the 2026 World Cup Knockout Round, beginning on June 28th
+          </p>
+        </div>
+      </div>
+
+      <div className="min-w-max flex items-stretch justify-center pointer-events-none select-none opacity-50">`;
+
+const returnNew = `  return (
+    <div className="w-full flex flex-col items-center">
+      <div className="bg-[#1a1a1a] border border-[#27272a] rounded-xl p-4 mb-6 w-full max-w-2xl text-center">
+        <p className="text-zinc-300 text-sm">
+          <strong className="text-white">Lock Times:</strong> Round of 32 games lock at their scheduled time. Round of 16 locks July 4th at 10:00 AM AZ time.
+        </p>
+      </div>
+      <div className="w-full overflow-x-auto pb-8 bg-[#0a0a0a] rounded-xl p-4 border border-[#27272a] relative">
+        <div className="min-w-max flex items-stretch justify-center">`;
+
+content = content.replace(returnOriginal, returnNew);
+
+content = content.replace(/    <\/div>\n  \);\n}/g, "      </div>\n    </div>\n  );\n}");
+
+fs.writeFileSync(path, content, 'utf8');
+

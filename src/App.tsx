@@ -422,8 +422,8 @@ export default function App() {
                     <Route path="/profile" element={<PrivateRoute><MainLayout><ProfilePage /></MainLayout></PrivateRoute>} />
           <Route path="/pickem" element={<PrivateRoute><MainLayout><PickEmPage /></MainLayout></PrivateRoute>} />
           <Route path="/pickem/:campaignId" element={<PrivateRoute><MainLayout><PickEmPage /></MainLayout></PrivateRoute>} />
-          <Route path="/brackets" element={<PrivateRoute><MainLayout><BracketsPage /></MainLayout></PrivateRoute>} />
-          <Route path="/brackets/:bracketId" element={<PrivateRoute><MainLayout><BracketsPage /></MainLayout></PrivateRoute>} />
+          <Route path="/brackets" element={<MainLayout><BracketsPage /></MainLayout>} />
+          <Route path="/brackets/:bracketId" element={<MainLayout><BracketsPage /></MainLayout>} />
           <Route path="/link4" element={<PrivateRoute><MainLayout><Link4Page /></MainLayout></PrivateRoute>} />
           <Route path="/mypicks" element={<PrivateRoute><MainLayout><MyPicksPage /></MainLayout></PrivateRoute>} />
           <Route path="/advanced-metrics" element={<PrivateRoute><MainLayout><AdvancedMetricsPage /></MainLayout></PrivateRoute>} />
