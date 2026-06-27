@@ -98,11 +98,38 @@ export function BracketsPage() {
         );
         const pSnap = await getDocs(pQuery);
 
-        const participantStats: Record<string, { points: number, uid: string }> = {};
+        const participantStats: Record<string, { points: number, potentialPoints: number, uid: string }> = {};
+
+        const pointsMap: Record<string, number> = {
+          "0": bracket.pointValues?.["Round of 32"] || 10,
+          "1": bracket.pointValues?.["Round of 16"] || 20,
+          "2": bracket.pointValues?.["Quarter Finals"] || 40,
+          "3": bracket.pointValues?.["Semi Finals"] || 80,
+          "4": bracket.pointValues?.["Finals"] || 160
+        };
+
+        const results = bracket.results || {};
+        const explicitlyEliminated = bracket.eliminatedTeams || [];
 
         pSnap.docs.forEach(d => {
           const data = d.data();
-          participantStats[data.userId] = { points: 0, uid: data.userId };
+          let pts = 0;
+          let pot = 0;
+          const sels = data.selections || {};
+          for (const [mId, pickedTeam] of Object.entries(sels)) {
+             const round = mId.split('-')[0].replace('r', '');
+             const rPts = pointsMap[round] || 0;
+             if (results[mId] === pickedTeam) {
+                pts += rPts;
+                pot += rPts;
+             } else if (results[mId] && results[mId] !== pickedTeam) {
+                // picked wrong, no points, no potential
+             } else if (!results[mId] && !explicitlyEliminated.includes(pickedTeam)) {
+                // still alive
+                pot += rPts;
+             }
+          }
+          participantStats[data.userId] = { points: pts, potentialPoints: pot, uid: data.userId };
         });
 
         const participantIds = Object.keys(participantStats);
@@ -126,7 +153,7 @@ export function BracketsPage() {
              name: usersMap[uid]?.username || usersMap[uid]?.displayName || 'Unknown User',
              avatar: usersMap[uid]?.image || usersMap[uid]?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${uid}`,
              ...participantStats[uid]
-          })).sort((a, b) => b.points - a.points);
+          })).sort((a, b) => b.points !== a.points ? b.points - a.points : b.potentialPoints - a.potentialPoints);
 
           setLeaderboardData(formattedLeaderboard);
         } else {
@@ -224,6 +251,7 @@ export function BracketsPage() {
                         <th className="px-6 py-4 font-medium w-16 text-center">Rank</th>
                         <th className="px-6 py-4 font-medium">Participant</th>
                         <th className="px-6 py-4 font-medium text-center">Points</th>
+                        <th className="px-6 py-4 font-medium text-center">Potential</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-800/50">
@@ -256,6 +284,9 @@ export function BracketsPage() {
                           </td>
                           <td className="px-6 py-4 text-center font-bold text-white">
                             {participant.points}
+                          </td>
+                          <td className="px-6 py-4 text-center font-bold text-zinc-400">
+                            {participant.potentialPoints}
                           </td>
                         </tr>
                       ))}
