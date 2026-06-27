@@ -18,22 +18,22 @@ export function BracketsPage() {
   useEffect(() => {
     async function fetchBracket() {
         const defaultTeams = [
-          "Winner Group E", "3rd Group A/B/C/D/F",
-          "Winner Group I", "3rd Group C/D/F/G/H",
-          "Runner-up Group A", "Runner-up Group B",
-          "Winner Group F", "Runner-up Group C",
-          "Runner-up Group K", "Runner-up Group L",
-          "Winner Group H", "Runner-up Group J",
-          "Winner Group D", "3rd Group B/E/F/I/J",
-          "Winner Group G", "3rd Group A/E/H/I/J",
-          "Winner Group C", "Runner-up Group F",
-          "Runner-up Group E", "Runner-up Group I",
-          "Winner Group A", "3rd Group C/E/F/H/I",
-          "Winner Group L", "3rd Group E/H/I/J/K",
-          "Winner Group J", "Runner-up Group H",
-          "Runner-up Group D", "Runner-up Group G",
-          "Winner Group B", "3rd Group E/F/G/I/J",
-          "Winner Group K", "3rd Group D/E/I/J/L"
+          "South Africa", "Canada",
+          "Netherlands", "Morocco",
+          "Germany", "Paraguay",
+          "France", "Sweden",
+          "Belgium", "TBD",
+          "USA", "Bosnia and Herzegovina",
+          "Spain", "TBD",
+          "TBD", "TBD",
+          "Brazil", "Japan",
+          "Côte d'Ivoire", "Norway",
+          "Mexico", "TBD",
+          "TBD", "TBD",
+          "Switzerland", "TBD",
+          "TBD", "TBD",
+          "Australia", "Egypt",
+          "Argentina", "Cabo Verde"
         ];
 
         const defaultBracket = {
@@ -171,7 +171,7 @@ export function BracketsPage() {
   const theme = bracket?.theme || {};
   const primaryColor = theme.primaryColor || "#22c55e";
   const title = theme.title || "Brackets";
-  const subtitle = theme.subtitle || "Pick entire brackets ahead of their start time.";
+  const subtitle = theme.subtitle;
 
   return (
     <div className="flex-1 p-6 md:p-8 w-full pt-20 md:pt-8 overflow-hidden">
@@ -184,7 +184,7 @@ export function BracketsPage() {
           )}
           {title}
         </h1>
-        <p className="text-zinc-400 text-lg">{subtitle}</p>
+        {subtitle && <p className="text-zinc-400 text-lg">{subtitle}</p>}
       </div>
 
       {loading ? (
