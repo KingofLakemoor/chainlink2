@@ -5,6 +5,7 @@ import { gradeLink4Matchups, processCompletedLink4Segments } from './link4Grader
 import { League, LeagueResponse, scrapeLeagueSchedules } from './espnScraper.js';
 
 export { scrapeLeagueSchedules } from './espnScraper.js';
+import { gradeBrackets } from './bracketGrader.js';
 
 export async function syncLeagueSchedules(league: League, scoreboardOnly: boolean = false): Promise<LeagueResponse> {
   let scraperConfig: { maxMoneylineOdds?: number, sportOverrides?: Record<string, number> } | undefined = undefined;
@@ -661,6 +662,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
       if (matchupsToGrade.length > 0) {
         await gradeMatchups(matchupsToGrade);
+        await gradeBrackets(matchupsToGrade);
         await gradeLink4Matchups(matchupsToGrade);
 
         const pickemMatchupsToGrade: any[] = [];
