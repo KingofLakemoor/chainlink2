@@ -8,8 +8,12 @@ interface WorldCupBracketProps {
   bracket: any; // The bracket document from Firestore
 }
 
+import { Coins, Loader2 } from 'lucide-react';
+
 export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
   const [selections, setSelections] = useState<Record<string, string>>({});
+  const [isPaid, setIsPaid] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
 
   const { user } = useAuth();
 
@@ -21,6 +25,7 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
         const snap = await getDoc(docRef);
         if (snap.exists()) {
           const data = snap.data();
+          if (data.paid) setIsPaid(true);
           if (data.selections) {
             setSelections(data.selections);
           }
@@ -32,8 +37,33 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
     loadSelections();
   }, [user, bracket?.id]);
 
+  const handlePayToEnter = async () => {
+    if (!user || !bracket?.id || isPaying) return;
+    setIsPaying(true);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch('/api/brackets/enter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ bracketId: bracket.id })
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to enter bracket');
+      }
+      setIsPaid(true);
+    } catch (err: any) {
+      alert(err.message || "Failed to enter bracket. Check your links balance.");
+    } finally {
+      setIsPaying(false);
+    }
+  };
+
   const handleSelect = async (matchId: string, team: string, isLocked: boolean) => {
-    if (isLocked) return;
+    if (isLocked || !isPaid) return;
 
     const next = { ...selections };
     const isDeselect = next[matchId] === team;
@@ -161,7 +191,24 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
           <strong className="text-white">Lock Times:</strong> Round of 32 games lock at their scheduled time. Round of 16 locks July 4th at 10:00 AM AZ time.
         </p>
       </div>
-      <div className="w-full overflow-x-auto pb-8 bg-[#0a0a0a] rounded-xl p-4 border border-[#27272a] relative">
+
+      {!isPaid && (
+        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-6 mb-8 w-full max-w-2xl text-center flex flex-col items-center">
+          <p className="text-yellow-200 mb-4 font-medium">
+            You must enter this bracket to make picks.
+          </p>
+          <button
+            onClick={handlePayToEnter}
+            disabled={isPaying}
+            className="flex items-center gap-2 bg-yellow-500 text-black px-6 py-2 rounded-lg font-bold hover:bg-yellow-400 transition-colors disabled:opacity-50"
+          >
+            {isPaying ? <Loader2 className="w-5 h-5 animate-spin" /> : <Coins className="w-5 h-5" />}
+            Pay {bracket?.cost || 10} Links to Enter
+          </button>
+        </div>
+      )}
+
+      <div className={cn("w-full overflow-x-auto pb-8 bg-[#0a0a0a] rounded-xl p-4 border border-[#27272a] relative transition-opacity", !isPaid && "opacity-50 pointer-events-none")}>
         <div className="min-w-max flex items-stretch justify-center">
         {/* Left Side */}
         <div className="flex">

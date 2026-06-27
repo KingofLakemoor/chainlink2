@@ -48,6 +48,8 @@ export function BracketsPage() {
             "Semi Finals": 80,
             "Finals": 160
           },
+          cost: 10,
+          prizePotPercent: 0.60,
           theme: bracketId === 'charity' ? {
             title: "Charity Cup 2026",
             subtitle: "Make your picks to support a great cause!",
@@ -233,6 +235,15 @@ export function BracketsPage() {
 
           {activeTab === 'leaderboard' && (
             <div className="bg-[#121212] border border-zinc-800 rounded-xl overflow-hidden max-w-7xl mx-auto">
+              {bracket?.cost !== undefined && (
+                <div className="bg-zinc-800/50 p-4 border-b border-zinc-800 flex justify-between items-center px-6">
+                  <div className="text-zinc-400 font-medium uppercase text-sm tracking-wider">Prize Pot (1st Place)</div>
+                  <div className="text-2xl font-black text-white flex items-center gap-2">
+                    <Trophy className="w-6 h-6 text-yellow-500" />
+                    {Math.floor((bracket.totalPot || 0) * (bracket.prizePotPercent || 0.60))} <span className="text-sm font-medium text-zinc-500">Links</span>
+                  </div>
+                </div>
+              )}
               {leaderboardLoading ? (
                 <div className="p-12 text-center text-zinc-500 font-medium flex flex-col items-center justify-center">
                   <Loader2 className="w-8 h-8 animate-spin mb-4" style={{ color: primaryColor }} />

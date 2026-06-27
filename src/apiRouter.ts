@@ -691,6 +691,65 @@ apiRouter.post("/picks/make-pick", async (req, res) => {
 });
 
 
+apiRouter.post("/brackets/enter", validateAuth, async (req, res) => {
+  try {
+    const uid = (req as any).uid;
+    const { bracketId } = req.body;
+    if (!bracketId) throw new Error("Missing bracketId");
+
+    await adminDb.runTransaction(async (transaction) => {
+      const userRef = adminDb.collection("users").doc(uid);
+      const userDoc = await transaction.get(userRef);
+      if (!userDoc.exists) throw new Error("User not found");
+      const userData = userDoc.data()!;
+
+      const bracketRef = adminDb.collection("brackets").doc(bracketId);
+      const bracketDoc = await transaction.get(bracketRef);
+      if (!bracketDoc.exists) throw new Error("Bracket not found");
+      const bracketData = bracketDoc.data()!;
+
+      const predictionRef = adminDb.collection("bracketGamePredictions").doc(`${bracketId}_${uid}`);
+      const predictionDoc = await transaction.get(predictionRef);
+
+      if (predictionDoc.exists && predictionDoc.data()!.paid) {
+        throw new Error("You have already paid to enter this bracket.");
+      }
+
+      const cost = bracketData.cost || 0;
+      const currentLinks = userData.links || 0;
+
+      if (currentLinks < cost) {
+        throw new Error(`Not enough links. This bracket requires ${cost} links to enter.`);
+      }
+
+      // Deduct links from user
+      transaction.update(userRef, { links: currentLinks - cost });
+
+      // Add to total pot on bracket doc
+      const currentPot = bracketData.totalPot || 0;
+      transaction.update(bracketRef, { totalPot: currentPot + cost });
+
+      // Mark prediction as paid or create it
+      if (predictionDoc.exists) {
+         transaction.update(predictionRef, { paid: true, updatedAt: new Date().toISOString() });
+      } else {
+         transaction.set(predictionRef, {
+             userId: uid,
+             bracketId,
+             selections: {},
+             paid: true,
+             updatedAt: new Date().toISOString()
+         });
+      }
+    });
+
+    res.json({ success: true });
+  } catch (e: any) {
+    console.error('Bracket enter error:', e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 apiRouter.post("/admin/link4/payout", validateAdmin, async (req, res) => {
   try {
     const { segmentId } = req.body;
