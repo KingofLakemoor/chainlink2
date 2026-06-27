@@ -5,6 +5,7 @@ import { FirebaseImage } from './components/ui/FirebaseImage';
 import { loginWithGoogle, loginWithDiscord, loginWithEmail, signupWithEmail, logout, db } from './lib/firebase';
 import { collection, getDocs, doc, setDoc, deleteDoc, query, where, onSnapshot } from 'firebase/firestore';
 import { Button } from './components/ui/button';
+import { SidebarProgress } from './components/SidebarProgress';
 import { cn } from './lib/utils';
 import { useNotifications } from './hooks/useNotifications';
 import { useInstallPrompt } from './hooks/useInstallPrompt';
@@ -62,6 +63,7 @@ const Sidebar = React.memo(function Sidebar({ open, setOpen }: { open: boolean, 
         </div>
 
       <div className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1.5 custom-scrollbar">
+        <SidebarProgress />
         <NavItem icon={LayoutDashboard} label="Dashboard" path="/dashboard" />
         <NavItem icon={UserIcon} label="My Profile" path="/profile" />
 
