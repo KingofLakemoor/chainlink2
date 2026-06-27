@@ -1,0 +1,9 @@
+--- src/services/scheduleProcessor.test.ts
++++ src/services/scheduleProcessor.test.ts
+@@ -5,7 +5,7 @@
+ vi.mock('./espnScraper', async (importOriginal) => {
+-  const actual = await importOriginal();
++  const actual: any = await importOriginal();
+   return {
+     ...actual,
+     scrapeLeagueSchedules: vi.fn(),

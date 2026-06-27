@@ -1,0 +1,7 @@
+--- src/App.tsx
++++ src/App.tsx
+@@ -421,7 +421,7 @@
+-          <Route path="/brackets" element={<PrivateRoute><MainLayout><BracketsPage /></MainLayout></PrivateRoute>} />
+-          <Route path="/brackets/:bracketId" element={<PrivateRoute><MainLayout><BracketsPage /></MainLayout></PrivateRoute>} />
++          <Route path="/brackets" element={<MainLayout><BracketsPage /></MainLayout>} />
++          <Route path="/brackets/:bracketId" element={<MainLayout><BracketsPage /></MainLayout>} />

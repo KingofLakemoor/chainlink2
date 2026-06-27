@@ -3,7 +3,7 @@ import { syncLeagueSchedules } from './scheduleProcessor';
 import * as espnScraper from './espnScraper';
 
 vi.mock('./espnScraper', async (importOriginal) => {
-  const actual: any = await importOriginal();
+  const actual = await importOriginal();
   return {
     ...actual,
     scrapeLeagueSchedules: vi.fn(),
