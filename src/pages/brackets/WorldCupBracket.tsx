@@ -100,20 +100,43 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
     }
   };
 
+  const getSlot = (prevMatchId: string) => {
+    const results = bracket.results || {};
+    const eliminatedTeams = bracket.eliminatedTeams || [];
+
+    const predicted = selections[prevMatchId] || null;
+    const actual = results[prevMatchId] || null;
+
+    let predictedWrong = false;
+    if (predicted) {
+      if (actual && actual !== predicted) {
+         predictedWrong = true;
+      } else if (eliminatedTeams.includes(predicted)) {
+         predictedWrong = true;
+      }
+    }
+
+    const display = actual || (predictedWrong ? null : predicted);
+    return { predicted, actual, predictedWrong, display };
+  };
+
   const getMatchTeams = (round: number, globalMatchIndex: number) => {
     if (round === 0) {
-      const team1 = bracket.teams[globalMatchIndex * 2] || `Team ${globalMatchIndex * 2 + 1}`;
-      const team2 = bracket.teams[globalMatchIndex * 2 + 1] || `Team ${globalMatchIndex * 2 + 2}`;
-      return [team1, team2];
+      const team1Str = bracket.teams[globalMatchIndex * 2] || `Team ${globalMatchIndex * 2 + 1}`;
+      const team2Str = bracket.teams[globalMatchIndex * 2 + 1] || `Team ${globalMatchIndex * 2 + 2}`;
+      return [
+        { predicted: null, actual: team1Str, predictedWrong: false, display: team1Str },
+        { predicted: null, actual: team2Str, predictedWrong: false, display: team2Str }
+      ];
     } else {
       const prevRound = round - 1;
       const prevMatch1Index = globalMatchIndex * 2;
       const prevMatch2Index = globalMatchIndex * 2 + 1;
 
-      const team1 = selections[`r${prevRound}-m${prevMatch1Index}`];
-      const team2 = selections[`r${prevRound}-m${prevMatch2Index}`];
+      const prevMatch1Id = `r${prevRound}-m${prevMatch1Index}`;
+      const prevMatch2Id = `r${prevRound}-m${prevMatch2Index}`;
 
-      return [team1, team2];
+      return [getSlot(prevMatch1Id), getSlot(prevMatch2Id)];
     }
   };
 
@@ -133,13 +156,53 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
 
   const renderMatch = (round: number, globalMatchIndex: number) => {
     const matchId = `r${round}-m${globalMatchIndex}`;
-    const [team1, team2] = getMatchTeams(round, globalMatchIndex);
+    const [team1Slot, team2Slot] = getMatchTeams(round, globalMatchIndex);
     const selectedTeam = selections[matchId];
 
     const locked = isMatchLocked(round, matchId);
 
     const matchTime = bracket?.matchTimes?.[matchId];
     const formattedTime = matchTime ? new Date(matchTime).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : null;
+
+    const renderButton = (slot: { predicted: string | null; actual: string | null; predictedWrong: boolean; display: string | null }, isTop: boolean) => {
+      const { display, predicted, predictedWrong } = slot;
+
+      const teamName = display;
+      const isSelected = selectedTeam && selectedTeam === teamName;
+
+      const matchResult = bracket?.results?.[matchId];
+      // It is eliminated here if there is a result for THIS match, and it's not this team
+      const isEliminatedHere = matchResult && teamName && matchResult !== teamName;
+      const isPickWrongHere = isEliminatedHere && isSelected;
+
+      return (
+        <button
+          onClick={() => teamName && handleSelect(matchId, teamName, locked)}
+          disabled={!teamName || locked}
+          className={cn(
+            "p-2 text-left hover:bg-zinc-800 transition-colors truncate relative flex flex-col justify-center min-h-[40px]",
+            isTop ? "border-b border-[#27272a]" : "",
+            isSelected ? "bg-zinc-800 font-bold" : "text-zinc-300",
+            (!teamName || locked) && "cursor-not-allowed"
+          )}
+          style={isSelected && !isPickWrongHere ? { color: primaryColor } : undefined}
+          title={teamName || 'TBD'}
+        >
+          {predictedWrong && predicted && (
+            <span className="text-[10px] text-red-500 line-through leading-none mb-0.5 opacity-80 truncate w-full">
+              {predicted}
+            </span>
+          )}
+          <span className={cn(
+            "truncate w-full block",
+            !teamName ? "text-zinc-600" : "",
+            isPickWrongHere ? "line-through text-red-500 opacity-80" : isEliminatedHere ? "line-through text-zinc-500" : ""
+          )}>
+            {teamName || 'TBD'}
+          </span>
+        </button>
+      );
+    };
 
     return (
       <div key={matchId} className={cn("flex flex-col mb-4 bg-[#1a1a1a] border border-[#27272a] rounded-md overflow-hidden w-[160px] text-sm", locked && "opacity-75")}>
@@ -148,32 +211,8 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
             {formattedTime}
           </div>
         )}
-        <button
-          onClick={() => team1 && handleSelect(matchId, team1, locked)}
-          disabled={!team1 || locked}
-          className={cn(
-            "p-2 text-left hover:bg-zinc-800 transition-colors border-b border-[#27272a] truncate",
-            selectedTeam === team1 ? "bg-zinc-800 font-bold" : "text-zinc-300",
-            (!team1 || locked) && "text-zinc-600 cursor-not-allowed"
-          )}
-          style={selectedTeam === team1 ? { color: primaryColor } : undefined}
-          title={team1}
-        >
-          {team1 || 'TBD'}
-        </button>
-        <button
-          onClick={() => team2 && handleSelect(matchId, team2, locked)}
-          disabled={!team2 || locked}
-          className={cn(
-            "p-2 text-left hover:bg-zinc-800 transition-colors truncate",
-            selectedTeam === team2 ? "bg-zinc-800 font-bold" : "text-zinc-300",
-            (!team2 || locked) && "text-zinc-600 cursor-not-allowed"
-          )}
-          style={selectedTeam === team2 ? { color: primaryColor } : undefined}
-          title={team2}
-        >
-          {team2 || 'TBD'}
-        </button>
+        {renderButton(team1Slot, true)}
+        {renderButton(team2Slot, false)}
       </div>
     );
   };
@@ -190,7 +229,7 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
   };
 
   const finalWinnerId = 'r4-m0';
-  const champion = selections[finalWinnerId];
+  const championSlot = getSlot(finalWinnerId);
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -230,7 +269,7 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
         <div className="flex flex-col items-center justify-center mx-4">
           <h3 className="font-bold mb-4 text-center text-xl uppercase tracking-widest" style={{ color: primaryColor }}>Champion</h3>
           <div
-            className="bg-[#1a1a1a] rounded-xl p-6 min-w-[200px] text-center flex items-center justify-center min-h-[100px]"
+            className="bg-[#1a1a1a] rounded-xl p-6 min-w-[200px] text-center flex flex-col items-center justify-center min-h-[100px]"
             style={{
               borderColor: primaryColor,
               borderWidth: '1px',
@@ -238,8 +277,13 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
               boxShadow: `0 0 20px ${primaryColor}26` // 26 is hex for ~15% opacity
             }}
           >
-            {champion ? (
-              <span className="text-2xl font-black text-white uppercase truncate px-2">{champion}</span>
+            {championSlot.predictedWrong && championSlot.predicted && (
+              <span className="text-sm text-red-500 line-through mb-1 uppercase font-bold opacity-80">
+                {championSlot.predicted}
+              </span>
+            )}
+            {championSlot.display ? (
+              <span className="text-2xl font-black text-white uppercase truncate px-2">{championSlot.display}</span>
             ) : (
               <span className="text-zinc-600 italic">Select Winner</span>
             )}
