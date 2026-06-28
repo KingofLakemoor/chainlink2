@@ -36,11 +36,22 @@ export function BracketsPage() {
           "Argentina", "Cabo Verde"
         ];
 
+
+        // Create matchTimes for default bracket to prevent everything from locking instantly if not seeded
+        const matchTimes: Record<string, string> = {};
+        for (let i = 0; i < 16; i++) {
+          const matchDate = new Date();
+          matchDate.setDate(matchDate.getDate() + 10);
+          matchTimes[`r0-m${i}`] = matchDate.toISOString();
+        }
+
         const defaultBracket = {
           id: 'world-cup-2026',
           name: "2026 World Cup Bracket",
           sport: "World Cup 2026",
           teams: defaultTeams,
+          matchTimes,
+
           pointValues: {
             "Round of 32": 10,
             "Round of 16": 20,
@@ -63,7 +74,16 @@ export function BracketsPage() {
           const docRef = doc(db, 'brackets', bracketId);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
-            setBracket({ ...defaultBracket, id: docSnap.id, ...docSnap.data() });
+            const data = docSnap.data();
+            setBracket({
+              ...defaultBracket,
+              id: docSnap.id,
+              ...data,
+              // Fallback to default teams/matchTimes if missing in the db document
+              teams: data.teams && data.teams.length > 0 ? data.teams : defaultBracket.teams,
+              matchTimes: data.matchTimes && Object.keys(data.matchTimes).length > 0 ? data.matchTimes : defaultBracket.matchTimes,
+              pointValues: data.pointValues && Object.keys(data.pointValues).length > 0 ? data.pointValues : defaultBracket.pointValues,
+            });
           } else {
             setBracket(defaultBracket);
           }
@@ -75,7 +95,16 @@ export function BracketsPage() {
           );
           const snapshot = await getDocs(q);
           if (!snapshot.empty) {
-            setBracket({ ...defaultBracket, id: snapshot.docs[0].id, ...snapshot.docs[0].data() });
+            const data = snapshot.docs[0].data();
+            setBracket({
+              ...defaultBracket,
+              id: snapshot.docs[0].id,
+              ...data,
+              // Fallback to default teams/matchTimes if missing in the db document
+              teams: data.teams && data.teams.length > 0 ? data.teams : defaultBracket.teams,
+              matchTimes: data.matchTimes && Object.keys(data.matchTimes).length > 0 ? data.matchTimes : defaultBracket.matchTimes,
+              pointValues: data.pointValues && Object.keys(data.pointValues).length > 0 ? data.pointValues : defaultBracket.pointValues,
+            });
           } else {
             setBracket(defaultBracket);
           }
