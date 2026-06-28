@@ -145,13 +145,20 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
 
   const isMatchLocked = (round: number, matchId: string) => {
     const now = new Date();
+
+    // The entire bracket locks when the Round of 16 starts
+    const globalLock = new Date('2026-07-04T17:00:00Z');
+    if (now > globalLock) return true;
+
+    // Round of 32 matches lock at their scheduled start times
     if (round === 0) {
       const matchTime = bracket?.matchTimes?.[matchId];
       if (matchTime) return now > new Date(matchTime);
-      return now > new Date('2026-06-28T19:00:00Z');
-    } else {
-      return now > new Date('2026-07-04T17:00:00Z');
+      return now > new Date('2026-06-28T19:00:00Z'); // Fallback lock for round of 32 if no matchTime
     }
+
+    // Future rounds (16, QF, SF, Final) are open until the global lock
+    return false;
   };
 
   const renderMatch = (round: number, globalMatchIndex: number) => {
@@ -235,7 +242,7 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
     <div className="w-full flex flex-col items-center">
       <div className="bg-[#1a1a1a] border border-[#27272a] rounded-xl p-4 mb-6 w-full max-w-2xl text-center">
         <p className="text-zinc-300 text-sm">
-          <strong className="text-white">Lock Times:</strong> Round of 32 games lock at their scheduled time. Round of 16 locks July 4th at 10:00 AM AZ time.
+          <strong className="text-white">Lock Times:</strong> Round of 32 games lock at their scheduled time. The rest of the bracket locks on July 4th at 10:00 AM AZ time.
         </p>
       </div>
 
