@@ -18,28 +18,42 @@ export function BracketsPage() {
   useEffect(() => {
     async function fetchBracket() {
         const defaultTeams = [
-          "South Africa", "Canada",
-          "Netherlands", "Morocco",
-          "Germany", "Paraguay",
-          "France", "Sweden",
+          "Ghana", "Croatia",
+          "England", "Panama",
+          "Portugal", "Colombia",
+          "Uzbekistan", "DR Congo",
+          "Austria", "Algeria",
+          "Argentina", "Jordan",
+          "Canada", "South Africa",
+          "Japan", "Brazil",
+          "Paraguay", "Germany",
+          "Morocco", "Netherlands",
+          "Norway", "Côte d'Ivoire",
+          "Sweden", "France",
+          "Ecuador", "Mexico",
           "Belgium", "Senegal",
           "USA", "Bosnia and Herzegovina",
-          "Spain", "Austria",
-          "Portugal", "Croatia",
-          "Brazil", "Japan",
-          "Côte d'Ivoire", "Norway",
-          "Mexico", "Ecuador",
-          "England", "DR Congo",
-          "Switzerland", "Algeria",
-          "Colombia", "Ghana",
-          "Australia", "Egypt",
-          "Argentina", "Cabo Verde"
+          "Spain", "Switzerland"
         ];
 
 
         // Create matchTimes for default bracket to prevent everything from locking instantly if not seeded
-        const matchTimes: Record<string, string> = {};
-        for (let i = 0; i < 16; i++) {
+        const matchTimes: Record<string, string> = {
+          'r0-m0': '2026-06-27T21:00:00.000Z',
+          'r0-m1': '2026-06-27T21:00:00.000Z',
+          'r0-m2': '2026-06-27T23:30:00.000Z',
+          'r0-m3': '2026-06-27T23:30:00.000Z',
+          'r0-m4': '2026-06-28T02:00:00.000Z',
+          'r0-m5': '2026-06-28T02:00:00.000Z',
+          'r0-m6': '2026-06-28T19:00:00.000Z',
+          'r0-m7': '2026-06-29T17:00:00.000Z',
+          'r0-m8': '2026-06-29T20:30:00.000Z',
+          'r0-m9': '2026-06-30T01:00:00.000Z',
+          'r0-m10': '2026-06-30T17:00:00.000Z',
+          'r0-m11': '2026-06-30T21:00:00.000Z',
+          'r0-m12': '2026-07-01T01:00:00.000Z',
+        };
+        for (let i = 13; i < 16; i++) {
           const matchDate = new Date();
           matchDate.setDate(matchDate.getDate() + 10);
           matchTimes[`r0-m${i}`] = matchDate.toISOString();
