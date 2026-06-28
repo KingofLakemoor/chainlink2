@@ -1,8 +1,9 @@
 import React from 'react';
-import { Trophy, Link2, X } from 'lucide-react';
+import { Trophy, Link2, X, Star } from 'lucide-react';
 import { cn, formatUpcomingTime } from '../../lib/utils';
 import { Link } from 'react-router-dom';
 import { FirebaseImage } from './FirebaseImage';
+import { useAuth } from '../../lib/auth-context';
 
 interface MatchupCardProps {
   m: any;
@@ -37,15 +38,26 @@ export const MatchupCard = React.memo(function MatchupCard({
   isMyPick = false,
   isLink4 = false
 }: MatchupCardProps) {
+  const { profile: authProfile } = useAuth();
+  const activeProfile = profile || authProfile;
+
   const hasPicked = !!pickData;
   const hasActivePicksArray = Array.isArray(hasActivePickAnywhere);
   const activePicksCount = hasActivePicksArray ? hasActivePickAnywhere.length : (hasActivePickAnywhere ? 1 : 0);
 
-  const isPickDisabled = !user || hasPicked || activePicksCount >= (profile?.premium ? 2 : 1);
-  const isQueueState = !hasPicked && profile?.premium && activePicksCount === 1;
+  const isPickDisabled = !user || hasPicked || activePicksCount >= (activeProfile?.premium ? 2 : 1);
+  const isQueueState = !hasPicked && activeProfile?.premium && activePicksCount === 1;
   const awayHotPct = mCounts.total > 0 ? Math.round((mCounts.away / mCounts.total) * 100) : 0;
   const homeHotPct = mCounts.total > 0 ? Math.round((mCounts.home / mCounts.total) * 100) : 0;
   const isScheduled = m.status === 'STATUS_SCHEDULED' && (!m.metadata?.homeLinescores || m.metadata?.homeLinescores.length === 0) && (!m.metadata?.awayLinescores || m.metadata?.awayLinescores.length === 0) && (m.homeTeam.score === 0 && m.awayTeam.score === 0);
+
+  const hasMoneyline = m.metadata?.mlAway !== undefined && m.metadata?.mlHome !== undefined && m.metadata?.mlAway !== null && m.metadata?.mlHome !== null;
+  const isAwayFavorite = hasMoneyline
+    ? m.metadata.mlAway < m.metadata.mlHome
+    : (m.metadata?.spread !== undefined ? m.metadata.spread > 0 : false);
+  const isHomeFavorite = hasMoneyline
+    ? m.metadata.mlHome < m.metadata.mlAway
+    : (m.metadata?.spread !== undefined ? m.metadata.spread < 0 : false);
 
   let featuredColor = "";
   let featuredName = "Featured Sponsor";
@@ -127,8 +139,13 @@ export const MatchupCard = React.memo(function MatchupCard({
                   <FirebaseImage fallback="/logo.png" src={m.type === 'OVER_UNDER' ? '/images/over.png' : m.awayTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.name} />
                </button>
                {pickData?.pick?.id === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) && (
-                 <div className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-[#22c55e] flex items-center justify-center shadow-lg">
+                 <div className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-[#22c55e] flex items-center justify-center shadow-lg z-10">
                    <Link2 className="w-3 h-3 text-zinc-950 stroke-[3]" />
+                 </div>
+               )}
+               {activeProfile?.premium && isAwayFavorite && m.type !== 'OVER_UNDER' && (
+                 <div className="absolute -top-2 -left-2 w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center shadow-lg border border-[#131415] z-10" title="Betting Favorite">
+                   <Star className="w-3 h-3 text-white fill-current" />
                  </div>
                )}
                {m.type === 'SPREAD' && m.metadata?.spread !== undefined && (
@@ -266,8 +283,13 @@ export const MatchupCard = React.memo(function MatchupCard({
                   <FirebaseImage fallback="/logo.png" src={m.type === 'OVER_UNDER' ? '/images/under.png' : m.homeTeam.image} className="w-full h-full object-contain drop-shadow-md" alt={m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.name} />
                </button>
                {pickData?.pick?.id === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) && (
-                 <div className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-[#22c55e] flex items-center justify-center shadow-lg">
+                 <div className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-[#22c55e] flex items-center justify-center shadow-lg z-10">
                    <Link2 className="w-3 h-3 text-zinc-950 stroke-[3]" />
+                 </div>
+               )}
+               {activeProfile?.premium && isHomeFavorite && m.type !== 'OVER_UNDER' && (
+                 <div className="absolute -top-2 -left-2 w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center shadow-lg border border-[#131415] z-10" title="Betting Favorite">
+                   <Star className="w-3 h-3 text-white fill-current" />
                  </div>
                )}
                {m.type === 'SPREAD' && m.metadata?.spread !== undefined && (
@@ -323,7 +345,7 @@ export const MatchupCard = React.memo(function MatchupCard({
                   <button onClick={() => onCancelPick(m)} className="text-xs font-bold text-red-500 uppercase tracking-wide flex items-center gap-1 hover:text-red-400">
                      <X className="w-3 h-3" /> Cancel
                   </button>
-                ) : profile?.premium && onForfeitPick && m.status !== 'STATUS_FINAL' && m.status !== 'STATUS_CANCELED' && m.status !== 'STATUS_POSTPONED' && !m.statusDesc?.toLowerCase().includes('final') ? (
+                ) : activeProfile?.premium && onForfeitPick && m.status !== 'STATUS_FINAL' && m.status !== 'STATUS_CANCELED' && m.status !== 'STATUS_POSTPONED' && !m.statusDesc?.toLowerCase().includes('final') ? (
                   <button onClick={() => onForfeitPick(m)} className="text-xs font-bold text-orange-500 uppercase tracking-wide flex items-center gap-1 hover:text-orange-400">
                      <X className="w-3 h-3" /> Forfeit
                   </button>
