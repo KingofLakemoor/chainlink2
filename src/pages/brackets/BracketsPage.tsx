@@ -22,16 +22,16 @@ export function BracketsPage() {
           "Netherlands", "Morocco",
           "Germany", "Paraguay",
           "France", "Sweden",
-          "Belgium", "TBD",
+          "Belgium", "Senegal",
           "USA", "Bosnia and Herzegovina",
-          "Spain", "TBD",
-          "TBD", "TBD",
+          "Spain", "Austria",
+          "Portugal", "Croatia",
           "Brazil", "Japan",
           "Côte d'Ivoire", "Norway",
-          "Mexico", "TBD",
-          "TBD", "TBD",
-          "Switzerland", "TBD",
-          "TBD", "TBD",
+          "Mexico", "Ecuador",
+          "England", "DR Congo",
+          "Switzerland", "Algeria",
+          "Colombia", "Ghana",
           "Australia", "Egypt",
           "Argentina", "Cabo Verde"
         ];
@@ -63,7 +63,9 @@ export function BracketsPage() {
           const docRef = doc(db, 'brackets', bracketId);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
-            setBracket({ id: docSnap.id, ...docSnap.data() });
+            setBracket({ ...defaultBracket, id: docSnap.id, ...docSnap.data() });
+          } else {
+            setBracket(defaultBracket);
           }
         } else {
           const q = query(
@@ -73,7 +75,7 @@ export function BracketsPage() {
           );
           const snapshot = await getDocs(q);
           if (!snapshot.empty) {
-            setBracket({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() });
+            setBracket({ ...defaultBracket, id: snapshot.docs[0].id, ...snapshot.docs[0].data() });
           } else {
             setBracket(defaultBracket);
           }
