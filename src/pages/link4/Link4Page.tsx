@@ -716,6 +716,7 @@ export default function Link4Page() {
                             key={m.gameId}
                             m={m}
                             user={user}
+                            profile={profile}
                             pickData={null}
                             hasActivePickAnywhere={false}
                             mCounts={{ total: 0, away: 0, home: 0 }}
