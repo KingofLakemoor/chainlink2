@@ -7,12 +7,13 @@ import { Button } from './ui/button';
 import { Trophy, Copy, Check, Users, Target } from 'lucide-react';
 
 export function SidebarProgress() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const [prizeData, setPrizeData] = useState({
     activeUsersRequirement: 25,
     picksRequirement: 375,
     prizeDescription: '$5 Club 602 gift card',
-    sponsorName: 'Club 602'
+    sponsorName: 'Club 602',
+    targetMonth: ''
   });
 
   const [activeUsers, setActiveUsers] = useState(0);
@@ -25,19 +26,44 @@ export function SidebarProgress() {
       try {
         const docRef = doc(db, 'settings', 'monthlyPrize');
         const docSnap = await getDoc(docRef);
+        let currentPrizeData = { ...prizeData };
         if (docSnap.exists()) {
-          setPrizeData(docSnap.data() as any);
+          currentPrizeData = { ...prizeData, ...docSnap.data() };
+          setPrizeData(currentPrizeData as any);
         }
 
-        // Fetch active users (just an approximation: all users for now, or users created this month?)
-        // The prompt says "25 users" - probably total users or we can just fetch all users and count them.
-        const usersSnap = await getDocs(collection(db, 'users'));
-        setActiveUsers(usersSnap.size);
+        // Get start of the targeted month (or current month if not set)
+        let targetYear = new Date().getFullYear();
+        let targetMonthIdx = new Date().getMonth();
 
-        // Fetch global picks (all pickemPicks or bracketGamePredictions)
-        // Let's just fetch pickemPicks for now
-        const picksSnap = await getDocs(collection(db, 'pickemPicks'));
-        setGlobalPicks(picksSnap.size);
+        if (currentPrizeData.targetMonth) {
+          const [yearStr, monthStr] = currentPrizeData.targetMonth.split('-');
+          if (yearStr && monthStr) {
+             targetYear = parseInt(yearStr);
+             targetMonthIdx = parseInt(monthStr) - 1;
+          }
+        }
+
+        const startOfMonth = new Date(targetYear, targetMonthIdx, 1, 0, 0, 0, 0);
+        const startTimestamp = startOfMonth.getTime();
+
+        const endOfMonth = new Date(targetYear, targetMonthIdx + 1, 1, 0, 0, 0, 0);
+        const endTimestamp = endOfMonth.getTime();
+
+        const token = await user?.getIdToken();
+
+        // 1. Fetch this month's picks
+        const monthPicksSnap = await getDocs(query(collection(db, 'picks'),
+             where('createdAt', '>=', startTimestamp),
+             where('createdAt', '<', endTimestamp)));
+
+        const uniqueUsers = new Set();
+        monthPicksSnap.docs.forEach(doc => {
+            uniqueUsers.add(doc.data().userId);
+        });
+
+        setActiveUsers(uniqueUsers.size);
+        setGlobalPicks(monthPicksSnap.size);
       } catch (err) {
         console.error(err);
       } finally {
