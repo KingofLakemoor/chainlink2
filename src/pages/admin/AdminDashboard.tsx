@@ -38,6 +38,7 @@ import {
 } from 'lucide-react';
 
 const ScraperSettingsPage = React.lazy(() => import('./settings/ScraperSettingsPage'));
+const PrizeAdminPage = React.lazy(() => import('./prize/PrizeAdminPage'));
 const AdminGuidePage = React.lazy(() => import('./guide/AdminGuidePage'));
 
 const ADMIN_MENU = [
@@ -87,7 +88,8 @@ const ADMIN_MENU = [
       { id: 'users-premium', label: 'Premium Status', path: '/admin/premium' },
       { id: 'users-cosmetics', label: 'User Cosmetics', path: '/admin/users/cosmetics' },
       { id: 'users-links', label: 'Manage Links', path: '/admin/users/links' },
-      { id: 'users-referrals', label: 'Referrals', path: '/admin/referrals' }
+      { id: 'users-referrals', label: 'Referrals', path: '/admin/referrals' },
+      { id: 'monthly-prize', label: 'Monthly Prize', path: '/admin/prize' }
     ]
   },
   { id: 'notifications', label: 'Notifications', icon: Bell, path: '/admin/notifications' },
@@ -1303,6 +1305,7 @@ export default function AdminDashboard() {
                 <Route path="users/links" element={<AddLinksAdminPage />} />
                 <Route path="premium" element={<PremiumStatusAdminPage />} />
                 <Route path="referrals" element={<ReferralsAdminPage />} />
+          <Route path="prize" element={<PrizeAdminPage />} />
 
                 {/* Notifications */}
                 <Route path="notifications" element={<NotificationsListPage />} />
