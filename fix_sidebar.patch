@@ -1,0 +1,45 @@
+<<<<<<< SEARCH
+        // 1. Fetch users, pending picks, and this month's picks
+        const [usersRes, pendingPicksSnap, monthPicksSnap] = await Promise.all([
+          token ? fetch('/api/users/public', { headers: { 'Authorization': `Bearer ${token}` } }) : Promise.resolve(null),
+          getDocs(query(collection(db, 'picks'), where('status', '==', 'PENDING'))),
+          getDocs(query(collection(db, 'picks'),
+             where('createdAt', '>=', startTimestamp),
+             where('createdAt', '<', endTimestamp)))
+        ]);
+
+        let activeUsersCount = 0;
+
+        if (usersRes && usersRes.ok) {
+          const usersData = await usersRes.json();
+          const usersList = usersData.users || [];
+
+          const activePicksUsers = new Set();
+          pendingPicksSnap.docs.forEach(doc => {
+              activePicksUsers.add(doc.data().userId);
+          });
+
+          // Match leaderboard active user logic: has stats > 0 OR an active pick
+          activeUsersCount = usersList.filter((u: any) => {
+              const hasStats = (u.stats?.wins || 0) > 0 || (u.stats?.losses || 0) > 0 || (u.stats?.pushes || 0) > 0;
+              const hasActivePick = activePicksUsers.has(u.id);
+              return hasStats || hasActivePick;
+          }).length;
+        }
+
+        setActiveUsers(activeUsersCount);
+        setGlobalPicks(monthPicksSnap.size);
+=======
+        // 1. Fetch this month's picks
+        const monthPicksSnap = await getDocs(query(collection(db, 'picks'),
+             where('createdAt', '>=', startTimestamp),
+             where('createdAt', '<', endTimestamp)));
+
+        const uniqueUsers = new Set();
+        monthPicksSnap.docs.forEach(doc => {
+            uniqueUsers.add(doc.data().userId);
+        });
+
+        setActiveUsers(uniqueUsers.size);
+        setGlobalPicks(monthPicksSnap.size);
+>>>>>>> REPLACE

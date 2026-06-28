@@ -10,7 +10,8 @@ export default function PrizeAdminPage() {
     activeUsersRequirement: 25,
     picksRequirement: 375,
     prizeDescription: '$5 Club 602 gift card',
-    sponsorName: 'Club 602'
+    sponsorName: 'Club 602',
+    targetMonth: new Date().toISOString().slice(0, 7) // Format YYYY-MM
   });
 
   useEffect(() => {
@@ -86,6 +87,16 @@ export default function PrizeAdminPage() {
             type="text"
             value={prizeData.sponsorName}
             onChange={(e) => setPrizeData({...prizeData, sponsorName: e.target.value})}
+            className="w-full bg-[#1a1a1a] border border-[#3f3f46] rounded-lg px-4 py-2 text-zinc-100"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-zinc-400 mb-1">Target Month</label>
+          <input
+            type="month"
+            value={prizeData.targetMonth}
+            onChange={(e) => setPrizeData({...prizeData, targetMonth: e.target.value})}
             className="w-full bg-[#1a1a1a] border border-[#3f3f46] rounded-lg px-4 py-2 text-zinc-100"
           />
         </div>
