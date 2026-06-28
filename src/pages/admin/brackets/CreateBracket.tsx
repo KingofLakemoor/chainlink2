@@ -169,7 +169,9 @@ export default function CreateBracket() {
           <div>
             <label className="block text-sm font-medium text-zinc-400 mb-2">Points per Round</label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {Object.entries(pointValues).map(([round, points]) => (
+              {Object.entries(pointValues)
+                .sort(([roundA], [roundB]) => roundA.localeCompare(roundB, undefined, { numeric: true }))
+                .map(([round, points]) => (
                 <div key={round} className="flex items-center gap-2">
                   <span className="text-sm text-zinc-300 w-20">{round}</span>
                   <input
