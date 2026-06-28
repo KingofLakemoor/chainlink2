@@ -1,6 +1,7 @@
 import { adminDb } from '../src/lib/firebase-admin.ts';
+import { scrapeLeagueSchedules } from '../src/services/espnScraper.ts';
 
-const defaultTeams = [
+const defaultFallbackTeams = [
   "South Africa", "Canada",
   "Netherlands", "Morocco",
   "Germany", "Paraguay",
@@ -22,19 +23,50 @@ const defaultTeams = [
 async function seed() {
   const bracketRef = adminDb.collection('brackets').doc('world-cup-2026');
 
-  // Fake match times to ensure the bracket works correctly initially
+  const res = await scrapeLeagueSchedules('FIFA');
+  const fifaMatchups = res.data || [];
+
   const matchTimes: Record<string, string> = {};
-  for (let i = 0; i < 16; i++) {
-    const matchDate = new Date();
-    // Add 10 days to make sure matches are open by default.
-    matchDate.setDate(matchDate.getDate() + 10);
-    matchTimes[`r0-m${i}`] = matchDate.toISOString();
+  const bracketTeams: string[] = [];
+
+  // Create teams and matchtimes from the specific matchup cards
+  for (let i = 0; i < fifaMatchups.length; i++) {
+     const m = fifaMatchups[i];
+     let homeName = m.homeTeam?.name || `TBD Home ${i}`;
+     let awayName = m.awayTeam?.name || `TBD Away ${i}`;
+
+     if (homeName === "Ivory Coast") homeName = "Côte d'Ivoire";
+     if (awayName === "Ivory Coast") awayName = "Côte d'Ivoire";
+     if (homeName === "Congo DR") homeName = "DR Congo";
+     if (awayName === "Congo DR") awayName = "DR Congo";
+     if (homeName === "Cape Verde") homeName = "Cabo Verde";
+     if (awayName === "Cape Verde") awayName = "Cabo Verde";
+
+     bracketTeams.push(awayName, homeName);
+     matchTimes[`r0-m${i}`] = new Date(m.startTime).toISOString();
+  }
+
+  // Fill the rest with the defaultTeams that were not used
+  const usedTeams = new Set(bracketTeams);
+  const remainingTeams = defaultFallbackTeams.filter(t => !usedTeams.has(t));
+
+  let i = fifaMatchups.length;
+  // Pad until we have exactly 32 teams (16 matchups)
+  while (bracketTeams.length < 32) {
+     const t1 = remainingTeams.shift() || `TBD Team ${bracketTeams.length + 1}`;
+     const t2 = remainingTeams.shift() || `TBD Team ${bracketTeams.length + 2}`;
+     bracketTeams.push(t1, t2);
+
+     const matchDate = new Date();
+     matchDate.setDate(matchDate.getDate() + 10);
+     matchTimes[`r0-m${i}`] = matchDate.toISOString();
+     i++;
   }
 
   await bracketRef.set({
     name: "2026 World Cup Bracket",
     sport: "World Cup 2026",
-    teams: defaultTeams,
+    teams: bracketTeams,
     pointValues: {
       "Round of 32": 10,
       "Round of 16": 20,

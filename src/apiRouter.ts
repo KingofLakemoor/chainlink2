@@ -705,7 +705,10 @@ apiRouter.post("/brackets/enter", validateAuth, async (req, res) => {
 
       const bracketRef = adminDb.collection("brackets").doc(bracketId);
       const bracketDoc = await transaction.get(bracketRef);
-      const bracketData = bracketDoc.exists ? bracketDoc.data()! : { cost: 10, totalPot: 0, sport: "World Cup 2026" };
+      if (!bracketDoc.exists) {
+        throw new Error("Bracket not found or has not been fully initialized yet.");
+      }
+      const bracketData = bracketDoc.data()!;
 
       const predictionRef = adminDb.collection("bracketGamePredictions").doc(`${bracketId}_${uid}`);
       const predictionDoc = await transaction.get(predictionRef);
