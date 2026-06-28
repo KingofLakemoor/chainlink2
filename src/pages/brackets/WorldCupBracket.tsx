@@ -138,8 +138,16 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
 
     const locked = isMatchLocked(round, matchId);
 
+    const matchTime = bracket?.matchTimes?.[matchId];
+    const formattedTime = matchTime ? new Date(matchTime).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : null;
+
     return (
       <div key={matchId} className={cn("flex flex-col mb-4 bg-[#1a1a1a] border border-[#27272a] rounded-md overflow-hidden w-[160px] text-sm", locked && "opacity-75")}>
+        {formattedTime && (
+          <div className="text-[10px] text-zinc-500 text-center py-1 bg-zinc-900 border-b border-[#27272a]">
+            {formattedTime}
+          </div>
+        )}
         <button
           onClick={() => team1 && handleSelect(matchId, team1, locked)}
           disabled={!team1 || locked}

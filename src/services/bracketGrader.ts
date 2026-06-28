@@ -87,5 +87,97 @@ export async function gradeBrackets(matchups: any[]) {
             eliminatedTeams
         });
     }
+
+    // Check if bracket payout is complete, else pay out if finals are done
+    if (results['r4-m0'] && !bracket.payoutComplete) {
+       await payoutBracket(bracketDoc.id, bracket, results);
+    }
+  }
+}
+
+async function payoutBracket(bracketId: string, bracket: any, currentResults: any) {
+  const adminDb = getAdminDb();
+  if (!adminDb) return;
+
+  const results = currentResults || {};
+  const pointValues = bracket.pointValues || {
+    "Round of 32": 10,
+    "Round of 16": 20,
+    "Quarter Finals": 40,
+    "Semi Finals": 80,
+    "Finals": 160
+  };
+
+  const explicitlyEliminated = bracket.eliminatedTeams || [];
+
+  const predictionsSnap = await adminDb.collection('bracketGamePredictions')
+      .where('bracketId', '==', bracketId)
+      .get();
+
+  if (predictionsSnap.empty) {
+      // No predictions, just mark complete
+      await adminDb.collection('brackets').doc(bracketId).update({ payoutComplete: true });
+      return;
+  }
+
+  const scores: {uid: string, score: number}[] = [];
+  for (const doc of predictionsSnap.docs) {
+      const data = doc.data();
+      const selections = data.selections || {};
+      let pts = 0;
+
+      for (const [mId, pickedTeam] of Object.entries(selections)) {
+          const rMatch = mId.match(/r(\d+)-m/);
+          if (!rMatch) continue;
+          const roundIdx = parseInt(rMatch[1], 10);
+          const roundNames = ["Round of 32", "Round of 16", "Quarter Finals", "Semi Finals", "Finals"];
+          const roundName = roundNames[roundIdx];
+          const rPts = pointValues[roundName] || 0;
+
+          if (results[mId] && results[mId] === pickedTeam) {
+              pts += rPts;
+          }
+      }
+      scores.push({ uid: data.userId, score: pts });
+  }
+
+  if (scores.length === 0) return;
+
+  // Find top score
+  scores.sort((a, b) => b.score - a.score);
+  const topScore = scores[0].score;
+  const winners = scores.filter(s => s.score === topScore);
+
+  const pot = Math.floor((bracket.totalPot || 0) * (bracket.prizePotPercent !== undefined ? bracket.prizePotPercent : 0.60));
+
+  if (winners.length > 0 && pot > 0) {
+      const payoutPerWinner = Math.floor(pot / winners.length);
+
+      await adminDb.runTransaction(async (transaction) => {
+          // Verify bracket again inside transaction
+          const bracketRef = adminDb.collection('brackets').doc(bracketId);
+          const bracketTxDoc = await transaction.get(bracketRef);
+
+          if (bracketTxDoc.exists && !bracketTxDoc.data().payoutComplete) {
+              // 1. ALL READS FIRST
+              const userDocs = [];
+              for (const winner of winners) {
+                  const userRef = adminDb.collection('users').doc(winner.uid);
+                  const userDoc = await transaction.get(userRef);
+                  userDocs.push({ ref: userRef, doc: userDoc });
+              }
+
+              // 2. THEN ALL WRITES
+              for (const { ref, doc } of userDocs) {
+                  if (doc.exists) {
+                      const currentLinks = doc.data().links || 0;
+                      transaction.update(ref, { links: currentLinks + payoutPerWinner });
+                  }
+              }
+              transaction.update(bracketRef, { payoutComplete: true });
+          }
+      });
+  } else {
+      await adminDb.collection('brackets').doc(bracketId).update({ payoutComplete: true });
   }
 }
