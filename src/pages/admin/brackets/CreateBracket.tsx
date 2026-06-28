@@ -14,6 +14,7 @@ export default function CreateBracket() {
   const [openDate, setOpenDate] = useState('');
   const [lockDate, setLockDate] = useState('');
   const [teamList, setTeamList] = useState('');
+  const [cost, setCost] = useState(10);
   const [loading, setLoading] = useState(false);
   const [pointValues, setPointValues] = useState<{ [key: string]: number }>({
     'Round 1': 10,
@@ -41,6 +42,7 @@ export default function CreateBracket() {
         sport,
         isPublic,
         maxEntries: Number(maxEntries),
+        cost: Number(cost),
         openDate: openDate ? new Date(openDate).getTime() : Date.now(),
         lockDate: lockDate ? new Date(lockDate).getTime() : Date.now() + 86400000 * 7,
         teams: teamsArray,
@@ -116,6 +118,17 @@ export default function CreateBracket() {
                 type="number"
                 value={maxEntries}
                 onChange={e => setMaxEntries(Number(e.target.value))}
+                className="w-full bg-[#18181A] border border-zinc-800 rounded-lg px-4 py-2 text-white"
+                min="0"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-1">Entry Price (Links)</label>
+              <input
+                type="number"
+                value={cost}
+                onChange={e => setCost(Number(e.target.value))}
                 className="w-full bg-[#18181A] border border-zinc-800 rounded-lg px-4 py-2 text-white"
                 min="0"
               />
