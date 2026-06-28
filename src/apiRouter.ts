@@ -705,10 +705,16 @@ apiRouter.post("/brackets/enter", validateAuth, async (req, res) => {
 
       const bracketRef = adminDb.collection("brackets").doc(bracketId);
       const bracketDoc = await transaction.get(bracketRef);
-      if (!bracketDoc.exists) {
-        throw new Error("Bracket not found or has not been fully initialized yet.");
+
+      let bracketData = bracketDoc.exists ? bracketDoc.data()! : null;
+      if (!bracketData) {
+        // Only allow lazy initialization for the default World Cup bracket
+        if (bracketId === 'world-cup-2026') {
+           bracketData = { cost: 10, totalPot: 0 };
+        } else {
+           throw new Error("Bracket not found or has not been fully initialized yet.");
+        }
       }
-      const bracketData = bracketDoc.data()!;
 
       const predictionRef = adminDb.collection("bracketGamePredictions").doc(`${bracketId}_${uid}`);
       const predictionDoc = await transaction.get(predictionRef);
@@ -729,7 +735,11 @@ apiRouter.post("/brackets/enter", validateAuth, async (req, res) => {
 
       // Add to total pot on bracket doc
       const currentPot = bracketData.totalPot || 0;
-      transaction.update(bracketRef, { totalPot: currentPot + cost });
+      if (bracketDoc.exists) {
+        transaction.update(bracketRef, { totalPot: currentPot + cost });
+      } else {
+        transaction.set(bracketRef, { ...bracketData, totalPot: currentPot + cost }, { merge: true });
+      }
 
       // Mark prediction as paid or create it
       if (predictionDoc.exists) {
