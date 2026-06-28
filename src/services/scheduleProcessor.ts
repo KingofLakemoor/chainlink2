@@ -69,6 +69,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
       let newCount = 0;
       let updateCount = 0;
       const matchupsToGrade: any[] = [];
+      const matchupsToSyncToPickem: any[] = [];
       const scrapedGameIds = new Set<string>();
 
       for (const scrapedMatchup of response.data) {
@@ -318,6 +319,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                 if (newStatus === 'STATUS_FINAL' && data.status !== 'STATUS_FINAL') {
                   matchupsToGrade.push({ ...data, ...updateData, id: existingGameId, gameId: existingGameId });
                 }
+
+                matchupsToSyncToPickem.push({ ...data, ...updateData, id: existingGameId, gameId: existingGameId });
 
                 if (opCount >= 500) {
                   await batch.commit();
@@ -584,6 +587,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                 (newStatus === 'STATUS_POSTPONED' && existingData.status !== 'STATUS_POSTPONED'))) {
               matchupsToGrade.push({ ...existingData, ...updateData, gameId: scrapedMatchup.gameId, id: gameId });
             }
+            matchupsToSyncToPickem.push({ ...existingData, ...updateData, gameId: scrapedMatchup.gameId, id: gameId });
           }
         } else {
           const newDocRef = adminDb.collection("matchups").doc(gameId);
@@ -645,6 +649,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               opCount++;
               updateCount++;
               matchupsToGrade.push({ ...data, status: 'STATUS_POSTPONED', id: gameId, gameId });
+              matchupsToSyncToPickem.push({ ...data, status: 'STATUS_POSTPONED', id: gameId, gameId });
             }
 
             if (opCount >= 500) {
@@ -664,10 +669,12 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
         await gradeMatchups(matchupsToGrade);
         await gradeBrackets(matchupsToGrade);
         await gradeLink4Matchups(matchupsToGrade);
+      }
 
+      if (matchupsToSyncToPickem.length > 0) {
         const pickemMatchupsToGrade: any[] = [];
-        const uniqueGameIds = Array.from(new Set(matchupsToGrade.map(m => m.gameId))).filter(Boolean);
-        const matchupMap = new Map(matchupsToGrade.map(m => [m.gameId, m]));
+        const uniqueGameIds = Array.from(new Set(matchupsToSyncToPickem.map(m => m.gameId))).filter(Boolean);
+        const matchupMap = new Map(matchupsToSyncToPickem.map(m => [m.gameId, m]));
 
         let pickemBatch = adminDb.batch();
         let pickemOpCount = 0;
@@ -689,23 +696,32 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                 'awayTeam.score': matchup.awayTeam?.score ?? 0,
                 updatedAt: Date.now()
               };
-              pickemBatch.update(doc.ref, updateData);
-              pickemOpCount++;
 
-              if (pickemOpCount >= 500) {
-                await pickemBatch.commit();
-                pickemBatch = adminDb.batch();
-                pickemOpCount = 0;
+              if (pData.status !== updateData.status ||
+                  pData.statusDesc !== updateData.statusDesc ||
+                  pData.homeTeam?.score !== updateData['homeTeam.score'] ||
+                  pData.awayTeam?.score !== updateData['awayTeam.score']) {
+
+                pickemBatch.update(doc.ref, updateData);
+                pickemOpCount++;
+
+                if (pickemOpCount >= 500) {
+                  await pickemBatch.commit();
+                  pickemBatch = adminDb.batch();
+                  pickemOpCount = 0;
+                }
+
+                if (updateData.status === 'STATUS_FINAL' || updateData.status === 'STATUS_POSTPONED') {
+                  pickemMatchupsToGrade.push({
+                    ...pData,
+                    status: matchup.status,
+                    statusDesc: matchup.statusDesc,
+                    homeTeam: { ...(pData.homeTeam || {}), score: matchup.homeTeam?.score ?? 0 },
+                    awayTeam: { ...(pData.awayTeam || {}), score: matchup.awayTeam?.score ?? 0 },
+                    id: doc.id
+                  });
+                }
               }
-
-              pickemMatchupsToGrade.push({
-                ...pData,
-                status: matchup.status,
-                statusDesc: matchup.statusDesc,
-                homeTeam: { ...(pData.homeTeam || {}), score: matchup.homeTeam?.score ?? 0 },
-                awayTeam: { ...(pData.awayTeam || {}), score: matchup.awayTeam?.score ?? 0 },
-                id: doc.id
-              });
             }
           } catch (err) {
             console.error(`[Sync] Error syncing pickem matchup chunk:`, err);
