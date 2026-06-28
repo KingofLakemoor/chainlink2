@@ -22,7 +22,6 @@ export async function gradeBrackets(matchups: any[]) {
     for (const matchup of finalMatchups) {
       if (bracket.sport === 'World Cup 2026') {
          if (matchup.league !== 'FIFA') continue;
-         if (new Date(matchup.startTime) < new Date('2026-06-28T00:00:00.000Z')) continue;
       }
 
       const homeTeam = matchup.homeTeam?.name;
@@ -151,7 +150,7 @@ async function payoutBracket(bracketId: string, bracket: any, currentResults: an
   const topScore = scores[0].score;
   const winners = scores.filter(s => s.score === topScore);
 
-  const pot = Math.floor((bracket.totalPot || 0) * (bracket.prizePotPercent !== undefined ? bracket.prizePotPercent : 0.60));
+  const pot = Math.floor((bracket.totalPot || (predictionsSnap.size * (bracket.cost || 10))) * (bracket.prizePotPercent !== undefined ? bracket.prizePotPercent : 0.60));
 
   if (winners.length > 0 && pot > 0) {
       const payoutPerWinner = Math.floor(pot / winners.length);
