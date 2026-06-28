@@ -1,5 +1,12 @@
-1. **Remove overlay in `src/pages/brackets/WorldCupBracket.tsx`:** I will remove the overlay that says "We will launch our Bracket feature with the 2026 World Cup Knockout Round, beginning on June 28th", so users can make selections.
-2. **Remove pointer-events-none and opacity from main container in `src/pages/brackets/WorldCupBracket.tsx`:** The `pointer-events-none select-none opacity-50` class restricts clicking the bracket; I will remove it.
-3. **Lock selections based on date:** In `src/pages/brackets/WorldCupBracket.tsx` I'll add logic to lock selections after the bracket lock date: noon Arizona time (MST/Phoenix) on 6/28/26.
-4. **Update state to `firebase` (optional/check instructions):** If needed, I will update how users persist picks, but currently it seems `src/pages/brackets/WorldCupBracket.tsx` uses only local state for selections and does not persist them. I should probably implement saving predictions to Firestore using `bracketGamePredictions` based on `firestore.rules`.
-5. **Pre commit instructions:** I will complete the pre commit instructions.
+1. **Import Icons:** Import `Lock` and `XCircle` from `lucide-react` in `src/pages/pickem/PickEmPage.tsx`.
+2. **Update Pick Style Logic:**
+    * In `src/pages/pickem/PickEmPage.tsx`, map the pick's status (`pick?.status`) to the specified colors.
+    * An upcoming pick (`pick.status === 'PENDING'` AND `!isLocked`) should be white.
+    * A pick in an in-progress/pending game (`pick.status === 'PENDING'` AND `isLocked`) should be grey with a padlock icon.
+    * A winning pick (`pick.status === 'WIN'`) should be green with a check mark.
+    * A losing pick (`pick.status === 'LOSS'`) should be red with an X mark.
+    * A pushing pick (`pick.status === 'PUSH'`) could be a neutral color, or default to standard.
+3. **Refactor the buttons:**
+    * Inside the `.map(m => ...)` for the matchups, when rendering the "away" and "home" buttons, calculate a specific style object based on whether the button corresponds to the user's pick and the status of that pick.
+    * Remove the default checkmark logic and replace it with a switch-case or nested ternary based on the status mapping above.
+4. **Pre-commit checks**: Call `pre_commit_instructions` tool to get the required checks to ensure proper testing, verification, review, and reflection are done.

@@ -5,10 +5,28 @@ import { collection, getDocs, doc, query, where, setDoc, getDoc, deleteDoc, docu
 import { db, auth } from '../../lib/firebase';
 import { useAuth } from '../../lib/auth-context';
 import { Button } from '../../components/ui/button';
-import { Layers, CheckCircle, Trophy } from 'lucide-react';
+import { Layers, CheckCircle, Trophy, Lock, XCircle } from 'lucide-react';
 import { MATCHUP_FINAL_STATUSES } from '../../services/espnScraper';
 
 export default function PickEmPage() {
+  const getPickStyle = (pick: any, isLocked: boolean) => {
+    if (!pick) return null;
+
+    if (pick.status === 'WIN') {
+      return { borderColor: '#22c55e', backgroundColor: '#22c55e1A', color: '#22c55e', icon: 'CheckCircle' };
+    }
+    if (pick.status === 'LOSS') {
+      return { borderColor: '#ef4444', backgroundColor: '#ef44441A', color: '#ef4444', icon: 'XCircle' };
+    }
+
+    if (isLocked) {
+      return { borderColor: '#71717a', backgroundColor: '#71717a1A', color: '#71717a', icon: 'Lock' };
+    }
+
+    return { borderColor: '#ffffff', backgroundColor: '#ffffff1A', color: '#ffffff', icon: 'CheckCircle' };
+  };
+
+
   const { campaignId } = useParams<{ campaignId: string }>();
   const { user } = useAuth();
   const [campaigns, setCampaigns] = useState<any[]>([]);
@@ -402,7 +420,7 @@ export default function PickEmPage() {
                             : 'border-zinc-800 hover:border-zinc-600 bg-[#18181A]'}
                           ${isLocked && pick?.pick.teamId !== (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) ? 'opacity-50 cursor-not-allowed' : ''}
                         `}
-                        style={pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) ? { borderColor: primaryColor, backgroundColor: `${primaryColor}1A` } : undefined}
+                        style={pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) ? (() => { const s = getPickStyle(pick, isLocked); return s ? { borderColor: s.borderColor, backgroundColor: s.backgroundColor } : undefined; })() : undefined}
                       >
                         <div className="flex items-center gap-3">
                           <img src={m.type === 'OVER_UNDER' ? '/images/over.png' : m.awayTeam.image} alt={m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.name} className="w-8 h-8 object-contain" loading="lazy" />
@@ -423,7 +441,12 @@ export default function PickEmPage() {
                             })()}
                           </div>
                         </div>
-                        {pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) && <CheckCircle className="w-5 h-5" style={{ color: primaryColor }} />}
+                        {pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'OVER' : m.awayTeam.id) && (() => {
+                          const style = getPickStyle(pick, isLocked);
+                          if (!style) return null;
+                          const IconComponent = style.icon === 'Lock' ? Lock : (style.icon === 'XCircle' ? XCircle : CheckCircle);
+                          return <IconComponent className="w-5 h-5" style={{ color: style.color }} />;
+                        })()}
                       </button>
 
                       <div className="text-center text-xs text-zinc-600 font-bold uppercase">@</div>
@@ -437,7 +460,7 @@ export default function PickEmPage() {
                             : 'border-zinc-800 hover:border-zinc-600 bg-[#18181A]'}
                           ${isLocked && pick?.pick.teamId !== (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) ? 'opacity-50 cursor-not-allowed' : ''}
                         `}
-                        style={pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) ? { borderColor: primaryColor, backgroundColor: `${primaryColor}1A` } : undefined}
+                        style={pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) ? (() => { const s = getPickStyle(pick, isLocked); return s ? { borderColor: s.borderColor, backgroundColor: s.backgroundColor } : undefined; })() : undefined}
                       >
                         <div className="flex items-center gap-3">
                           <img src={m.type === 'OVER_UNDER' ? '/images/under.png' : m.homeTeam.image} alt={m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.name} className="w-8 h-8 object-contain" loading="lazy" />
@@ -458,7 +481,12 @@ export default function PickEmPage() {
                             })()}
                           </div>
                         </div>
-                        {pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) && <CheckCircle className="w-5 h-5" style={{ color: primaryColor }} />}
+                        {pick?.pick.teamId === (m.type === 'OVER_UNDER' ? 'UNDER' : m.homeTeam.id) && (() => {
+                          const style = getPickStyle(pick, isLocked);
+                          if (!style) return null;
+                          const IconComponent = style.icon === 'Lock' ? Lock : (style.icon === 'XCircle' ? XCircle : CheckCircle);
+                          return <IconComponent className="w-5 h-5" style={{ color: style.color }} />;
+                        })()}
                       </button>
 
                       {pick && !isLocked && (
