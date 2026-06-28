@@ -705,8 +705,7 @@ apiRouter.post("/brackets/enter", validateAuth, async (req, res) => {
 
       const bracketRef = adminDb.collection("brackets").doc(bracketId);
       const bracketDoc = await transaction.get(bracketRef);
-      if (!bracketDoc.exists) throw new Error("Bracket not found");
-      const bracketData = bracketDoc.data()!;
+      const bracketData = bracketDoc.exists ? bracketDoc.data()! : { cost: 10, totalPot: 0, sport: "World Cup 2026" };
 
       const predictionRef = adminDb.collection("bracketGamePredictions").doc(`${bracketId}_${uid}`);
       const predictionDoc = await transaction.get(predictionRef);
