@@ -1,66 +1,79 @@
 import { adminDb } from '../src/lib/firebase-admin.ts';
 import { scrapeLeagueSchedules } from '../src/services/espnScraper.ts';
 
-const defaultFallbackTeams = [
-  "South Africa", "Canada",
-  "Netherlands", "Morocco",
+const defaultTeams = [
   "Germany", "Paraguay",
   "France", "Sweden",
-  "Belgium", "Senegal",
-  "USA", "Bosnia and Herzegovina",
-  "Spain", "Austria",
+  "South Africa", "Canada",
+  "Netherlands", "Morocco",
   "Portugal", "Croatia",
+  "Spain", "Austria",
+  "USA", "Bosnia and Herzegovina",
+  "Belgium", "Senegal",
   "Brazil", "Japan",
   "Côte d'Ivoire", "Norway",
   "Mexico", "Ecuador",
   "England", "DR Congo",
-  "Switzerland", "Algeria",
-  "Colombia", "Ghana",
+  "Argentina", "Cabo Verde",
   "Australia", "Egypt",
-  "Argentina", "Cabo Verde"
+  "Switzerland", "Algeria",
+  "Colombia", "Ghana"
 ];
+
+// Fallback match times corresponding to defaultTeams (r0-m0 to r0-m15)
+const defaultMatchTimes: Record<string, string> = {
+  'r0-m0': '2026-06-29T17:30:00.000Z',
+  'r0-m1': '2026-06-30T18:00:00.000Z',
+  'r0-m2': '2026-06-28T16:00:00.000Z',
+  'r0-m3': '2026-06-29T22:00:00.000Z',
+  'r0-m4': '2026-07-02T20:00:00.000Z',
+  'r0-m5': '2026-07-02T16:00:00.000Z',
+  'r0-m6': '2026-07-01T21:00:00.000Z',
+  'r0-m7': '2026-07-01T17:00:00.000Z',
+  'r0-m8': '2026-06-29T14:00:00.000Z',
+  'r0-m9': '2026-06-30T14:00:00.000Z',
+  'r0-m10': '2026-06-30T22:00:00.000Z',
+  'r0-m11': '2026-07-01T13:00:00.000Z',
+  'r0-m12': '2026-07-03T19:00:00.000Z',
+  'r0-m13': '2026-07-03T15:00:00.000Z',
+  'r0-m14': '2026-07-03T00:00:00.000Z',
+  'r0-m15': '2026-07-03T22:30:00.000Z',
+};
+
 
 async function seed() {
   const bracketRef = adminDb.collection('brackets').doc('world-cup-2026');
 
   const res = await scrapeLeagueSchedules('FIFA');
-  const fifaMatchups = res.data || [];
+  const allFifaMatchups = res.data || [];
 
-  const matchTimes: Record<string, string> = {};
-  const bracketTeams: string[] = [];
+  // Only consider matchups on or after June 28th
+  const fifaMatchups = allFifaMatchups.filter(m => new Date(m.startTime) >= new Date('2026-06-28T00:00:00.000Z'));
 
-  // Create teams and matchtimes from the specific matchup cards
-  for (let i = 0; i < fifaMatchups.length; i++) {
-     const m = fifaMatchups[i];
-     let homeName = m.homeTeam?.name || `TBD Home ${i}`;
-     let awayName = m.awayTeam?.name || `TBD Away ${i}`;
+  const matchTimes: Record<string, string> = { ...defaultMatchTimes };
+  const bracketTeams: string[] = [...defaultTeams];
 
-     if (homeName === "Ivory Coast") homeName = "Côte d'Ivoire";
-     if (awayName === "Ivory Coast") awayName = "Côte d'Ivoire";
-     if (homeName === "Congo DR") homeName = "DR Congo";
-     if (awayName === "Congo DR") awayName = "DR Congo";
-     if (homeName === "Cape Verde") homeName = "Cabo Verde";
-     if (awayName === "Cape Verde") awayName = "Cabo Verde";
+  // Update match times dynamically if the matchup exists in the filtered ESPN data
+  for (let i = 0; i < bracketTeams.length / 2; i++) {
+     const t1 = bracketTeams[i * 2];
+     const t2 = bracketTeams[i * 2 + 1];
 
-     bracketTeams.push(awayName, homeName);
-     matchTimes[`r0-m${i}`] = new Date(m.startTime).toISOString();
-  }
+     const matchedGame = fifaMatchups.find(m => {
+       let homeName = m.homeTeam?.name;
+       let awayName = m.awayTeam?.name;
+       if (homeName === "Ivory Coast") homeName = "Côte d'Ivoire";
+       if (awayName === "Ivory Coast") awayName = "Côte d'Ivoire";
+       if (homeName === "Congo DR") homeName = "DR Congo";
+       if (awayName === "Congo DR") awayName = "DR Congo";
+       if (homeName === "Cape Verde") homeName = "Cabo Verde";
+       if (awayName === "Cape Verde") awayName = "Cabo Verde";
 
-  // Fill the rest with the defaultTeams that were not used
-  const usedTeams = new Set(bracketTeams);
-  const remainingTeams = defaultFallbackTeams.filter(t => !usedTeams.has(t));
+       return (homeName === t1 && awayName === t2) || (homeName === t2 && awayName === t1);
+     });
 
-  let i = fifaMatchups.length;
-  // Pad until we have exactly 32 teams (16 matchups)
-  while (bracketTeams.length < 32) {
-     const t1 = remainingTeams.shift() || `TBD Team ${bracketTeams.length + 1}`;
-     const t2 = remainingTeams.shift() || `TBD Team ${bracketTeams.length + 2}`;
-     bracketTeams.push(t1, t2);
-
-     const matchDate = new Date();
-     matchDate.setDate(matchDate.getDate() + 10);
-     matchTimes[`r0-m${i}`] = matchDate.toISOString();
-     i++;
+     if (matchedGame) {
+       matchTimes[`r0-m${i}`] = new Date(matchedGame.startTime).toISOString();
+     }
   }
 
   await bracketRef.set({

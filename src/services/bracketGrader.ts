@@ -20,7 +20,10 @@ export async function gradeBrackets(matchups: any[]) {
     const eliminatedTeams = bracket.eliminatedTeams || [];
 
     for (const matchup of finalMatchups) {
-      if (bracket.sport === 'World Cup 2026' && matchup.league !== 'FIFA') continue;
+      if (bracket.sport === 'World Cup 2026') {
+         if (matchup.league !== 'FIFA') continue;
+         if (new Date(matchup.startTime) < new Date('2026-06-28T00:00:00.000Z')) continue;
+      }
 
       const homeTeam = matchup.homeTeam?.name;
       const awayTeam = matchup.awayTeam?.name;
