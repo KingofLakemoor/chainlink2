@@ -76,10 +76,13 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
   const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
   const theDayAfterTomorrow = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
 
+  const estDate = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
+  const year = new Date(estDate).getFullYear();
+
   const formatESTDate = (d: Date) => {
     const str = d.toLocaleString("en-US", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" });
-    const [month, day, year] = str.split("/");
-    return `${year}${month}${day}`;
+    const [month, day, y] = str.split("/");
+    return `${y}${month}${day}`;
   };
   const dates = [yesterday, today, tomorrow, theDayAfterTomorrow].map(formatESTDate);
 
@@ -113,7 +116,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
       case "MLB": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${date}`);
       case "MLS": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard?dates=${date}`);
       case "EPL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=${date}`);
-      case "FIFA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${date}&limit=300`);
+      case "FIFA": return [`https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${year}&limit=300`];
       case "FRA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/fra.1/scoreboard?dates=${date}`);
       case "TUR": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/tur.1/scoreboard?dates=${date}`);
       case "RPL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/rus.1/scoreboard?dates=${date}`);
@@ -129,8 +132,6 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
     }
   }
 
-  const estDate = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
-  const year = new Date(estDate).getFullYear();
   switch (league) {
     case "NFL": return [`https://cdn.espn.com/core/nfl/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "NBA": return [`https://cdn.espn.com/core/nba/schedule?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
@@ -138,7 +139,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
     case "MLB": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${date}`);
     case "MLS": return [`https://cdn.espn.com/core/soccer/schedule/_/league/usa.1??dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "EPL": return [`https://cdn.espn.com/core/soccer/schedule/_/league/eng.1??dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
-    case "FIFA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${date}&limit=300`);
+    case "FIFA": return [`https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${year}&limit=300`];
     case "FRA": return [`https://cdn.espn.com/core/soccer/schedule/_/league/fra.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "TUR": return [`https://cdn.espn.com/core/soccer/schedule/_/league/tur.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "RPL": return [`https://cdn.espn.com/core/soccer/schedule/_/league/rus.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
