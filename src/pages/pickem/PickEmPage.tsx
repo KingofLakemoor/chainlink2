@@ -169,18 +169,25 @@ export default function PickEmPage() {
 
           // Fetch public user profiles via API endpoint to avoid permission denied errors
           const token = await auth.currentUser?.getIdToken();
-          const res = await fetch(`/api/users/public?uids=${participantIds.join(',')}`, {
-             headers: { 'Authorization': `Bearer ${token}` }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            const usersList = data.users || [];
-            usersList.forEach((u: any) => {
-               usersMap[u.id] = u;
-            });
-          } else {
-            console.warn("Failed to fetch participant user details for Pick Em leaderboard.");
+          const chunkedUids = [];
+          for (let i = 0; i < participantIds.length; i += 50) {
+            chunkedUids.push(participantIds.slice(i, i + 50));
           }
+
+          await Promise.all(chunkedUids.map(async (chunk) => {
+            const res = await fetch(`/api/users/public?uids=${chunk.join(',')}`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const usersList = data.users || [];
+              usersList.forEach((u: any) => {
+                usersMap[u.id] = u;
+              });
+            } else {
+              console.warn("Failed to fetch participant user details chunk for Pick Em leaderboard.");
+            }
+          }));
 
           const formattedLeaderboard = participantIds.map(uid => ({
              uid,

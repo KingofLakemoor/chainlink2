@@ -174,24 +174,35 @@ export function BracketsPage() {
                 pot += rPts;
              }
           }
-          participantStats[data.userId] = { points: pts, potentialPoints: pot, uid: data.userId };
+          const uid = data.userId || d.id.split('_')[1];
+          if (uid) {
+            participantStats[uid] = { points: pts, potentialPoints: pot, uid };
+          }
         });
 
         const participantIds = Object.keys(participantStats);
 
         if (participantIds.length > 0) {
-          const uidsParam = participantIds.join(',');
           const token = await user?.getIdToken();
-          const res = await fetch(`/api/users/public?uids=${uidsParam}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
 
           let usersMap: Record<string, any> = {};
-          if (res.ok) {
-            const data = await res.json();
-            const usersList = data.users || [];
-            usersList.forEach((u: any) => { usersMap[u.id] = u; });
+
+          const chunkedUids = [];
+          for (let i = 0; i < participantIds.length; i += 50) {
+            chunkedUids.push(participantIds.slice(i, i + 50));
           }
+
+          await Promise.all(chunkedUids.map(async (chunk) => {
+            const res = await fetch(`/api/users/public?uids=${chunk.join(',')}`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const usersList = data.users || [];
+              usersList.forEach((u: any) => { usersMap[u.id] = u; });
+            }
+          }));
+
 
           const formattedLeaderboard = participantIds.map(uid => ({
              uid,

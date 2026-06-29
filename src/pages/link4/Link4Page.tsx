@@ -182,8 +182,8 @@ export default function Link4Page() {
                chunkedUids.push(uids.slice(i, i + 50));
              }
 
-             for (const chunk of chunkedUids) {
-                const token = await auth.currentUser?.getIdToken();
+             const token = await auth.currentUser?.getIdToken();
+             await Promise.all(chunkedUids.map(async (chunk) => {
                 const res = await fetch(`/api/users/public?uids=${chunk.join(',')}`, {
                    headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -193,7 +193,7 @@ export default function Link4Page() {
                       if (u) profilesMap[u.id] = u;
                    });
                 }
-             }
+             }));
            } catch (e) {
              console.error("Failed to fetch profiles for Link4 leaderboard", e);
            }

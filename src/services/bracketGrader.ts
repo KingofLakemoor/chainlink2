@@ -140,7 +140,10 @@ async function payoutBracket(bracketId: string, bracket: any, currentResults: an
               pts += rPts;
           }
       }
-      scores.push({ uid: data.userId, score: pts });
+      const uid = data.userId || doc.id.split('_')[1];
+      if (uid) {
+        scores.push({ uid, score: pts });
+      }
   }
 
   if (scores.length === 0) return;
