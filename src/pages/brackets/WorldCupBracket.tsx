@@ -8,7 +8,7 @@ interface WorldCupBracketProps {
   bracket: any; // The bracket document from Firestore
 }
 
-import { Coins, Loader2, Check } from 'lucide-react';
+import { Coins, Loader2, Check, X } from 'lucide-react';
 
 export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
   const [selections, setSelections] = useState<Record<string, string>>({});
@@ -210,6 +210,7 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
               {teamName || 'TBD'}
             </span>
             {isPickCorrectHere && <Check className="w-4 h-4 ml-2 flex-shrink-0 text-green-500" />}
+            {isPickWrongHere && <X className="w-4 h-4 ml-2 flex-shrink-0 text-red-500" />}
           </span>
         </button>
       );
@@ -298,6 +299,7 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
               <span className="flex items-center gap-2 justify-center w-full">
                 <span className="text-2xl font-black text-white uppercase truncate px-2">{championSlot.display}</span>
                 {isChampionCorrect && <Check className="w-6 h-6 flex-shrink-0 text-green-500" />}
+                {championSlot.predictedWrong && <X className="w-6 h-6 flex-shrink-0 text-red-500" />}
               </span>
             ) : (
               <span className="text-zinc-600 italic">Select Winner</span>
