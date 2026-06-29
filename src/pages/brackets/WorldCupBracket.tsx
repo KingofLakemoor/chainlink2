@@ -8,7 +8,7 @@ interface WorldCupBracketProps {
   bracket: any; // The bracket document from Firestore
 }
 
-import { Coins, Loader2 } from 'lucide-react';
+import { Coins, Loader2, Check } from 'lucide-react';
 
 export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
   const [selections, setSelections] = useState<Record<string, string>>({});
@@ -181,6 +181,7 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
       // It is eliminated here if there is a result for THIS match, and it's not this team
       const isEliminatedHere = matchResult && teamName && matchResult !== teamName;
       const isPickWrongHere = isEliminatedHere && isSelected;
+      const isPickCorrectHere = matchResult && teamName && matchResult === teamName && isSelected;
 
       return (
         <button
@@ -200,12 +201,15 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
               {predicted}
             </span>
           )}
-          <span className={cn(
-            "truncate w-full block",
-            !teamName ? "text-zinc-600" : "",
-            isPickWrongHere ? "line-through text-red-500 opacity-80" : isEliminatedHere ? "line-through text-zinc-500" : ""
-          )}>
-            {teamName || 'TBD'}
+          <span className="flex justify-between items-center w-full">
+            <span className={cn(
+              "truncate block",
+              !teamName ? "text-zinc-600" : "",
+              isPickWrongHere ? "line-through text-red-500 opacity-80" : isEliminatedHere ? "line-through text-zinc-500" : ""
+            )}>
+              {teamName || 'TBD'}
+            </span>
+            {isPickCorrectHere && <Check className="w-4 h-4 ml-2 flex-shrink-0 text-green-500" />}
           </span>
         </button>
       );
@@ -237,6 +241,7 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
 
   const finalWinnerId = 'r4-m0';
   const championSlot = getSlot(finalWinnerId);
+  const isChampionCorrect = bracket?.results?.[finalWinnerId] && bracket.results[finalWinnerId] === championSlot.display && championSlot.predicted === championSlot.display;
 
   return (
     <div className="w-full flex flex-col items-center">
@@ -290,7 +295,10 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
               </span>
             )}
             {championSlot.display ? (
-              <span className="text-2xl font-black text-white uppercase truncate px-2">{championSlot.display}</span>
+              <span className="flex items-center gap-2 justify-center w-full">
+                <span className="text-2xl font-black text-white uppercase truncate px-2">{championSlot.display}</span>
+                {isChampionCorrect && <Check className="w-6 h-6 flex-shrink-0 text-green-500" />}
+              </span>
             ) : (
               <span className="text-zinc-600 italic">Select Winner</span>
             )}
