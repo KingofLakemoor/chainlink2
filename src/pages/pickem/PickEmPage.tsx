@@ -93,7 +93,6 @@ export default function PickEmPage() {
   }, []);
 
   const fetchMatchupsAndPicks = async (campaignId: string, week: number) => {
-    if (!user) return;
     setMatchupsLoading(true);
     try {
       const mQuery = query(
@@ -104,19 +103,21 @@ export default function PickEmPage() {
       const mSnap = await getDocs(mQuery);
       setMatchups(mSnap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a: any, b: any) => a.startTime - b.startTime));
 
-      const pQuery = query(
-        collection(db, 'pickemPicks'),
-        where('campaignId', '==', campaignId),
-        where('week', '==', week),
-        where('participantId', '==', user.uid)
-      );
-      const pSnap = await getDocs(pQuery);
-      const picksMap: Record<string, any> = {};
-      pSnap.docs.forEach(d => {
-        const data = d.data();
-        picksMap[data.matchupId] = { id: d.id, ...data };
-      });
-      setUserPicks(picksMap);
+      if (user) {
+        const pQuery = query(
+          collection(db, 'pickemPicks'),
+          where('campaignId', '==', campaignId),
+          where('week', '==', week),
+          where('participantId', '==', user.uid)
+        );
+        const pSnap = await getDocs(pQuery);
+        const picksMap: Record<string, any> = {};
+        pSnap.docs.forEach(d => {
+          const data = d.data();
+          picksMap[data.matchupId] = { id: d.id, ...data };
+        });
+        setUserPicks(picksMap);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -125,7 +126,10 @@ export default function PickEmPage() {
   };
 
   useEffect(() => {
-    if (selectedCampaign && selectedWeek && user) {
+    if (selectedCampaign && selectedWeek) {
+      // Fetch matchups even if user is not authenticated (for leaderboard)
+      // fetchMatchupsAndPicks normally needs a user to fetch picks,
+      // but we need it to just fetch matchups if user is missing, or we can just fetch it as is
       fetchMatchupsAndPicks(selectedCampaign.id, selectedWeek);
     }
   }, [selectedCampaign, selectedWeek, user]);
@@ -142,14 +146,16 @@ export default function PickEmPage() {
         );
         const pSnap = await getDocs(pQuery);
 
-        const participantStats: Record<string, { wins: number, losses: number, pushes: number, points: number }> = {};
+        const participantStats: Record<string, { wins: number, losses: number, pushes: number, points: number, picks: any[] }> = {};
 
         pSnap.docs.forEach(d => {
           const pick = d.data();
           const pId = pick.participantId;
           if (!participantStats[pId]) {
-            participantStats[pId] = { wins: 0, losses: 0, pushes: 0, points: 0 };
+            participantStats[pId] = { wins: 0, losses: 0, pushes: 0, points: 0, picks: [] };
           }
+
+          participantStats[pId].picks.push(pick);
 
           if (pick.status === 'WIN') {
             participantStats[pId].wins += 1;
@@ -322,17 +328,15 @@ export default function PickEmPage() {
             ))}
           </select>
 
-          {activeTab === 'matchups' && (
-            <select
-              value={selectedWeek}
-              onChange={e => setSelectedWeek(Number(e.target.value))}
-              className="bg-[#121212] border border-zinc-800 rounded-xl px-4 py-3 text-white text-lg font-medium"
-            >
-              {[...Array(20)].map((_, i) => (
-                <option key={i+1} value={i+1}>Week {i+1}</option>
-              ))}
-            </select>
-          )}
+          <select
+            value={selectedWeek}
+            onChange={e => setSelectedWeek(Number(e.target.value))}
+            className="bg-[#121212] border border-zinc-800 rounded-xl px-4 py-3 text-white text-lg font-medium"
+          >
+            {[...Array(20)].map((_, i) => (
+              <option key={i+1} value={i+1}>Week {i+1}</option>
+            ))}
+          </select>
         </div>
 
         <div className="flex bg-[#121212] p-1 rounded-xl border border-zinc-800">
@@ -531,6 +535,7 @@ export default function PickEmPage() {
                     <th className="px-6 py-4 font-medium">Participant</th>
                     <th className="px-6 py-4 font-medium text-center">Points</th>
                     <th className="px-6 py-4 font-medium text-center">W-L-P</th>
+                    <th className="px-6 py-4 font-medium text-left">Week {selectedWeek} Picks</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-800/50">
@@ -561,6 +566,34 @@ export default function PickEmPage() {
                       </td>
                       <td className="px-6 py-4 text-center text-zinc-400 font-mono">
                         {participant.wins}-{participant.losses}-{participant.pushes}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex gap-2 items-center flex-wrap">
+                          {participant.picks && participant.picks.filter((p: any) => p.week === selectedWeek).map((pick: any) => {
+                            const matchup = matchups.find((m: any) => m.id === pick.matchupId);
+                            if (!matchup || matchup.status === 'STATUS_SCHEDULED') return null;
+
+                            let imageUrl = '';
+                            let altText = '';
+                            if (matchup.type === 'OVER_UNDER') {
+                                imageUrl = pick.pick.teamId === 'OVER' ? '/images/over.png' : '/images/under.png';
+                                altText = pick.pick.teamId;
+                            } else {
+                                imageUrl = pick.pick.teamId === matchup.awayTeam.id ? matchup.awayTeam.image : matchup.homeTeam.image;
+                                altText = pick.pick.teamId === matchup.awayTeam.id ? matchup.awayTeam.name : matchup.homeTeam.name;
+                            }
+
+                            let borderColorClass = 'border-zinc-500';
+                            if (pick.status === 'WIN') borderColorClass = 'border-green-500';
+                            else if (pick.status === 'LOSS') borderColorClass = 'border-red-500';
+
+                            return (
+                              <div key={pick.id} className={`w-8 h-8 rounded-full border-2 overflow-hidden bg-zinc-800 flex-shrink-0 ${borderColorClass}`} title={`${altText} - ${pick.status}`}>
+                                <img src={imageUrl} alt={altText} className="w-full h-full object-contain p-0.5" />
+                              </div>
+                            );
+                          })}
+                        </div>
                       </td>
                     </tr>
                   ))}
