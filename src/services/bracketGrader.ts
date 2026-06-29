@@ -24,8 +24,15 @@ export async function gradeBrackets(matchups: any[]) {
          if (matchup.league !== 'FIFA') continue;
       }
 
-      const homeTeam = matchup.homeTeam?.name;
-      const awayTeam = matchup.awayTeam?.name;
+      let homeTeam = matchup.homeTeam?.name;
+      let awayTeam = matchup.awayTeam?.name;
+
+      if (homeTeam === "Ivory Coast") homeTeam = "Côte d'Ivoire";
+      if (awayTeam === "Ivory Coast") awayTeam = "Côte d'Ivoire";
+      if (homeTeam === "Congo DR") homeTeam = "DR Congo";
+      if (awayTeam === "Congo DR") awayTeam = "DR Congo";
+      if (homeTeam === "Cape Verde") homeTeam = "Cabo Verde";
+      if (awayTeam === "Cape Verde") awayTeam = "Cabo Verde";
 
       const homeScore = Number(matchup.homeTeam?.score || 0);
       const awayScore = Number(matchup.awayTeam?.score || 0);
