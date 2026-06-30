@@ -145,20 +145,9 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
 
   const isMatchLocked = (round: number, matchId: string) => {
     const now = new Date();
-
-    // The entire bracket locks when the Round of 16 starts
-    const globalLock = new Date('2026-07-04T17:00:00Z');
-    if (now > globalLock) return true;
-
-    // Round of 32 matches lock at their scheduled start times
-    if (round === 0) {
-      const matchTime = bracket?.matchTimes?.[matchId];
-      if (matchTime) return now > new Date(matchTime);
-      return now > new Date('2026-06-28T19:00:00Z'); // Fallback lock for round of 32 if no matchTime
-    }
-
-    // Future rounds (16, QF, SF, Final) are open until the global lock
-    return false;
+    // The entire bracket locks when the Round of 16 starts (July 4th at 2 PM AZ time = 21:00:00Z)
+    const globalLock = new Date('2026-07-04T21:00:00Z');
+    return now > globalLock;
   };
 
   const renderMatch = (round: number, globalMatchIndex: number) => {
@@ -216,11 +205,19 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
       );
     };
 
+    const matchResult = bracket?.results?.[matchId];
+
     return (
       <div key={matchId} className={cn("flex flex-col mb-4 bg-[#1a1a1a] border border-[#27272a] rounded-md overflow-hidden w-[160px] text-sm", locked && "opacity-75")}>
         {formattedTime && (
-          <div className="text-[10px] text-zinc-500 text-center py-1 bg-zinc-900 border-b border-[#27272a]">
+          <div className="text-[10px] text-zinc-500 text-center py-1 bg-zinc-900 border-b border-[#27272a] flex justify-center items-center gap-2">
             {formattedTime}
+            {matchResult && <span className="font-bold text-zinc-300">FINAL</span>}
+          </div>
+        )}
+        {!formattedTime && matchResult && (
+          <div className="text-[10px] text-zinc-300 font-bold text-center py-1 bg-zinc-900 border-b border-[#27272a]">
+            FINAL
           </div>
         )}
         {renderButton(team1Slot, true)}
@@ -240,15 +237,62 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
     );
   };
 
-  const finalWinnerId = 'r4-m0';
+  const finalWinnerId = 'r3-m0';
   const championSlot = getSlot(finalWinnerId);
   const isChampionCorrect = bracket?.results?.[finalWinnerId] && bracket.results[finalWinnerId] === championSlot.display && championSlot.predicted === championSlot.display;
+  const isChampionDecided = bracket?.results?.[finalWinnerId] && bracket.results[finalWinnerId] === championSlot.display;
+
+  const calculatePoints = () => {
+    let pts = 0;
+    let pot = 0;
+
+    const pointsMap: Record<string, number> = {
+      "0": bracket.pointValues?.["Round of 16"] || 20,
+      "1": bracket.pointValues?.["Quarter Finals"] || 40,
+      "2": bracket.pointValues?.["Semi Finals"] || 80,
+      "3": bracket.pointValues?.["Finals"] || 160
+    };
+
+    const results = bracket.results || {};
+    const eliminatedTeams = bracket.eliminatedTeams || [];
+
+    for (const [mId, pickedTeam] of Object.entries(selections)) {
+       const round = mId.split('-')[0].replace('r', '');
+       const rPts = pointsMap[round] || 0;
+
+       if (results[mId] === pickedTeam) {
+          pts += rPts;
+          pot += rPts;
+       } else if (results[mId] && results[mId] !== pickedTeam) {
+          // picked wrong, no points, no potential
+       } else if (!results[mId] && !eliminatedTeams.includes(pickedTeam)) {
+          // still alive
+          pot += rPts;
+       }
+    }
+    return { pts, pot };
+  };
+
+  const { pts: currentPoints, pot: potentialPoints } = calculatePoints();
 
   return (
     <div className="w-full flex flex-col items-center">
+      {isPaid && (
+        <div className="bg-[#1a1a1a] border border-[#27272a] rounded-xl p-4 mb-6 w-full max-w-2xl flex justify-around">
+           <div className="text-center">
+             <div className="text-zinc-400 text-xs font-bold uppercase mb-1">Current Points</div>
+             <div className="text-2xl font-black text-white">{currentPoints}</div>
+           </div>
+           <div className="text-center">
+             <div className="text-zinc-400 text-xs font-bold uppercase mb-1">Potential Points</div>
+             <div className="text-2xl font-black text-white">{potentialPoints}</div>
+           </div>
+        </div>
+      )}
+
       <div className="bg-[#1a1a1a] border border-[#27272a] rounded-xl p-4 mb-6 w-full max-w-2xl text-center">
         <p className="text-zinc-300 text-sm">
-          <strong className="text-white">Lock Times:</strong> Round of 32 games lock at their scheduled time. The rest of the bracket locks on July 4th at 10:00 AM AZ time.
+          <strong className="text-white">Lock Time:</strong> The entire bracket locks on July 4th at 2:00 PM AZ time.
         </p>
       </div>
 
@@ -272,10 +316,9 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
         <div className="min-w-max flex items-stretch justify-center">
         {/* Left Side */}
         <div className="flex">
-          {renderRound(0, 0, 8, "Round of 32")}
-          {renderRound(1, 0, 4, "Round of 16")}
-          {renderRound(2, 0, 2, "Quarter-finals")}
-          {renderRound(3, 0, 1, "Semi-finals")}
+          {renderRound(0, 0, 4, "Round of 16")}
+          {renderRound(1, 0, 2, "Quarter-finals")}
+          {renderRound(2, 0, 1, "Semi-finals")}
         </div>
 
         {/* Center - Finals */}
@@ -298,7 +341,7 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
             {championSlot.display ? (
               <span className="flex items-center gap-2 justify-center w-full">
                 <span className="text-2xl font-black text-white uppercase truncate px-2">{championSlot.display}</span>
-                {isChampionCorrect && <Check className="w-6 h-6 flex-shrink-0 text-green-500" />}
+                {isChampionDecided && <Check className={cn("w-6 h-6 flex-shrink-0", isChampionCorrect ? "text-green-500" : "text-zinc-500")} />}
                 {championSlot.predictedWrong && <X className="w-6 h-6 flex-shrink-0 text-red-500" />}
               </span>
             ) : (
@@ -308,16 +351,15 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
 
           <div className="mt-12 flex flex-col items-center">
              <h3 className="text-zinc-400 font-bold mb-4 text-center text-xs uppercase">Final</h3>
-             {renderMatch(4, 0)}
+             {renderMatch(3, 0)}
           </div>
         </div>
 
         {/* Right Side */}
         <div className="flex flex-row-reverse">
-           {renderRound(0, 8, 8, "Round of 32")}
-           {renderRound(1, 4, 4, "Round of 16")}
-           {renderRound(2, 2, 2, "Quarter-finals")}
-           {renderRound(3, 1, 1, "Semi-finals")}
+           {renderRound(0, 4, 4, "Round of 16")}
+           {renderRound(1, 2, 2, "Quarter-finals")}
+           {renderRound(2, 1, 1, "Semi-finals")}
         </div>
       </div>
       </div>

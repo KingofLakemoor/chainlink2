@@ -53,7 +53,7 @@ export async function gradeBrackets(matchups: any[]) {
 
          while (r < 5) {
              const currentRoundTeams = rounds[r];
-             if (!currentRoundTeams || currentRoundTeams.length === 0) break;
+             if (!currentRoundTeams || currentRoundTeams.length < 2) break;
 
              const nextRoundTeams = new Array(currentRoundTeams.length / 2).fill(null);
 
@@ -90,8 +90,13 @@ export async function gradeBrackets(matchups: any[]) {
         });
     }
 
+    // Dynamically determine the final match ID based on the number of base teams
+    const baseTeams = bracket.teams?.length || 32;
+    const totalRounds = Math.log2(baseTeams);
+    const finalMatchId = `r${totalRounds - 1}-m0`;
+
     // Check if bracket payout is complete, else pay out if finals are done
-    if (results['r4-m0'] && !bracket.payoutComplete) {
+    if (results[finalMatchId] && !bracket.payoutComplete) {
        await payoutBracket(bracketDoc.id, bracket, results);
     }
   }
@@ -128,11 +133,15 @@ async function payoutBracket(bracketId: string, bracket: any, currentResults: an
       const selections = data.selections || {};
       let pts = 0;
 
+      const baseTeams = bracket.teams?.length || 32;
+      const roundNames = baseTeams === 16
+          ? ["Round of 16", "Quarter Finals", "Semi Finals", "Finals"]
+          : ["Round of 32", "Round of 16", "Quarter Finals", "Semi Finals", "Finals"];
+
       for (const [mId, pickedTeam] of Object.entries(selections)) {
           const rMatch = mId.match(/r(\d+)-m/);
           if (!rMatch) continue;
           const roundIdx = parseInt(rMatch[1], 10);
-          const roundNames = ["Round of 32", "Round of 16", "Quarter Finals", "Semi Finals", "Finals"];
           const roundName = roundNames[roundIdx];
           const rPts = pointValues[roundName] || 0;
 

@@ -18,22 +18,14 @@ export function BracketsPage() {
   useEffect(() => {
     async function fetchBracket() {
         const defaultTeams = [
-          "Germany", "Paraguay",
-          "France", "Sweden",
-          "South Africa", "Canada",
-          "Netherlands", "Morocco",
-          "Portugal", "Croatia",
-          "Spain", "Austria",
-          "USA", "Bosnia and Herzegovina",
-          "Belgium", "Senegal",
-          "Brazil", "Japan",
-          "Côte d'Ivoire", "Norway",
-          "Mexico", "Ecuador",
-          "England", "DR Congo",
-          "Argentina", "Cabo Verde",
-          "Australia", "Egypt",
-          "Switzerland", "Algeria",
-          "Colombia", "Ghana"
+          "Germany", "France",
+          "South Africa", "Morocco",
+          "Portugal", "Spain",
+          "USA", "Belgium",
+          "Brazil", "Côte d'Ivoire",
+          "Mexico", "England",
+          "Argentina", "Australia",
+          "Switzerland", "Colombia"
         ];
 
 
@@ -65,7 +57,6 @@ export function BracketsPage() {
           matchTimes,
 
           pointValues: {
-            "Round of 32": 10,
             "Round of 16": 20,
             "Quarter Finals": 40,
             "Semi Finals": 80,
@@ -146,11 +137,10 @@ export function BracketsPage() {
         const participantStats: Record<string, { points: number, potentialPoints: number, uid: string }> = {};
 
         const pointsMap: Record<string, number> = {
-          "0": bracket.pointValues?.["Round of 32"] || 10,
-          "1": bracket.pointValues?.["Round of 16"] || 20,
-          "2": bracket.pointValues?.["Quarter Finals"] || 40,
-          "3": bracket.pointValues?.["Semi Finals"] || 80,
-          "4": bracket.pointValues?.["Finals"] || 160
+          "0": bracket.pointValues?.["Round of 16"] || 20,
+          "1": bracket.pointValues?.["Quarter Finals"] || 40,
+          "2": bracket.pointValues?.["Semi Finals"] || 80,
+          "3": bracket.pointValues?.["Finals"] || 160
         };
 
         const results = bracket.results || {};
