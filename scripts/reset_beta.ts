@@ -105,12 +105,30 @@ async function resetBeta() {
     console.log(`Clearing ${coll}...`);
     const snap = await adminDb.collection(coll).get();
     for (const doc of snap.docs) {
-      batch.delete(doc.ref);
-      operationsCount++;
-      if (operationsCount >= 400) {
-        await batch.commit();
-        batch = adminDb.batch();
-        operationsCount = 0;
+      const data = doc.data();
+      let shouldDelete = true;
+
+      if (coll === 'picks' || coll === 'pickemPicks') {
+        if (data.status === 'PENDING') {
+          shouldDelete = false;
+        }
+      } else if (coll === 'link4Picks') {
+        if (data.picks && Array.isArray(data.picks)) {
+          const hasPending = data.picks.some((p: any) => p.status === 'PENDING');
+          if (hasPending) {
+            shouldDelete = false;
+          }
+        }
+      }
+
+      if (shouldDelete) {
+        batch.delete(doc.ref);
+        operationsCount++;
+        if (operationsCount >= 400) {
+          await batch.commit();
+          batch = adminDb.batch();
+          operationsCount = 0;
+        }
       }
     }
     if (operationsCount > 0) {
