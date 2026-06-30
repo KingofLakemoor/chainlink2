@@ -98,8 +98,8 @@ async function resetBeta() {
 
   console.log(`Finished processing ${userCount} users.`);
 
-  // Clear picks, chains, pickQueues, link4Picks, pickemParticipants
-  const collectionsToClear = ['chains', 'picks', 'pickQueues', 'pickemPicks', 'link4Picks', 'pickemParticipants'];
+  // Clear picks, chains, pickQueues, link4Picks, pickemParticipants, and bracketGamePredictions
+  const collectionsToClear = ['chains', 'picks', 'pickQueues', 'pickemPicks', 'link4Picks', 'pickemParticipants', 'bracketGamePredictions'];
 
   for (const coll of collectionsToClear) {
     console.log(`Clearing ${coll}...`);
