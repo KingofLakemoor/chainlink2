@@ -70,6 +70,8 @@ async function resetBeta() {
     const updateData: any = {
       inventory: inventory,
       stats: { wins: 0, losses: 0, pushes: 0 },
+      allTimeStats: { wins: 0, losses: 0, pushes: 0 },
+      statsByLeague: {},
       achievements: [],
       records: {}, // Add records wipe if it exists
       medals: {}, // Add medals wipe if it exists
