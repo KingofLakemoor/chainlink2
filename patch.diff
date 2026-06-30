@@ -1,0 +1,106 @@
+--- src/pages/brackets/WorldCupBracket.tsx
++++ src/pages/brackets/WorldCupBracket.tsx
+@@ -181,7 +181,8 @@
+       const matchResult = bracket?.results?.[matchId];
+       // It is eliminated here if there is a result for THIS match, and it's not this team
+       const isEliminatedHere = matchResult && teamName && matchResult !== teamName;
+       const isPickWrongHere = isEliminatedHere && isSelected;
+       const isPickCorrectHere = matchResult && teamName && matchResult === teamName && isSelected;
++      const isWinnerHere = matchResult && teamName && matchResult === teamName;
+
+       return (
+         <button
+@@ -206,7 +207,7 @@
+             )}>
+               {teamName || 'TBD'}
+             </span>
+-            {isPickCorrectHere && <Check className="w-4 h-4 ml-2 flex-shrink-0 text-green-500" />}
++            {isWinnerHere && <Check className={cn("w-4 h-4 ml-2 flex-shrink-0", isPickCorrectHere ? "text-green-500" : "text-zinc-500")} />}
+             {isPickWrongHere && <X className="w-4 h-4 ml-2 flex-shrink-0 text-red-500" />}
+           </span>
+         </button>
+@@ -216,11 +217,19 @@
+       );
+     };
+
++    const matchResult = bracket?.results?.[matchId];
++
+     return (
+       <div key={matchId} className={cn("flex flex-col mb-4 bg-[#1a1a1a] border border-[#27272a] rounded-md overflow-hidden w-[160px] text-sm", locked && "opacity-75")}>
+         {formattedTime && (
+-          <div className="text-[10px] text-zinc-500 text-center py-1 bg-zinc-900 border-b border-[#27272a]">
++          <div className="text-[10px] text-zinc-500 text-center py-1 bg-zinc-900 border-b border-[#27272a] flex justify-center items-center gap-2">
+             {formattedTime}
++            {matchResult && <span className="font-bold text-zinc-300">FINAL</span>}
++          </div>
++        )}
++        {!formattedTime && matchResult && (
++          <div className="text-[10px] text-zinc-300 font-bold text-center py-1 bg-zinc-900 border-b border-[#27272a]">
++            FINAL
+           </div>
+         )}
+         {renderButton(team1Slot, true)}
+@@ -244,8 +253,55 @@
+   const championSlot = getSlot(finalWinnerId);
+   const isChampionCorrect = bracket?.results?.[finalWinnerId] && bracket.results[finalWinnerId] === championSlot.display && championSlot.predicted === championSlot.display;
++  const isChampionDecided = bracket?.results?.[finalWinnerId] && bracket.results[finalWinnerId] === championSlot.display;
+
++  const calculatePoints = () => {
++    let pts = 0;
++    let pot = 0;
++
++    const pointsMap: Record<string, number> = {
++      "0": bracket.pointValues?.["Round of 32"] || 10,
++      "1": bracket.pointValues?.["Round of 16"] || 20,
++      "2": bracket.pointValues?.["Quarter Finals"] || 40,
++      "3": bracket.pointValues?.["Semi Finals"] || 80,
++      "4": bracket.pointValues?.["Finals"] || 160
++    };
++
++    const results = bracket.results || {};
++    const eliminatedTeams = bracket.eliminatedTeams || [];
++
++    for (const [mId, pickedTeam] of Object.entries(selections)) {
++       const round = mId.split('-')[0].replace('r', '');
++       const rPts = pointsMap[round] || 0;
++
++       if (results[mId] === pickedTeam) {
++          pts += rPts;
++          pot += rPts;
++       } else if (results[mId] && results[mId] !== pickedTeam) {
++          // picked wrong, no points, no potential
++       } else if (!results[mId] && !eliminatedTeams.includes(pickedTeam)) {
++          // still alive
++          pot += rPts;
++       }
++    }
++    return { pts, pot };
++  };
++
++  const { pts: currentPoints, pot: potentialPoints } = calculatePoints();
++
+   return (
+     <div className="w-full flex flex-col items-center">
++      {isPaid && (
++        <div className="bg-[#1a1a1a] border border-[#27272a] rounded-xl p-4 mb-6 w-full max-w-2xl flex justify-around">
++           <div className="text-center">
++             <div className="text-zinc-400 text-xs font-bold uppercase mb-1">Current Points</div>
++             <div className="text-2xl font-black text-white">{currentPoints}</div>
++           </div>
++           <div className="text-center">
++             <div className="text-zinc-400 text-xs font-bold uppercase mb-1">Potential Points</div>
++             <div className="text-2xl font-black text-white">{potentialPoints}</div>
++           </div>
++        </div>
++      )}
++
+       <div className="bg-[#1a1a1a] border border-[#27272a] rounded-xl p-4 mb-6 w-full max-w-2xl text-center">
+@@ -354,7 +410,7 @@
+             {championSlot.display ? (
+               <span className="flex items-center gap-2 justify-center w-full">
+                 <span className="text-2xl font-black text-white uppercase truncate px-2">{championSlot.display}</span>
+-                {isChampionCorrect && <Check className="w-6 h-6 flex-shrink-0 text-green-500" />}
++                {isChampionDecided && <Check className={cn("w-6 h-6 flex-shrink-0", isChampionCorrect ? "text-green-500" : "text-zinc-500")} />}
+                 {championSlot.predictedWrong && <X className="w-6 h-6 flex-shrink-0 text-red-500" />}
+               </span>
+             ) : (

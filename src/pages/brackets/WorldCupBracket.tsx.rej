@@ -1,0 +1,11 @@
+--- WorldCupBracket.tsx
++++ WorldCupBracket.tsx
+@@ -181,7 +181,8 @@
+       const matchResult = bracket?.results?.[matchId];
+       // It is eliminated here if there is a result for THIS match, and it's not this team
+       const isEliminatedHere = matchResult && teamName && matchResult !== teamName;
+       const isPickWrongHere = isEliminatedHere && isSelected;
+       const isPickCorrectHere = matchResult && teamName && matchResult === teamName && isSelected;
++      const isWinnerHere = matchResult && teamName && matchResult === teamName;
+
+       return (
