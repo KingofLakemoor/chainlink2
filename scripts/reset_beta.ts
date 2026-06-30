@@ -98,57 +98,26 @@ async function resetBeta() {
 
   console.log(`Finished processing ${userCount} users.`);
 
-  // Clear picks, chains, pickQueues
-  console.log("Clearing chains...");
-  const chainsSnap = await adminDb.collection('chains').get();
-  for (const doc of chainsSnap.docs) {
-    batch.delete(doc.ref);
-    operationsCount++;
-    if (operationsCount >= 400) {
+  // Clear picks, chains, pickQueues, link4Picks, pickemParticipants
+  const collectionsToClear = ['chains', 'picks', 'pickQueues', 'pickemPicks', 'link4Picks', 'pickemParticipants'];
+
+  for (const coll of collectionsToClear) {
+    console.log(`Clearing ${coll}...`);
+    const snap = await adminDb.collection(coll).get();
+    for (const doc of snap.docs) {
+      batch.delete(doc.ref);
+      operationsCount++;
+      if (operationsCount >= 400) {
+        await batch.commit();
+        batch = adminDb.batch();
+        operationsCount = 0;
+      }
+    }
+    if (operationsCount > 0) {
       await batch.commit();
       batch = adminDb.batch();
       operationsCount = 0;
     }
-  }
-
-  console.log("Clearing picks...");
-  const picksSnap = await adminDb.collection('picks').get();
-  for (const doc of picksSnap.docs) {
-    batch.delete(doc.ref);
-    operationsCount++;
-    if (operationsCount >= 400) {
-      await batch.commit();
-      batch = adminDb.batch();
-      operationsCount = 0;
-    }
-  }
-
-  console.log("Clearing pickQueues...");
-  const pickQueuesSnap = await adminDb.collection('pickQueues').get();
-  for (const doc of pickQueuesSnap.docs) {
-    batch.delete(doc.ref);
-    operationsCount++;
-    if (operationsCount >= 400) {
-      await batch.commit();
-      batch = adminDb.batch();
-      operationsCount = 0;
-    }
-  }
-
-  console.log("Clearing pickemPicks...");
-  const pickemPicksSnap = await adminDb.collection('pickemPicks').get();
-  for (const doc of pickemPicksSnap.docs) {
-    batch.delete(doc.ref);
-    operationsCount++;
-    if (operationsCount >= 400) {
-      await batch.commit();
-      batch = adminDb.batch();
-      operationsCount = 0;
-    }
-  }
-
-  if (operationsCount > 0) {
-    await batch.commit();
   }
 
   console.log("All done.");
