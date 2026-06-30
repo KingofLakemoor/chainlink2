@@ -45,6 +45,7 @@ export default function Link4Page() {
   const { user, profile } = useAuth();
   const [activeSegmentId, setActiveSegmentId] = useState<string | null>(null);
   const [isLoadingSegment, setIsLoadingSegment] = useState(true);
+  const [startTime, setStartTime] = useState<string>('');
   const [endTime, setEndTime] = useState<string>('');
   const [allowedSports, setAllowedSports] = useState<string[]>([]);
   const [theme, setTheme] = useState<Link4SegmentTheme>({});
@@ -110,6 +111,7 @@ export default function Link4Page() {
           }
 
           setActiveSegmentId(activeDoc.id);
+          if (activeSegment.startTime) setStartTime(activeSegment.startTime);
           if (activeSegment.endTime) setEndTime(activeSegment.endTime);
           if (activeSegment.allowedSports) setAllowedSports(activeSegment.allowedSports);
           if (activeSegment.theme) setTheme(activeSegment.theme);
@@ -437,6 +439,12 @@ export default function Link4Page() {
         if (new Date(m.startTime).getTime() <= new Date(prevPick.startTime).getTime()) {
           return false;
         }
+      }
+    }
+
+    if (startTime && m.startTime) {
+      if (new Date(m.startTime).getTime() < new Date(startTime).getTime()) {
+        return false;
       }
     }
 
