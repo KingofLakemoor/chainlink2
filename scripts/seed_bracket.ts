@@ -2,14 +2,14 @@ import { adminDb } from '../src/lib/firebase-admin.ts';
 import { scrapeLeagueSchedules } from '../src/services/espnScraper.ts';
 
 const defaultTeams = [
-  "Colombia", "Ghana",
-  "Canada", "Morocco",
-  "Paraguay", "France",
-  "Brazil", "Norway",
+  "Round of 32 1 Winner", "Round of 32 2 Winner",
+  "Round of 32 3 Winner", "Round of 32 4 Winner",
+  "Round of 32 5 Winner", "Round of 32 6 Winner",
   "Round of 32 7 Winner", "Round of 32 8 Winner",
-  "Round of 32 11 Winner", "Round of 32 12 Winner",
   "Round of 32 9 Winner", "Round of 32 10 Winner",
-  "Round of 32 14 Winner", "Round of 32 16 Winner"
+  "Round of 32 11 Winner", "Round of 32 12 Winner",
+  "Round of 32 13 Winner", "Round of 32 14 Winner",
+  "Round of 32 15 Winner", "Round of 32 16 Winner"
 ];
 
 // Fallback match times corresponding to defaultTeams (r0-m0 to r0-m15)
@@ -42,8 +42,8 @@ async function seed() {
   const res = await scrapeLeagueSchedules('FIFA');
   const allFifaMatchups = res.data || [];
 
-  // Only consider matchups on or after July 4th
-  const fifaMatchups = allFifaMatchups.filter(m => new Date(m.startTime) >= new Date('2026-07-04T00:00:00.000Z'));
+  // Only consider matchups on or after July 4th (Arizona time, UTC-7)
+  const fifaMatchups = allFifaMatchups.filter(m => new Date(m.startTime) >= new Date('2026-07-04T07:00:00.000Z'));
 
   const matchTimes: Record<string, string> = { ...defaultMatchTimes };
   const matchIds: Record<string, string> = { ...defaultMatchIds };
