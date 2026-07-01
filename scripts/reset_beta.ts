@@ -71,7 +71,9 @@ async function resetBeta() {
       inventory: inventory,
       stats: { wins: 0, losses: 0, pushes: 0 },
       allTimeStats: { wins: 0, losses: 0, pushes: 0 },
+      historicalStats: {},
       statsByLeague: {},
+      allTimeBest: 0,
       achievements: [],
       records: {}, // Add records wipe if it exists
       medals: {}, // Add medals wipe if it exists
