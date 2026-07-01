@@ -148,6 +148,11 @@ export default function PickEmCampaignDetail() {
         }
 
         for (const m of res.data) {
+          // Skip games that start before the campaign starts
+          if (campaign.startDate && m.startTime < campaign.startDate) {
+            continue;
+          }
+
           const pickemMatchupId = `${id}_${selectedWeek}_${m.gameId}`;
           const docRef = doc(db, 'pickemMatchups', pickemMatchupId);
 
