@@ -13,7 +13,8 @@ export function SidebarProgress() {
     picksRequirement: 375,
     prizeDescription: '$5 Club 602 gift card',
     sponsorName: 'Club 602',
-    targetMonth: ''
+    targetMonth: '',
+    winCondition: 'Current Chain'
   });
 
   const [activeUsers, setActiveUsers] = useState(0);
@@ -112,8 +113,11 @@ export function SidebarProgress() {
         <div className="text-sm text-[#22c55e] font-medium mb-1">
           {prizeData.prizeDescription}
         </div>
-        <div className="text-xs text-zinc-400 mb-3">
+        <div className="text-xs text-zinc-400 mb-1">
           Sponsored by <span className="text-zinc-200">{prizeData.sponsorName}</span>
+        </div>
+        <div className="text-xs text-zinc-400 mb-3">
+          Win Condition: <span className="text-zinc-200">{prizeData.winCondition || 'Current Chain'}</span>
         </div>
 
         <div className="space-y-3">

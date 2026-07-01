@@ -11,7 +11,8 @@ export default function PrizeAdminPage() {
     picksRequirement: 375,
     prizeDescription: '$5 Club 602 gift card',
     sponsorName: 'Club 602',
-    targetMonth: new Date().toISOString().slice(0, 7) // Format YYYY-MM
+    targetMonth: new Date().toISOString().slice(0, 7), // Format YYYY-MM
+    winCondition: 'Current Chain'
   });
 
   useEffect(() => {
@@ -89,6 +90,20 @@ export default function PrizeAdminPage() {
             onChange={(e) => setPrizeData({...prizeData, sponsorName: e.target.value})}
             className="w-full bg-[#1a1a1a] border border-[#3f3f46] rounded-lg px-4 py-2 text-zinc-100"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-zinc-400 mb-1">Win Condition</label>
+          <select
+            value={prizeData.winCondition || 'Current Chain'}
+            onChange={(e) => setPrizeData({...prizeData, winCondition: e.target.value})}
+            className="w-full bg-[#1a1a1a] border border-[#3f3f46] rounded-lg px-4 py-2 text-zinc-100"
+          >
+            <option value="Current Chain">Current Chain</option>
+            <option value="Longest Chain">Longest Chain</option>
+            <option value="Most Wins">Most Wins</option>
+            <option value="Highest Win Percentage">Highest Win Percentage</option>
+          </select>
         </div>
 
         <div>
