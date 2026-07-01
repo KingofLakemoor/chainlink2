@@ -2,37 +2,37 @@ import { adminDb } from '../src/lib/firebase-admin.ts';
 import { scrapeLeagueSchedules } from '../src/services/espnScraper.ts';
 
 const defaultTeams = [
-  "Round of 32 1 Winner", "Round of 32 2 Winner",
-  "Round of 32 3 Winner", "Round of 32 4 Winner",
-  "Round of 32 5 Winner", "Round of 32 6 Winner",
+  "Canada", "Morocco",
+  "Paraguay", "France",
+  "Brazil", "Norway",
   "Round of 32 7 Winner", "Round of 32 8 Winner",
-  "Round of 32 9 Winner", "Round of 32 10 Winner",
   "Round of 32 11 Winner", "Round of 32 12 Winner",
-  "Round of 32 13 Winner", "Round of 32 14 Winner",
-  "Round of 32 15 Winner", "Round of 32 16 Winner"
+  "Round of 32 9 Winner", "Round of 32 10 Winner",
+  "Round of 32 14 Winner", "Round of 32 16 Winner",
+  "Round of 32 13 Winner", "Round of 32 15 Winner"
 ];
 
 // Fallback match times corresponding to defaultTeams (r0-m0 to r0-m15)
 const defaultMatchTimes: Record<string, string> = {
-  'r0-m0': '2026-07-04T01:30:00.000Z',
-  'r0-m1': '2026-07-04T17:00:00.000Z',
-  'r0-m2': '2026-07-04T21:00:00.000Z',
-  'r0-m3': '2026-07-05T20:00:00.000Z',
-  'r0-m4': '2026-07-06T00:00:00.000Z',
-  'r0-m5': '2026-07-06T19:00:00.000Z',
-  'r0-m6': '2026-07-07T00:00:00.000Z',
-  'r0-m7': '2026-07-07T16:00:00.000Z'
+  'r0-m0': '2026-07-04T17:00:00.000Z',
+  'r0-m1': '2026-07-04T21:00:00.000Z',
+  'r0-m2': '2026-07-05T20:00:00.000Z',
+  'r0-m3': '2026-07-06T00:00:00.000Z',
+  'r0-m4': '2026-07-06T19:00:00.000Z',
+  'r0-m5': '2026-07-07T00:00:00.000Z',
+  'r0-m6': '2026-07-07T16:00:00.000Z',
+  'r0-m7': '2026-07-07T20:00:00.000Z'
 };
 
 const defaultMatchIds: Record<string, string> = {
-  'r0-m0': '760501',
-  'r0-m1': '760502',
-  'r0-m2': '760503',
-  'r0-m3': '760504',
-  'r0-m4': '760505',
-  'r0-m5': '760506',
-  'r0-m6': '760507',
-  'r0-m7': '760509'
+  'r0-m0': '760502',
+  'r0-m1': '760503',
+  'r0-m2': '760504',
+  'r0-m3': '760505',
+  'r0-m4': '760506',
+  'r0-m5': '760507',
+  'r0-m6': '760509',
+  'r0-m7': '760508'
 };
 
 
