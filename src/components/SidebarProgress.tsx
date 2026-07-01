@@ -52,18 +52,33 @@ export function SidebarProgress() {
 
         const token = await user?.getIdToken();
 
-        // 1. Fetch this month's picks
-        const monthPicksSnap = await getDocs(query(collection(db, 'picks'),
-             where('createdAt', '>=', startTimestamp),
-             where('createdAt', '<', endTimestamp)));
+        // 1. Fetch matchups that take place in the target month
+        const matchupsSnap = await getDocs(query(collection(db, 'matchups'),
+             where('startTime', '>=', startTimestamp),
+             where('startTime', '<', endTimestamp)));
 
+        const validMatchupIds = matchupsSnap.docs.map(doc => doc.data().gameId).filter(Boolean);
+
+        let totalPicks = 0;
         const uniqueUsers = new Set();
-        monthPicksSnap.docs.forEach(doc => {
-            uniqueUsers.add(doc.data().userId);
-        });
+
+        // 2. Fetch picks for those matchups in chunks of 30 (Firestore in-query limit is 30)
+        const chunkSize = 30;
+        for (let i = 0; i < validMatchupIds.length; i += chunkSize) {
+          const chunk = validMatchupIds.slice(i, i + chunkSize);
+          if (chunk.length === 0) continue;
+
+          const picksSnap = await getDocs(query(collection(db, 'picks'),
+               where('matchupId', 'in', chunk)));
+
+          totalPicks += picksSnap.size;
+          picksSnap.docs.forEach(doc => {
+              uniqueUsers.add(doc.data().userId);
+          });
+        }
 
         setActiveUsers(uniqueUsers.size);
-        setGlobalPicks(monthPicksSnap.size);
+        setGlobalPicks(totalPicks);
       } catch (err) {
         console.error(err);
       } finally {
