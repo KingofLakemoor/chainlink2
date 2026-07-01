@@ -63,7 +63,10 @@ export async function gradeBrackets(matchups: any[]) {
 
                  const mId = `r${r}-m${i}`;
 
-                 if (t1 && t2 && ((t1 === winner && t2 === loser) || (t1 === loser && t2 === winner))) {
+                 const isMatchById = bracket.matchIds && bracket.matchIds[mId] === matchup.gameId;
+                 const isMatchByTeams = t1 && t2 && ((t1 === winner && t2 === loser) || (t1 === loser && t2 === winner));
+
+                 if (isMatchById || isMatchByTeams) {
                      if (results[mId] !== winner) {
                          results[mId] = winner;
                          updated = true;

@@ -2,42 +2,37 @@ import { adminDb } from '../src/lib/firebase-admin.ts';
 import { scrapeLeagueSchedules } from '../src/services/espnScraper.ts';
 
 const defaultTeams = [
-  "Germany", "Paraguay",
-  "France", "Sweden",
-  "South Africa", "Canada",
-  "Netherlands", "Morocco",
-  "Portugal", "Croatia",
-  "Spain", "Austria",
-  "USA", "Bosnia and Herzegovina",
-  "Belgium", "Senegal",
-  "Brazil", "Japan",
-  "Côte d'Ivoire", "Norway",
-  "Mexico", "Ecuador",
-  "England", "DR Congo",
-  "Argentina", "Cabo Verde",
-  "Australia", "Egypt",
-  "Switzerland", "Algeria",
-  "Colombia", "Ghana"
+  "Colombia", "Ghana",
+  "Canada", "Morocco",
+  "Paraguay", "France",
+  "Brazil", "Norway",
+  "Round of 32 7 Winner", "Round of 32 8 Winner",
+  "Round of 32 11 Winner", "Round of 32 12 Winner",
+  "Round of 32 9 Winner", "Round of 32 10 Winner",
+  "Round of 32 14 Winner", "Round of 32 16 Winner"
 ];
 
 // Fallback match times corresponding to defaultTeams (r0-m0 to r0-m15)
 const defaultMatchTimes: Record<string, string> = {
-  'r0-m0': '2026-06-29T17:30:00.000Z',
-  'r0-m1': '2026-06-30T18:00:00.000Z',
-  'r0-m2': '2026-06-28T16:00:00.000Z',
-  'r0-m3': '2026-06-29T22:00:00.000Z',
-  'r0-m4': '2026-07-02T20:00:00.000Z',
-  'r0-m5': '2026-07-02T16:00:00.000Z',
-  'r0-m6': '2026-07-01T21:00:00.000Z',
-  'r0-m7': '2026-07-01T17:00:00.000Z',
-  'r0-m8': '2026-06-29T14:00:00.000Z',
-  'r0-m9': '2026-06-30T14:00:00.000Z',
-  'r0-m10': '2026-06-30T22:00:00.000Z',
-  'r0-m11': '2026-07-01T13:00:00.000Z',
-  'r0-m12': '2026-07-03T19:00:00.000Z',
-  'r0-m13': '2026-07-03T15:00:00.000Z',
-  'r0-m14': '2026-07-03T00:00:00.000Z',
-  'r0-m15': '2026-07-03T22:30:00.000Z',
+  'r0-m0': '2026-07-04T01:30:00.000Z',
+  'r0-m1': '2026-07-04T17:00:00.000Z',
+  'r0-m2': '2026-07-04T21:00:00.000Z',
+  'r0-m3': '2026-07-05T20:00:00.000Z',
+  'r0-m4': '2026-07-06T00:00:00.000Z',
+  'r0-m5': '2026-07-06T19:00:00.000Z',
+  'r0-m6': '2026-07-07T00:00:00.000Z',
+  'r0-m7': '2026-07-07T16:00:00.000Z'
+};
+
+const defaultMatchIds: Record<string, string> = {
+  'r0-m0': '760501',
+  'r0-m1': '760502',
+  'r0-m2': '760503',
+  'r0-m3': '760504',
+  'r0-m4': '760505',
+  'r0-m5': '760506',
+  'r0-m6': '760507',
+  'r0-m7': '760509'
 };
 
 
@@ -47,32 +42,22 @@ async function seed() {
   const res = await scrapeLeagueSchedules('FIFA');
   const allFifaMatchups = res.data || [];
 
-  // Only consider matchups on or after June 28th
-  const fifaMatchups = allFifaMatchups.filter(m => new Date(m.startTime) >= new Date('2026-06-28T00:00:00.000Z'));
+  // Only consider matchups on or after July 4th
+  const fifaMatchups = allFifaMatchups.filter(m => new Date(m.startTime) >= new Date('2026-07-04T00:00:00.000Z'));
 
   const matchTimes: Record<string, string> = { ...defaultMatchTimes };
+  const matchIds: Record<string, string> = { ...defaultMatchIds };
   const bracketTeams: string[] = [...defaultTeams];
 
   // Update match times dynamically if the matchup exists in the filtered ESPN data
   for (let i = 0; i < bracketTeams.length / 2; i++) {
-     const t1 = bracketTeams[i * 2];
-     const t2 = bracketTeams[i * 2 + 1];
+     const mIdKey = `r0-m${i}`;
+     const gameId = matchIds[mIdKey];
 
-     const matchedGame = fifaMatchups.find(m => {
-       let homeName = m.homeTeam?.name;
-       let awayName = m.awayTeam?.name;
-       if (homeName === "Ivory Coast") homeName = "Côte d'Ivoire";
-       if (awayName === "Ivory Coast") awayName = "Côte d'Ivoire";
-       if (homeName === "Congo DR") homeName = "DR Congo";
-       if (awayName === "Congo DR") awayName = "DR Congo";
-       if (homeName === "Cape Verde") homeName = "Cabo Verde";
-       if (awayName === "Cape Verde") awayName = "Cabo Verde";
-
-       return (homeName === t1 && awayName === t2) || (homeName === t2 && awayName === t1);
-     });
+     const matchedGame = fifaMatchups.find(m => m.gameId === gameId);
 
      if (matchedGame) {
-       matchTimes[`r0-m${i}`] = new Date(matchedGame.startTime).toISOString();
+       matchTimes[mIdKey] = new Date(matchedGame.startTime).toISOString();
      }
   }
 
@@ -81,7 +66,6 @@ async function seed() {
     sport: "World Cup 2026",
     teams: bracketTeams,
     pointValues: {
-      "Round of 32": 10,
       "Round of 16": 20,
       "Quarter Finals": 40,
       "Semi Finals": 80,
@@ -94,6 +78,7 @@ async function seed() {
     openDate: Date.now(),
     lockDate: Date.now() + 86400000 * 30, // 30 days lock
     matchTimes,
+    matchIds,
     status: 'OPEN',
     createdAt: Date.now(),
     updatedAt: Date.now()
