@@ -18,14 +18,14 @@ export function BracketsPage() {
   useEffect(() => {
     async function fetchBracket() {
                 const defaultTeams = [
-          "Colombia", "Ghana",
-          "Canada", "Morocco",
-          "Paraguay", "France",
-          "Brazil", "Norway",
+          "Round of 32 1 Winner", "Round of 32 2 Winner",
+          "Round of 32 3 Winner", "Round of 32 4 Winner",
+          "Round of 32 5 Winner", "Round of 32 6 Winner",
           "Round of 32 7 Winner", "Round of 32 8 Winner",
-          "Round of 32 11 Winner", "Round of 32 12 Winner",
           "Round of 32 9 Winner", "Round of 32 10 Winner",
-          "Round of 32 14 Winner", "Round of 32 16 Winner"
+          "Round of 32 11 Winner", "Round of 32 12 Winner",
+          "Round of 32 13 Winner", "Round of 32 14 Winner",
+          "Round of 32 15 Winner", "Round of 32 16 Winner"
         ];
 
 
