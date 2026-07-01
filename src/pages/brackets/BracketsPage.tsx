@@ -17,36 +17,39 @@ export function BracketsPage() {
 
   useEffect(() => {
     async function fetchBracket() {
-        const defaultTeams = [
-          "Germany", "France",
-          "South Africa", "Morocco",
-          "Portugal", "Spain",
-          "USA", "Belgium",
-          "Brazil", "Côte d'Ivoire",
-          "Mexico", "England",
-          "Argentina", "Australia",
-          "Switzerland", "Colombia"
+                const defaultTeams = [
+          "Colombia", "Ghana",
+          "Canada", "Morocco",
+          "Paraguay", "France",
+          "Brazil", "Norway",
+          "Round of 32 7 Winner", "Round of 32 8 Winner",
+          "Round of 32 11 Winner", "Round of 32 12 Winner",
+          "Round of 32 9 Winner", "Round of 32 10 Winner",
+          "Round of 32 14 Winner", "Round of 32 16 Winner"
         ];
 
 
-        // Create matchTimes for default bracket to prevent everything from locking instantly if not seeded
+                // Create matchTimes for default bracket to prevent everything from locking instantly if not seeded
         const matchTimes: Record<string, string> = {
-          'r0-m0': '2026-06-29T17:30:00.000Z',
-          'r0-m1': '2026-06-30T18:00:00.000Z',
-          'r0-m2': '2026-06-28T16:00:00.000Z',
-          'r0-m3': '2026-06-29T22:00:00.000Z',
-          'r0-m4': '2026-07-02T20:00:00.000Z',
-          'r0-m5': '2026-07-02T16:00:00.000Z',
-          'r0-m6': '2026-07-01T21:00:00.000Z',
-          'r0-m7': '2026-07-01T17:00:00.000Z',
-          'r0-m8': '2026-06-29T14:00:00.000Z',
-          'r0-m9': '2026-06-30T14:00:00.000Z',
-          'r0-m10': '2026-06-30T22:00:00.000Z',
-          'r0-m11': '2026-07-01T13:00:00.000Z',
-          'r0-m12': '2026-07-03T19:00:00.000Z',
-          'r0-m13': '2026-07-03T15:00:00.000Z',
-          'r0-m14': '2026-07-03T00:00:00.000Z',
-          'r0-m15': '2026-07-03T22:30:00.000Z',
+          'r0-m0': '2026-07-04T01:30:00.000Z',
+          'r0-m1': '2026-07-04T17:00:00.000Z',
+          'r0-m2': '2026-07-04T21:00:00.000Z',
+          'r0-m3': '2026-07-05T20:00:00.000Z',
+          'r0-m4': '2026-07-06T00:00:00.000Z',
+          'r0-m5': '2026-07-06T19:00:00.000Z',
+          'r0-m6': '2026-07-07T00:00:00.000Z',
+          'r0-m7': '2026-07-07T16:00:00.000Z'
+        };
+
+        const matchIds: Record<string, string> = {
+          'r0-m0': '760501',
+          'r0-m1': '760502',
+          'r0-m2': '760503',
+          'r0-m3': '760504',
+          'r0-m4': '760505',
+          'r0-m5': '760506',
+          'r0-m6': '760507',
+          'r0-m7': '760509'
         };
 
         const defaultBracket = {
@@ -55,6 +58,7 @@ export function BracketsPage() {
           sport: "World Cup 2026",
           teams: defaultTeams,
           matchTimes,
+          matchIds,
 
           pointValues: {
             "Round of 16": 20,
@@ -85,6 +89,7 @@ export function BracketsPage() {
               // Fallback to default teams/matchTimes if missing in the db document
               teams: data.teams && data.teams.length > 0 ? data.teams : defaultBracket.teams,
               matchTimes: data.matchTimes && Object.keys(data.matchTimes).length > 0 ? data.matchTimes : defaultBracket.matchTimes,
+              matchIds: data.matchIds && Object.keys(data.matchIds).length > 0 ? data.matchIds : defaultBracket.matchIds,
               pointValues: data.pointValues && Object.keys(data.pointValues).length > 0 ? data.pointValues : defaultBracket.pointValues,
             });
           } else {
@@ -106,6 +111,7 @@ export function BracketsPage() {
               // Fallback to default teams/matchTimes if missing in the db document
               teams: data.teams && data.teams.length > 0 ? data.teams : defaultBracket.teams,
               matchTimes: data.matchTimes && Object.keys(data.matchTimes).length > 0 ? data.matchTimes : defaultBracket.matchTimes,
+              matchIds: data.matchIds && Object.keys(data.matchIds).length > 0 ? data.matchIds : defaultBracket.matchIds,
               pointValues: data.pointValues && Object.keys(data.pointValues).length > 0 ? data.pointValues : defaultBracket.pointValues,
             });
           } else {
