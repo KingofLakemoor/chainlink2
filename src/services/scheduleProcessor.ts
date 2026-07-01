@@ -72,6 +72,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
       const matchupsToSyncToPickem: any[] = [];
       const scrapedGameIds = new Set<string>();
 
+      let fifaBracketUpdates: Record<string, { oldHome: string, newHome: string, oldAway: string, newAway: string }> = {};
+
       for (const scrapedMatchup of response.data) {
         if (scrapedMatchup.isRawPGAData) {
           const competitors = scrapedMatchup.competition.competitors || [];
@@ -516,6 +518,23 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               updatedAt: updateData.updatedAt
             };
 
+            if (scrapedMatchup.league === 'FIFA') {
+               const oldHomeName = existingData.homeTeam?.name;
+               const newHomeName = scrapedMatchup.homeTeam?.name;
+               const oldAwayName = existingData.awayTeam?.name;
+               const newAwayName = scrapedMatchup.awayTeam?.name;
+
+               if ((oldHomeName && newHomeName && oldHomeName !== newHomeName && oldHomeName.includes("Winner")) ||
+                   (oldAwayName && newAwayName && oldAwayName !== newAwayName && oldAwayName.includes("Winner"))) {
+                   fifaBracketUpdates[gameId] = {
+                       oldHome: oldHomeName,
+                       newHome: newHomeName,
+                       oldAway: oldAwayName,
+                       newAway: newAwayName
+                   };
+               }
+            }
+
             Object.keys(flattenedUpdate).forEach(key => flattenedUpdate[key] === undefined && delete flattenedUpdate[key]);
 
             if (existingData.status === 'STATUS_SCHEDULED' &&
@@ -663,6 +682,75 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
 
       if (opCount > 0) {
         await batch.commit();
+      }
+
+      if (Object.keys(fifaBracketUpdates).length > 0) {
+          try {
+              const bracketRef = adminDb.collection('brackets').doc('world-cup-2026');
+              const bracketDoc = await bracketRef.get();
+              if (bracketDoc.exists) {
+                  const bracketData = bracketDoc.data()!;
+                  let teamsChanged = false;
+                  const newTeams = [...(bracketData.teams || [])];
+
+                  const nameMap: Record<string, string> = {};
+
+                  for (const [gameId, update] of Object.entries(fifaBracketUpdates)) {
+                      if (update.oldHome && update.newHome && update.oldHome !== update.newHome) {
+                          nameMap[update.oldHome] = update.newHome;
+                      }
+                      if (update.oldAway && update.newAway && update.oldAway !== update.newAway) {
+                          nameMap[update.oldAway] = update.newAway;
+                      }
+                  }
+
+                  for (let i = 0; i < newTeams.length; i++) {
+                      if (nameMap[newTeams[i]]) {
+                          newTeams[i] = nameMap[newTeams[i]];
+                          teamsChanged = true;
+                      }
+                  }
+
+                  if (teamsChanged) {
+                      await bracketRef.update({ teams: newTeams, updatedAt: Date.now() });
+
+                      const predictionsSnap = await adminDb.collection('bracketGamePredictions')
+                          .where('bracketId', '==', 'world-cup-2026')
+                          .get();
+
+                      let predBatch = adminDb.batch();
+                      let predOpCount = 0;
+
+                      for (const predDoc of predictionsSnap.docs) {
+                          const pData = predDoc.data();
+                          let selectionsChanged = false;
+                          const newSelections = { ...(pData.selections || {}) };
+
+                          for (const [mId, pickedTeam] of Object.entries(newSelections)) {
+                              if (typeof pickedTeam === 'string' && nameMap[pickedTeam]) {
+                                  newSelections[mId] = nameMap[pickedTeam];
+                                  selectionsChanged = true;
+                              }
+                          }
+
+                          if (selectionsChanged) {
+                              predBatch.update(predDoc.ref, { selections: newSelections, updatedAt: Date.now() });
+                              predOpCount++;
+                              if (predOpCount >= 500) {
+                                  await predBatch.commit();
+                                  predBatch = adminDb.batch();
+                                  predOpCount = 0;
+                              }
+                          }
+                      }
+                      if (predOpCount > 0) {
+                          await predBatch.commit();
+                      }
+                  }
+              }
+          } catch (err) {
+              console.error("[Sync] Error updating FIFA bracket placeholder teams:", err);
+          }
       }
 
       if (matchupsToGrade.length > 0) {
