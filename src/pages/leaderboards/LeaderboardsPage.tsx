@@ -178,12 +178,15 @@ export default function LeaderboardsPage() {
         const usersData = await usersRes.json();
         const usersList = usersData.users || [];
 
-        const activePicksMap = new Map();
+        const userPicksMap = new Map<string, any[]>();
         const pendingMatchupIds = new Set<string>();
 
         pendingPicksSnap.docs.forEach(doc => {
             const pick = doc.data() as any;
-            activePicksMap.set(pick.userId, pick);
+            if (!userPicksMap.has(pick.userId)) {
+                userPicksMap.set(pick.userId, []);
+            }
+            userPicksMap.get(pick.userId)!.push(pick);
             if (pick.matchupId) {
                pendingMatchupIds.add(pick.matchupId);
             }
@@ -250,15 +253,26 @@ export default function LeaderboardsPage() {
             const winRate = total > 0 ? (wins / total) * 100 : 0;
 
             let nextPickText = 'NO PICK';
-            const userPick = activePicksMap.get(userData.id);
-            if (userPick) {
-                const matchup = matchupsMap.get(userPick.matchupId);
-                if (matchup) {
-                    if (matchup.status === 'STATUS_SCHEDULED') {
-                        nextPickText = 'PICK IN';
-                    } else {
-                        nextPickText = userPick.pick?.name || userPick.pick?.id || 'NO PICK';
+            const userPicks = userPicksMap.get(userData.id);
+            if (userPicks && userPicks.length > 0) {
+                let hasScheduled = false;
+                let activePickToShow = null;
+
+                for (const pick of userPicks) {
+                    const matchup = matchupsMap.get(pick.matchupId);
+                    if (matchup) {
+                        if (matchup.status === 'STATUS_SCHEDULED') {
+                            hasScheduled = true;
+                        } else {
+                            activePickToShow = pick;
+                        }
                     }
+                }
+
+                if (activePickToShow) {
+                    nextPickText = activePickToShow.pick?.name || activePickToShow.pick?.id || 'NO PICK';
+                } else if (hasScheduled) {
+                    nextPickText = 'PICK IN';
                 }
             }
 
