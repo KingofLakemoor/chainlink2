@@ -145,8 +145,8 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
 
   const isMatchLocked = (round: number, matchId: string) => {
     const now = new Date();
-    // The entire bracket locks when the Round of 16 starts (July 4th at 2 PM AZ time = 21:00:00Z)
-    const globalLock = new Date('2026-07-04T21:00:00Z');
+    // The entire bracket locks when the Round of 16 starts (July 4th at 10 AM AZ time = 17:00:00Z)
+    const globalLock = new Date('2026-07-04T17:00:00Z');
     return now > globalLock;
   };
 
