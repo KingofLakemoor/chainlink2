@@ -292,7 +292,7 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
 
       <div className="bg-[#1a1a1a] border border-[#27272a] rounded-xl p-4 mb-6 w-full max-w-2xl text-center">
         <p className="text-zinc-300 text-sm">
-          <strong className="text-white">Lock Time:</strong> The entire bracket locks on July 4th at 2:00 PM AZ time.
+          <strong className="text-white">Lock Time:</strong> The entire bracket locks on July 4th at 10:00 AM AZ time.
         </p>
       </div>
 
