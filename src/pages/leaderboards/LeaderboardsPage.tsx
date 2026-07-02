@@ -387,7 +387,8 @@ export default function LeaderboardsPage() {
     valueLabel: string,
     valueColorClass: string,
     Icon: any,
-    iconColorClass: string
+    iconColorClass: string,
+    emptyHelpText?: string
   ) => {
     if (!player) {
       return (
@@ -398,6 +399,7 @@ export default function LeaderboardsPage() {
           <div>
             <p className="text-xs text-zinc-500 uppercase tracking-wider font-bold mb-1">{title}</p>
             <p className="text-zinc-400 font-bold">N/A</p>
+            {emptyHelpText && <p className="text-[10px] text-zinc-500 mt-0.5">{emptyHelpText}</p>}
           </div>
         </div>
       );
@@ -539,7 +541,8 @@ export default function LeaderboardsPage() {
           `${topWinRate?.winRate?.toFixed(1) || 0}%`,
           "text-cyan-500",
           Percent,
-          "bg-cyan-500/10 text-cyan-500"
+          "bg-cyan-500/10 text-cyan-500",
+          "Minimum 10 Picks"
         )}
       </div>
 
