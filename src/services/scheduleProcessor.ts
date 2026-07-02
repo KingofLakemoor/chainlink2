@@ -524,8 +524,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                const oldAwayName = existingData.awayTeam?.name;
                const newAwayName = scrapedMatchup.awayTeam?.name;
 
-               if ((oldHomeName && newHomeName && oldHomeName !== newHomeName && oldHomeName.includes("Winner")) ||
-                   (oldAwayName && newAwayName && oldAwayName !== newAwayName && oldAwayName.includes("Winner"))) {
+               if ((oldHomeName && newHomeName && oldHomeName !== newHomeName) ||
+                   (oldAwayName && newAwayName && oldAwayName !== newAwayName)) {
                    fifaBracketUpdates[gameId] = {
                        oldHome: oldHomeName,
                        newHome: newHomeName,
