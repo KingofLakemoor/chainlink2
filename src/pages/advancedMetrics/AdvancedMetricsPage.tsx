@@ -7,6 +7,7 @@ import { cn } from '../../lib/utils';
 import { FirebaseImage } from '../../components/ui/FirebaseImage';
 import LifetimeStats from '../mypicks/LifetimeStats';
 import { useNavigate } from 'react-router-dom';
+import { TeamInsights } from './TeamInsights';
 
 export default function AdvancedMetricsPage() {
 const fetchMatchupsForPicks = async (fetchedPicks: any[]) => {
@@ -35,7 +36,7 @@ const fetchMatchupsForPicks = async (fetchedPicks: any[]) => {
 
   const { user, profile } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'ALL_TIME' | 'MEDALS' | 'LEAGUE_STATS'>('ALL_TIME');
+  const [activeTab, setActiveTab] = useState<'ALL_TIME' | 'MEDALS' | 'LEAGUE_STATS' | 'TEAM_INSIGHTS'>('ALL_TIME');
 
   // States for All Time Picks
   const [picks, setPicks] = useState<any[]>([]);
@@ -232,11 +233,21 @@ const fetchMatchupsForPicks = async (fetchedPicks: any[]) => {
           >
             Stats By League
           </button>
+          <button
+            onClick={() => setActiveTab('TEAM_INSIGHTS')}
+            className={cn("px-4 py-1.5 text-sm font-medium rounded-md transition-colors whitespace-nowrap", activeTab === 'TEAM_INSIGHTS' ? "bg-zinc-800 text-white" : "text-zinc-400 hover:text-zinc-200")}
+          >
+            Team Insights
+          </button>
         </div>
       </div>
 
       {activeTab === 'LEAGUE_STATS' && (
         <LifetimeStats userStats={profile?.statsByLeague || {}} />
+      )}
+
+      {activeTab === 'TEAM_INSIGHTS' && (
+        <TeamInsights />
       )}
 
       {activeTab === 'MEDALS' && (
