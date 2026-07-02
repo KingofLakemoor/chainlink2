@@ -444,7 +444,7 @@ export default function ProfilePage() {
 
       {/* Profile Header */}
       <div className={`bg-[#121212] border border-zinc-800 rounded-2xl p-6 md:p-10 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden ${
-        BannerComponent ? '' : (equippedBannerImage || '')
+        BannerComponent || equippedBannerImage?.startsWith('/') ? '' : (equippedBannerImage || '')
       }`}>
          {/* Render WebGL banner if applicable */}
          {BannerComponent && (
