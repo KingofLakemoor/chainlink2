@@ -1616,5 +1616,19 @@
     "preview": "",
     "order": 106,
     "collectionId": ""
+  },
+  {
+    "id": "banner_fourth_of_july_hero",
+    "name": "Fourth of July Hero",
+    "description": "A patriotic hero soaring over the city skyline.",
+    "cost": 5000,
+    "type": "PROFILE_BANNER",
+    "active": true,
+    "forSale": true,
+    "image": "/images/fourth_of_july_hero.png",
+    "featured": true,
+    "preview": "/images/fourth_of_july_hero.png",
+    "order": 2,
+    "collectionId": ""
   }
 ]

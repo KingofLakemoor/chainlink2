@@ -312,9 +312,11 @@ export default function ShopPage() {
                 <div className="absolute inset-0">
                   {React.createElement(ProfileBannerMap[item.image], { isStatic: false })}
                 </div>
-              ) : (
-                <div className={`absolute inset-0 ${item.image || 'bg-zinc-800'}`}></div>
-              )
+              ) : item.image?.startsWith('/') ? (
+                  <img loading="lazy" src={item.image} alt={item.name} className="absolute inset-0 w-full h-full object-cover" />
+                ) : (
+                  <div className={`absolute inset-0 ${item.image || 'bg-zinc-800'}`}></div>
+                )
             )}
             {item.type === 'AVATAR_RING' && (
               <div className="relative w-16 h-16 flex items-center justify-center z-10">
