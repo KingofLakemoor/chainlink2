@@ -785,11 +785,12 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                 updatedAt: Date.now()
               };
 
-              if (pData.status !== updateData.status ||
+              const isStatusOrScoreChanged = pData.status !== updateData.status ||
                   pData.statusDesc !== updateData.statusDesc ||
                   pData.homeTeam?.score !== updateData['homeTeam.score'] ||
-                  pData.awayTeam?.score !== updateData['awayTeam.score']) {
+                  pData.awayTeam?.score !== updateData['awayTeam.score'];
 
+              if (isStatusOrScoreChanged) {
                 pickemBatch.update(doc.ref, updateData);
                 pickemOpCount++;
 
@@ -798,8 +799,10 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                   pickemBatch = adminDb.batch();
                   pickemOpCount = 0;
                 }
+              }
 
-                if (updateData.status === 'STATUS_FINAL' || updateData.status === 'STATUS_POSTPONED') {
+              if (updateData.status === 'STATUS_FINAL' || updateData.status === 'STATUS_POSTPONED') {
+                if (isStatusOrScoreChanged) {
                   pickemMatchupsToGrade.push({
                     ...pData,
                     status: matchup.status,
@@ -808,6 +811,24 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                     awayTeam: { ...(pData.awayTeam || {}), score: matchup.awayTeam?.score ?? 0 },
                     id: doc.id
                   });
+                } else {
+                  // If status/score didn't change but game is final, check for pending picks to retry
+                  const pendingPicksSnap = await adminDb.collection('pickemPicks')
+                    .where('matchupId', '==', doc.id)
+                    .where('status', '==', 'PENDING')
+                    .limit(1)
+                    .get();
+
+                  if (!pendingPicksSnap.empty) {
+                    pickemMatchupsToGrade.push({
+                      ...pData,
+                      status: matchup.status,
+                      statusDesc: matchup.statusDesc,
+                      homeTeam: { ...(pData.homeTeam || {}), score: matchup.homeTeam?.score ?? 0 },
+                      awayTeam: { ...(pData.awayTeam || {}), score: matchup.awayTeam?.score ?? 0 },
+                      id: doc.id
+                    });
+                  }
                 }
               }
             }
