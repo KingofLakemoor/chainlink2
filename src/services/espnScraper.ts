@@ -482,12 +482,23 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
             }
           }
 
-          const homeScore = parseFloat(home.score !== undefined && home.score !== null && home.score !== "" ? home.score : "0");
-          const awayScore = parseFloat(away.score !== undefined && away.score !== null && away.score !== "" ? away.score : "0");
+          let homeScore = parseFloat(home.score !== undefined && home.score !== null && home.score !== "" ? home.score : "0");
+          let awayScore = parseFloat(away.score !== undefined && away.score !== null && away.score !== "" ? away.score : "0");
 
           let rawStatus = competition.status?.type?.name || "STATUS_SCHEDULED";
           let finalStatusDesc = competition.status?.type?.shortDetail || "Upcoming";
           let finalStatus = "STATUS_SCHEDULED";
+
+          if (league === "FIFA" && (competition.status?.type?.completed === true || competition.status?.type?.name === "STATUS_FINAL" || MATCHUP_FINAL_STATUSES.includes(competition.status?.type?.name || "") || competition.status?.type?.shortDetail?.toLowerCase().includes("final") || competition.status?.type?.detail?.toLowerCase().includes("final"))) {
+              let calculatedHomeScore = home.linescores ? home.linescores.filter((ls: any) => ls.winner === true).length : homeScore;
+              let calculatedAwayScore = away.linescores ? away.linescores.filter((ls: any) => ls.winner === true).length : awayScore;
+
+              if (home.winner === true && calculatedHomeScore <= calculatedAwayScore) {
+                  homeScore = awayScore + 1;
+              } else if (away.winner === true && calculatedAwayScore <= calculatedHomeScore) {
+                  awayScore = homeScore + 1;
+              }
+          }
 
           const descLower = finalStatusDesc.toLowerCase();
           const detailLower = (competition.status?.type?.detail || "").toLowerCase();
@@ -544,13 +555,13 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                id: String(home.id),
                name: home.team.name || "Home Team",
                image: (league as any === "CRICKET" ? MLC_LOGOS[String(home.id)] : undefined) || home.team.logo || "/icons/icon-256x256.png",
-               score: parseFloat(home.score !== undefined && home.score !== null && home.score !== "" ? home.score : "0")
+               score: homeScore
              },
              awayTeam: {
                id: String(away.id),
                name: away.team.name || "Away Team",
                image: (league as any === "CRICKET" ? MLC_LOGOS[String(away.id)] : undefined) || away.team.logo || "/icons/icon-256x256.png",
-               score: parseFloat(away.score !== undefined && away.score !== null && away.score !== "" ? away.score : "0")
+               score: awayScore
              },
              cost: 0,
              metadata: {

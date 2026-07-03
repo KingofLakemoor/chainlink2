@@ -553,7 +553,9 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                 for (const pickDoc of pendingPicksSnap.docs) {
                     const pickData = pickDoc.data();
                     const userPicksSnap = await adminDb.collection('picks').where('userId', '==', pickData.userId).where('status', '==', 'PENDING').orderBy('createdAt', 'asc').get();
-                    if (userPicksSnap.size > 1 && userPicksSnap.docs[1].id === pickDoc.id) {
+
+                    const pickIndex = userPicksSnap.docs.findIndex(doc => doc.id === pickDoc.id);
+                    if (pickIndex > 0) {
                         batch.delete(pickDoc.ref);
                         const userRef = adminDb.collection('users').doc(pickData.userId);
                         const userDoc = await userRef.get();
