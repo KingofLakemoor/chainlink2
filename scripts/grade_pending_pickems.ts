@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { adminDb } from '../src/lib/firebase-admin.js';
 import { gradePickemMatchups } from '../src/services/pickemGrader.js';
 
