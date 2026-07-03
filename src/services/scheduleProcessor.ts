@@ -684,7 +684,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
         await batch.commit();
       }
 
-      if (Object.keys(fifaBracketUpdates).length > 0) {
+      const hasFifaData = response.data.some(m => m.league === 'FIFA');
+      if (Object.keys(fifaBracketUpdates).length > 0 || hasFifaData) {
           try {
               const bracketRef = adminDb.collection('brackets').doc('world-cup-2026');
               const bracketDoc = await bracketRef.get();
@@ -701,6 +702,26 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                       }
                       if (update.oldAway && update.newAway && update.oldAway !== update.newAway) {
                           nameMap[update.oldAway] = update.newAway;
+                      }
+                  }
+
+                  // Secondary check: Compare bracket teams directly against scraped data
+                  // to catch cases where the matchups collection was already updated but the bracket wasn't.
+                  if (bracketData.matchIds) {
+                      for (let i = 0; i < newTeams.length / 2; i++) {
+                          const mIdKey = `r0-m${i}`;
+                          const gameId = bracketData.matchIds[mIdKey];
+                          const matchedGame = response.data.find(m => m.gameId === gameId && m.league === 'FIFA');
+                          if (matchedGame) {
+                              const currentHome = newTeams[i * 2];
+                              const currentAway = newTeams[i * 2 + 1];
+                              if (currentHome && (currentHome.includes('Winner') || currentHome.includes('TBD')) && matchedGame.homeTeam?.name && matchedGame.homeTeam.name !== currentHome && !matchedGame.homeTeam.name.includes('Winner') && !matchedGame.homeTeam.name.includes('TBD')) {
+                                  nameMap[currentHome] = matchedGame.homeTeam.name;
+                              }
+                              if (currentAway && (currentAway.includes('Winner') || currentAway.includes('TBD')) && matchedGame.awayTeam?.name && matchedGame.awayTeam.name !== currentAway && !matchedGame.awayTeam.name.includes('Winner') && !matchedGame.awayTeam.name.includes('TBD')) {
+                                  nameMap[currentAway] = matchedGame.awayTeam.name;
+                              }
+                          }
                       }
                   }
 
