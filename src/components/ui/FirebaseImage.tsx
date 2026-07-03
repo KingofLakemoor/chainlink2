@@ -44,6 +44,7 @@ export function FirebaseImage({ src, fallback, ...props }: FirebaseImageProps) {
           }
 
           adjustedSrc = adjustedSrc.replace(/sponsors\/scriptless\.png/i, "Sponsors/scriptless.png");
+          adjustedSrc = adjustedSrc.replace(/^achievements\//i, "Achievements/");
           const imageRef = ref(storage, adjustedSrc);
           const url = await getDownloadURL(imageRef);
           if (isMounted) {
