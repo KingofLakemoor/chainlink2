@@ -113,7 +113,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
       case "MLB": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${date}`);
       case "MLS": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard?dates=${date}`);
       case "EPL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/scoreboard?dates=${date}`);
-      case "FIFA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${date}&limit=300`);
+      case "FIFA": return [`https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${new Date().getFullYear()}&limit=300`];
       case "FRA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/fra.1/scoreboard?dates=${date}`);
       case "TUR": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/tur.1/scoreboard?dates=${date}`);
       case "RPL": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/rus.1/scoreboard?dates=${date}`);
@@ -138,7 +138,7 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
     case "MLB": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=${date}`);
     case "MLS": return [`https://cdn.espn.com/core/soccer/schedule/_/league/usa.1??dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "EPL": return [`https://cdn.espn.com/core/soccer/schedule/_/league/eng.1??dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
-    case "FIFA": return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${date}&limit=300`);
+    case "FIFA": return [`https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${year}&limit=300`];
     case "FRA": return [`https://cdn.espn.com/core/soccer/schedule/_/league/fra.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "TUR": return [`https://cdn.espn.com/core/soccer/schedule/_/league/tur.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
     case "RPL": return [`https://cdn.espn.com/core/soccer/schedule/_/league/rus.1?dates=${year}&xhr=1&render=false&device=desktop&userab=18`];
