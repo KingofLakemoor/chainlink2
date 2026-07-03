@@ -329,6 +329,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                   batch = adminDb.batch();
                   opCount = 0;
                 }
+              } else if (data.status === 'STATUS_FINAL' || data.status === 'STATUS_POSTPONED') {
+                matchupsToSyncToPickem.push({ ...data, id: existingGameId, gameId: existingGameId });
               }
             }
           }
@@ -609,6 +611,8 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               matchupsToGrade.push({ ...existingData, ...updateData, gameId: scrapedMatchup.gameId, id: gameId });
             }
             matchupsToSyncToPickem.push({ ...existingData, ...updateData, gameId: scrapedMatchup.gameId, id: gameId });
+          } else if (existingData.status === 'STATUS_FINAL' || existingData.status === 'STATUS_POSTPONED') {
+            matchupsToSyncToPickem.push({ ...existingData, gameId: scrapedMatchup.gameId, id: gameId });
           }
         } else {
           const newDocRef = adminDb.collection("matchups").doc(gameId);
