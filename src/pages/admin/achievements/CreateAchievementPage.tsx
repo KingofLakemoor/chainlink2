@@ -231,7 +231,7 @@ export default function CreateAchievementPage() {
 
                           setIsUploading(true);
                           try {
-                            const fileRef = ref(getStorage(app), `achievements/${Date.now()}_${file.name}`);
+                            const fileRef = ref(getStorage(app), `Achievements/${Date.now()}_${file.name}`);
                             await uploadBytes(fileRef, file);
                             const downloadUrl = await getDownloadURL(fileRef);
                             form.setValue("image", downloadUrl, { shouldValidate: true, shouldDirty: true, shouldTouch: true });
