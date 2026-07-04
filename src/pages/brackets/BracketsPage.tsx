@@ -6,6 +6,21 @@ import { collection, query, where, getDocs, doc, getDoc, limit } from 'firebase/
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../lib/auth-context';
 
+const getTeamAbbreviation = (team: string) => {
+  if (!team) return "";
+  const specialCases: Record<string, string> = {
+    "United States": "USA",
+    "United Kingdom": "UK",
+    "South Korea": "KOR",
+    "North Korea": "PRK",
+    "Saudi Arabia": "KSA",
+    "Costa Rica": "CRC",
+    "New Zealand": "NZL",
+    "South Africa": "RSA",
+  };
+  return specialCases[team] || team.substring(0, 3).toUpperCase();
+};
+
 export function BracketsPage() {
   const { bracketId } = useParams<{ bracketId: string }>();
   const { user } = useAuth();
@@ -118,7 +133,7 @@ export function BracketsPage() {
         );
         const pSnap = await getDocs(pQuery);
 
-        const participantStats: Record<string, { points: number, potentialPoints: number, uid: string }> = {};
+        const participantStats: Record<string, { points: number, potentialPoints: number, uid: string, finalFour?: string[], champion?: string }> = {};
 
         const pointsMap: Record<string, number> = {
           "0": bracket.pointValues?.["Round of 16"] || 20,
@@ -149,8 +164,16 @@ export function BracketsPage() {
              }
           }
           const uid = data.userId || d.id.split('_')[1];
+          const finalFour = [
+            sels['r1-m0'],
+            sels['r1-m1'],
+            sels['r1-m2'],
+            sels['r1-m3']
+          ].filter(Boolean) as string[];
+          const champion = sels['r3-m0'];
+
           if (uid) {
-            participantStats[uid] = { points: pts, potentialPoints: pot, uid };
+            participantStats[uid] = { points: pts, potentialPoints: pot, uid, finalFour, champion };
           }
         });
 
@@ -289,12 +312,21 @@ export function BracketsPage() {
                       <tr>
                         <th className="px-6 py-4 font-medium w-16 text-center">Rank</th>
                         <th className="px-6 py-4 font-medium">Participant</th>
+                        <th className="px-6 py-4 font-medium text-center">Final Four</th>
                         <th className="px-6 py-4 font-medium text-center">Points</th>
                         <th className="px-6 py-4 font-medium text-center">Potential</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-800/50">
-                      {leaderboardData.map((participant, index) => (
+                      {leaderboardData.map((participant, index) => {
+                        const actualR1Winners = [
+                          bracket?.results?.['r1-m0'],
+                          bracket?.results?.['r1-m1'],
+                          bracket?.results?.['r1-m2'],
+                          bracket?.results?.['r1-m3']
+                        ].filter(Boolean) as string[];
+
+                        return (
                         <tr
                           key={participant.uid}
                           className={`hover:bg-zinc-800/20 transition-colors`}
@@ -321,6 +353,37 @@ export function BracketsPage() {
                               )}
                             </div>
                           </td>
+                          <td className="px-6 py-4 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              {participant.finalFour?.map((team: string, i: number) => {
+                                const isEliminated = bracket?.eliminatedTeams?.includes(team);
+                                const isActualFinalFour = actualR1Winners.includes(team);
+                                const isChampion = team === participant.champion;
+
+                                let className = "text-[10px] font-bold px-1.5 py-0.5 rounded-sm ";
+
+                                if (isChampion) {
+                                  className += "border border-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.3)] ";
+                                } else {
+                                  className += "border border-transparent ";
+                                }
+
+                                if (isActualFinalFour) {
+                                  className += "text-green-500 ";
+                                } else if (isEliminated) {
+                                  className += "text-red-500 line-through opacity-80 ";
+                                } else {
+                                  className += "text-zinc-400 ";
+                                }
+
+                                return (
+                                  <span key={i} className={className} title={team}>
+                                    {getTeamAbbreviation(team)}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </td>
                           <td className="px-6 py-4 text-center font-bold text-white">
                             {participant.points}
                           </td>
@@ -328,7 +391,8 @@ export function BracketsPage() {
                             {participant.potentialPoints}
                           </td>
                         </tr>
-                      ))}
+                      );
+                    })}
                     </tbody>
                   </table>
                 </div>
