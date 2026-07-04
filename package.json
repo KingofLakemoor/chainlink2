@@ -17,7 +17,8 @@
     "seed-shop:new": "tsx scripts/seed_shop.ts --new-only",
     "seed-shop:changed": "tsx scripts/seed_shop.ts --changed-only",
     "seed-shop:force": "tsx scripts/seed_shop.ts --force",
-    "seed-bracket": "tsx scripts/seed_bracket.ts"
+    "seed-bracket": "tsx scripts/seed_bracket.ts",
+    "sync-bracket-pot": "tsx scripts/sync_bracket_pot.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
