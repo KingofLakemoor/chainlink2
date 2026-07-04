@@ -5,11 +5,11 @@ const defaultTeams = [
   "Canada", "Morocco",
   "Paraguay", "France",
   "Brazil", "Norway",
-  "Round of 32 7 Winner", "Round of 32 8 Winner",
-  "Round of 32 11 Winner", "Round of 32 12 Winner",
-  "Round of 32 9 Winner", "Round of 32 10 Winner",
-  "Round of 32 14 Winner", "Round of 32 16 Winner",
-  "Round of 32 13 Winner", "Round of 32 15 Winner"
+  "Mexico", "England",
+  "Portugal", "Spain",
+  "United States", "Belgium",
+  "Argentina", "Egypt",
+  "Switzerland", "Colombia"
 ];
 
 // Fallback match times corresponding to defaultTeams (r0-m0 to r0-m7)
