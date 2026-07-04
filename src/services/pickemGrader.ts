@@ -48,7 +48,13 @@ export async function gradeSinglePickemMatchup(matchup: any) {
   let winnerId: string | null = null;
   let isTie = false;
 
-  if (isPostponed) {
+  if (matchup.manualWinnerId !== undefined) {
+    if (matchup.manualWinnerId === 'PUSH') {
+      isTie = true;
+    } else {
+      winnerId = matchup.manualWinnerId;
+    }
+  } else if (isPostponed) {
     isTie = true; // Treats postponed as a push
   } else if (matchup.type === 'OVER_UNDER' && matchup.metadata?.overUnder !== undefined && matchup.metadata?.overUnder !== null) {
     const combinedScore = homeScore + awayScore;

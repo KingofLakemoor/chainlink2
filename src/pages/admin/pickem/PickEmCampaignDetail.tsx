@@ -280,8 +280,30 @@ export default function PickEmCampaignDetail() {
     }
   };
 
-  const handleGradeMatchup = async (matchupId: string) => {
-    if (!confirm('Are you sure you want to manually trigger grading for this game?')) return;
+  const handleGradeMatchup = async (m: any) => {
+    let promptMsg = `Manual Grading Options for ${m.title}:\n\n`;
+    if (m.type === 'OVER_UNDER') {
+      promptMsg += `1: OVER\n2: UNDER\n`;
+    } else {
+      promptMsg += `1: Home Win (${m.homeTeam?.name || 'Home'})\n2: Away Win (${m.awayTeam?.name || 'Away'})\n`;
+    }
+    promptMsg += `3: Push (Tie)\n4: Auto Grade\n\nEnter 1, 2, 3, or 4:`;
+
+    const action = window.prompt(promptMsg);
+    if (!action) return;
+
+    let manualWinnerId: string | undefined = undefined;
+    if (action === '1') manualWinnerId = m.type === 'OVER_UNDER' ? 'OVER' : m.homeTeam?.id;
+    else if (action === '2') manualWinnerId = m.type === 'OVER_UNDER' ? 'UNDER' : m.awayTeam?.id;
+    else if (action === '3') manualWinnerId = 'PUSH';
+    else if (action === '4') manualWinnerId = undefined;
+    else {
+      alert("Invalid option. Grading cancelled.");
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to trigger grading for this game${manualWinnerId ? ' with your manual selection' : ' automatically'}?`)) return;
+
     try {
         const res = await fetch('/api/admin/grade-pickem-matchup', {
             method: 'POST',
@@ -289,7 +311,7 @@ export default function PickEmCampaignDetail() {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
             },
-            body: JSON.stringify({ matchupId })
+            body: JSON.stringify({ matchupId: m.id, manualWinnerId })
         });
         const data = await res.json();
         if (data.success) {
@@ -473,7 +495,7 @@ export default function PickEmCampaignDetail() {
                       </button>
                     </td>
                     <td className="px-4 py-3 text-right flex items-center justify-end gap-2">
-                      <button onClick={() => handleGradeMatchup(m.id)} className="text-blue-500/70 hover:text-blue-500 p-2" title="Grade Matchup">
+                      <button onClick={() => handleGradeMatchup(m)} className="text-blue-500/70 hover:text-blue-500 p-2" title="Grade Matchup">
                          Grade
                       </button>
                       <button onClick={() => handleDeleteMatchup(m.id)} className="text-red-500/70 hover:text-red-500 p-2" title="Remove Matchup">
