@@ -7,7 +7,7 @@ import { League, LeagueResponse, scrapeLeagueSchedules } from './espnScraper.js'
 export { scrapeLeagueSchedules } from './espnScraper.js';
 import { gradeBrackets } from './bracketGrader.js';
 
-export async function syncLeagueSchedules(league: League, scoreboardOnly: boolean = false, specificDates?: string[]): Promise<LeagueResponse> {
+export async function syncLeagueSchedules(league: League, scoreboardOnly: boolean = false): Promise<LeagueResponse> {
   let scraperConfig: { maxMoneylineOdds?: number, sportOverrides?: Record<string, number> } | undefined = undefined;
   if (adminDb) {
     try {
@@ -20,7 +20,7 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
     }
   }
 
-  const response = await scrapeLeagueSchedules(league, scoreboardOnly, scraperConfig, specificDates);
+  const response = await scrapeLeagueSchedules(league, scoreboardOnly, scraperConfig);
 
   if (response.data && response.data.length > 0 && adminDb) {
     try {

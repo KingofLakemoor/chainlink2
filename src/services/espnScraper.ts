@@ -70,24 +70,18 @@ const MLC_LOGOS: Record<string, string> = {
   "1381360": "https://upload.wikimedia.org/wikipedia/en/thumb/d/db/Washington_Freedom_Logo.svg/250px-Washington_Freedom_Logo.svg.png"
 };
 
-export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = false, specificDates?: string[]) {
-  let dates: string[] = [];
+export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = false) {
+  const today = new Date();
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+  const theDayAfterTomorrow = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
 
-  if (specificDates && specificDates.length > 0) {
-    dates = specificDates;
-  } else {
-    const today = new Date();
-    const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
-    const theDayAfterTomorrow = new Date(today.getTime() + 2 * 24 * 60 * 60 * 1000);
-
-    const formatESTDate = (d: Date) => {
-      const str = d.toLocaleString("en-US", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" });
-      const [month, day, year] = str.split("/");
-      return `${year}${month}${day}`;
-    };
-    dates = [yesterday, today, tomorrow, theDayAfterTomorrow].map(formatESTDate);
-  }
+  const formatESTDate = (d: Date) => {
+    const str = d.toLocaleString("en-US", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" });
+    const [month, day, year] = str.split("/");
+    return `${year}${month}${day}`;
+  };
+  const dates = [yesterday, today, tomorrow, theDayAfterTomorrow].map(formatESTDate);
 
 
   // College basketball and PGA always use scoreboard
@@ -236,7 +230,7 @@ export async function fetchScheduleData(endpoint: string, league: League, isScor
   return scheduleData;
 }
 
-export async function scrapeLeagueSchedules(league: League, scoreboardOnly: boolean = false, scraperConfig?: { maxMoneylineOdds?: number, sportOverrides?: Record<string, number> }, specificDates?: string[]): Promise<LeagueResponse> {
+export async function scrapeLeagueSchedules(league: League, scoreboardOnly: boolean = false, scraperConfig?: { maxMoneylineOdds?: number, sportOverrides?: Record<string, number> }): Promise<LeagueResponse> {
   const response: LeagueResponse = {
     scoreMatchupsCreated: 0,
     existingMatchups: 0,
@@ -248,7 +242,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
 
   let endpoints: string[] = [];
   try {
-    endpoints = getScheduleEndpoints(league, scoreboardOnly, specificDates);
+    endpoints = getScheduleEndpoints(league, scoreboardOnly);
   } catch (err: any) {
     response.error = err.message;
     return response;
