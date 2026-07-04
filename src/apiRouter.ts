@@ -300,6 +300,15 @@ apiRouter.post("/shop/claim-daily", async (req, res) => {
       };
 
       transaction.update(userRef, updateData);
+      const logRef = adminDb.collection('linkTransactions').doc();
+      transaction.set(logRef, {
+        userId: uid,
+        username: profile.username || profile.name || 'Unknown User',
+        type: 'DAILY_CLAIM',
+        amount: 10,
+        description: 'Daily Links Claim',
+        createdAt: Date.now()
+      });
     });
 
     res.json({ success: true });
@@ -375,6 +384,17 @@ apiRouter.post('/stripe/webhook', express.raw({type: 'application/json'}), async
                  updatedAt: Date.now()
                });
             }
+             if (amountStr) {
+               const amount = parseInt(String(amountStr), 10);
+               const logRef = adminDb.collection('linkTransactions').doc();
+               transaction.set(logRef, {
+                 userId: uid,
+                 type: 'SHOP_PURCHASE_PACK',
+                 amount: amount,
+                 description: `Purchased ${amount} Links Pack`,
+                 createdAt: Date.now()
+               });
+             }
           } else if (itemType === 'premium') {
              updateData.premium = true;
           }
@@ -462,6 +482,15 @@ apiRouter.post("/link4/submit", async (req, res) => {
         }
 
         transaction.update(userRef, { links: currentLinks - cost });
+        const logRef = adminDb.collection('linkTransactions').doc();
+        transaction.set(logRef, {
+          userId: uid,
+          username: userData.username || userData.name || 'Unknown User',
+          type: 'LINK4_ENTRY',
+          amount: -cost,
+          description: 'Link4 Entry Fee',
+          createdAt: Date.now()
+        });
 
         transaction.set(pickRef, {
           segmentId,
@@ -635,6 +664,17 @@ apiRouter.post("/picks/cancel-pick", async (req, res) => {
         updateData.links = profile.links + refundAmount;
       }
       transaction.update(userRef, updateData);
+      if (refundAmount > 0) {
+        const logRef = adminDb.collection('linkTransactions').doc();
+        transaction.set(logRef, {
+          userId: uid,
+          username: profile.username || profile.name || 'Unknown User',
+          type: 'WAGER_REFUND_CANCEL',
+          amount: refundAmount,
+          description: 'Wager refunded due to user cancellation',
+          createdAt: Date.now()
+        });
+      }
     });
 
     res.json({ success: true });
@@ -704,6 +744,17 @@ apiRouter.post("/picks/make-pick", async (req, res) => {
         updateData.links = profile.links - matchCost;
       }
       transaction.update(userRef, updateData);
+      if (matchCost > 0) {
+        const logRef = adminDb.collection('linkTransactions').doc();
+        transaction.set(logRef, {
+          userId: uid,
+          username: profile.username || profile.name || 'Unknown User',
+          type: 'WAGER_PLACED',
+          amount: -matchCost,
+          description: 'Wager placed on pick',
+          createdAt: Date.now()
+        });
+      }
     });
 
     res.json({ success: true });
@@ -755,6 +806,15 @@ apiRouter.post("/brackets/enter", validateAuth, async (req, res) => {
 
       // Deduct links from user
       transaction.update(userRef, { links: currentLinks - cost });
+      const logRef = adminDb.collection('linkTransactions').doc();
+      transaction.set(logRef, {
+        userId: uid,
+        username: userData.username || userData.name || 'Unknown User',
+        type: 'BRACKET_ENTRY',
+        amount: -cost,
+        description: `Bracket Entry Fee for ${bracketData.name || bracketId}`,
+        createdAt: Date.now()
+      });
 
       // Add to total pot on bracket doc
       const currentPot = bracketData.totalPot || 0;
@@ -857,6 +917,15 @@ apiRouter.post("/shop/buy", async (req, res) => {
       };
 
       transaction.update(userRef, updateData);
+      const logRef = adminDb.collection('linkTransactions').doc();
+      transaction.set(logRef, {
+        userId: uid,
+        username: profile.username || profile.name || 'Unknown User',
+        type: 'SHOP_BUY_COSMETIC',
+        amount: -cost,
+        description: `Purchased cosmetic item: ${item.name}`,
+        createdAt: Date.now()
+      });
     });
 
     res.json({ success: true });
@@ -911,6 +980,16 @@ apiRouter.post("/shop/buy-merch", async (req, res) => {
       };
 
       transaction.update(userRef, updateData);
+
+      const logRef = adminDb.collection('linkTransactions').doc();
+      transaction.set(logRef, {
+        userId: uid,
+        username: profile.username || profile.name || 'Unknown User',
+        type: 'SHOP_BUY_MERCH',
+        amount: -cost,
+        description: `Purchased merch item: ${item.name}`,
+        createdAt: Date.now()
+      });
 
       const ordersRef = adminDb.collection('orders').doc();
       transaction.set(ordersRef, {

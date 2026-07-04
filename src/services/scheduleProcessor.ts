@@ -578,6 +578,16 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                         if (userDoc.exists && pickData.links > 0) {
                             const userData = userDoc.data()!;
                             batch.update(userRef, { links: (userData.links || 0) + pickData.links, updatedAt: Date.now() });
+                            const logRef = adminDb.collection('linkTransactions').doc();
+                            batch.set(logRef, {
+                              userId: pickData.userId,
+                              username: userData.username || userData.name || 'Unknown User',
+                              type: 'PICK_CANCELLED',
+                              amount: pickData.links,
+                              description: `Wager refunded for cancelled pick on ${updateData.title || (updateData.awayTeam?.name + ' @ ' + updateData.homeTeam?.name)}`,
+                              createdAt: Date.now()
+                            });
+                            opCount++;
                         }
                         opCount += 2;
 

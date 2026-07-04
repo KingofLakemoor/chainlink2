@@ -210,6 +210,15 @@ export async function payoutLink4Segment(segmentId: string) {
        if (userDoc.exists) {
           const userData = userDoc.data();
           transaction.update(userRef, { links: (userData.links || 0) + payoutAmount });
+          const logRef = adminDb.collection('linkTransactions').doc();
+          transaction.set(logRef, {
+            userId: winnerId,
+            username: userData.username || userData.name || 'Unknown User',
+            type: 'LINK4_WIN',
+            amount: payoutAmount,
+            description: `Won Link4 Segment`,
+            createdAt: Date.now()
+          });
 
           const notificationsRef = adminDb.collection('notifications').doc();
           transaction.set(notificationsRef, {

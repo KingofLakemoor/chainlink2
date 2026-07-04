@@ -33,6 +33,7 @@ const AdminPicksPage = React.lazy(() => import('./picks/AdminPicksPage'));
 const ReferralsAdminPage = React.lazy(() => import('./referrals/ReferralsAdminPage'));
 const UserCosmeticsAdminPage = React.lazy(() => import('./users/UserCosmeticsAdminPage'));
 const AddLinksAdminPage = React.lazy(() => import('./users/AddLinksAdminPage'));
+const LinkTransactionsAdminPage = React.lazy(() => import('./logs/LinkTransactionsAdminPage'));
 const PremiumStatusAdminPage = React.lazy(() => import('./users/PremiumStatusAdminPage'));
 const ScraperSettingsPage = React.lazy(() => import('./settings/ScraperSettingsPage'));
 const PrizeAdminPage = React.lazy(() => import('./prize/PrizeAdminPage'));
@@ -112,6 +113,7 @@ export default function AdminDashboard() {
                 <Route path="users" element={<GenericTable collectionName="users" />} />
                 <Route path="users/cosmetics" element={<UserCosmeticsAdminPage />} />
                 <Route path="users/links" element={<AddLinksAdminPage />} />
+                <Route path="logs/transactions" element={<LinkTransactionsAdminPage />} />
                 <Route path="premium" element={<PremiumStatusAdminPage />} />
                 <Route path="referrals" element={<ReferralsAdminPage />} />
           <Route path="prize" element={<PrizeAdminPage />} />
