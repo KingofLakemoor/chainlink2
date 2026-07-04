@@ -3,6 +3,7 @@ import { adminAuth, adminDb } from './lib/firebase-admin.js';
 import { scrapeLeagueSchedules } from './services/scheduleProcessor.js';
 import { gradeMatchups } from './services/grader.js';
 import { gradeLink4Matchups, payoutLink4Segment } from './services/link4Grader.js';
+import { gradePickemMatchups } from './services/pickemGrader.js';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock', {
@@ -238,6 +239,25 @@ apiRouter.post('/stripe/create-checkout-session', async (req, res) => {
     res.json({ success: true, id: session.id, url: session.url });
   } catch (e: any) {
     console.error("Create checkout session error:", e.message, e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+apiRouter.post("/admin/grade-pickem-matchup", validateAdmin, async (req, res) => {
+  try {
+    const { matchupId } = req.body;
+    if (!adminDb) return res.status(500).json({ success: false, error: "adminDb not initialized" });
+
+    const doc = await adminDb.collection('pickemMatchups').doc(matchupId).get();
+    if (!doc.exists) {
+       return res.status(404).json({ success: false, error: "Pick 'Em Matchup not found" });
+    }
+
+    const matchup = { ...doc.data(), id: doc.id };
+    await gradePickemMatchups([{ ...matchup, status: 'STATUS_FINAL' }]); // Force grade
+    res.json({ success: true });
+  } catch (e: any) {
+    console.error("Grade Pick 'Em matchup error:", e.message, e);
     res.status(500).json({ success: false, error: e.message });
   }
 });
