@@ -165,7 +165,7 @@ async function payoutBracket(bracketId: string, bracket: any, currentResults: an
   const topScore = scores[0].score;
   const winners = scores.filter(s => s.score === topScore);
 
-  const pot = Math.floor((bracket.totalPot || (predictionsSnap.size * (bracket.cost || 10))) * (bracket.prizePotPercent !== undefined ? bracket.prizePotPercent : 0.60));
+  const pot = Math.floor((bracket.totalPot ?? (predictionsSnap.size * (bracket.cost ?? 10))) * (bracket.prizePotPercent ?? 0.60));
 
   if (winners.length > 0 && pot > 0) {
       const payoutPerWinner = Math.floor(pot / winners.length);
