@@ -280,6 +280,26 @@ export default function PickEmCampaignDetail() {
     }
   };
 
+  const handleGradeMatchup = async (matchupId: string) => {
+    if (!confirm('Are you sure you want to manually trigger grading for this game?')) return;
+    try {
+        const res = await fetch('/api/admin/grade-pickem-matchup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ matchupId })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert('Matchup graded successfully!');
+        } else {
+            alert('Failed to grade picks: ' + (data.error || 'Unknown error'));
+        }
+    } catch (err: any) {
+        console.error('Error grading matchup:', err);
+        alert(`Failed to contact server for grading. Error: ${err.message}`);
+    }
+  };
+
   if (loading) return <div className="p-8">Loading...</div>;
   if (!campaign) return <div className="p-8">Campaign not found</div>;
 
@@ -449,7 +469,10 @@ export default function PickEmCampaignDetail() {
                         {m.type === "SPREAD" ? "ATS" : "STD"}
                       </button>
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-right flex items-center justify-end gap-2">
+                      <button onClick={() => handleGradeMatchup(m.id)} className="text-blue-500/70 hover:text-blue-500 p-2" title="Grade Matchup">
+                         Grade
+                      </button>
                       <button onClick={() => handleDeleteMatchup(m.id)} className="text-red-500/70 hover:text-red-500 p-2" title="Remove Matchup">
                         <Trash2 className="w-4 h-4" />
                       </button>

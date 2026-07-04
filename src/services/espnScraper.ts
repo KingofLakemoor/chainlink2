@@ -306,7 +306,7 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
                   const homeName = homeCompetitor?.athlete?.displayName || homeCompetitor?.team?.displayName || homeCompetitor?.team?.name || "";
                   const awayName = awayCompetitor?.athlete?.displayName || awayCompetitor?.team?.displayName || awayCompetitor?.team?.name || "";
 
-                  if (league !== "FIFA" && (homeName.includes("TBD") || awayName.includes("TBD"))) continue;
+                  if ((league as any) !== "FIFA" && (homeName.includes("TBD") || awayName.includes("TBD"))) continue;
 
                   let homeScore = homeCompetitor.linescores ? homeCompetitor.linescores.filter((ls: any) => ls.winner === true).length : 0;
                   let awayScore = awayCompetitor.linescores ? awayCompetitor.linescores.filter((ls: any) => ls.winner === true).length : 0;

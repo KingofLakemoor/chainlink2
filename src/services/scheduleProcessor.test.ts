@@ -85,7 +85,7 @@ describe('scheduleProcessor', () => {
             get: vi.fn().mockResolvedValue({ exists: true, data: () => ({}) })
          };
       }
-      if (colName === 'picks') {
+      if (colName === 'picks' || colName === 'pickemPicks') {
          return {
             where: vi.fn().mockReturnThis(),
             limit: vi.fn().mockReturnThis(),
@@ -96,6 +96,8 @@ describe('scheduleProcessor', () => {
       return {
           doc: vi.fn().mockImplementation((id) => ({ id, ref: { id, path: `${colName}/${id}` } })),
           where: vi.fn().mockReturnThis(),
+          limit: vi.fn().mockReturnThis(),
+          orderBy: vi.fn().mockReturnThis(),
           get: vi.fn().mockResolvedValue({ empty: true, docs: [] })
       };
     });
