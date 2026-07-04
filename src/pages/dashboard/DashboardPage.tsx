@@ -293,6 +293,9 @@ export default function DashboardPage() {
                <BannerComponent isStatic={false} />
             </div>
          )}
+         {!BannerComponent && equippedBannerImage?.startsWith('/') && (
+            <img src={equippedBannerImage} alt="Profile Banner" className="absolute inset-0 w-full h-full object-cover z-0" />
+         )}
          {!profile?.equippedCosmetics?.PROFILE_BANNER && (
             <div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5 pointer-events-none"></div>
          )}
