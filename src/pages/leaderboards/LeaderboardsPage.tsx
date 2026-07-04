@@ -421,11 +421,15 @@ export default function LeaderboardsPage() {
     const TitleComponent = titleImage ? TitleMap[titleImage || ''] : null;
 
     return (
-      <div className="bg-[#121212] border border-zinc-800 rounded-xl relative overflow-hidden group min-h-[220px] flex flex-col">
+      <div className={`bg-[#121212] border border-zinc-800 rounded-xl relative overflow-hidden group min-h-[220px] flex flex-col ${
+        BannerComponent || bannerImage?.startsWith('/') ? '' : (bannerImage || '')
+      }`}>
          {BannerComponent ? (
             <div className="absolute inset-0 z-0">
                <CosmeticsErrorBoundary fallback={<div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5 pointer-events-none"></div>}><BannerComponent isStatic={!animateCosmetics} /></CosmeticsErrorBoundary>
             </div>
+         ) : bannerImage?.startsWith('/') ? (
+            <img src={bannerImage} alt="Profile Banner" className="absolute inset-0 w-full h-full object-cover z-0" />
          ) : (
             <div className="absolute inset-0 bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_10%,transparent_80%)] opacity-5 pointer-events-none"></div>
          )}
