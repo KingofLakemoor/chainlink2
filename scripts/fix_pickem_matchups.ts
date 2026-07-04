@@ -1,5 +1,6 @@
 import { adminDb } from '../src/lib/firebase-admin.js';
 import { syncLeagueSchedules } from '../src/services/scheduleProcessor.js';
+import { gradePickemMatchups } from '../src/services/pickemGrader.js';
 
 async function run() {
   if (!adminDb) {
@@ -62,6 +63,23 @@ async function run() {
     } catch(err) {
         console.error(`Error syncing ${league}:`, err);
     }
+  }
+
+  console.log("Fetching recently updated pickem matchups to grade...");
+  const updatedSnaps = await adminDb.collection('pickemMatchups').get();
+  const pickemMatchupsToGrade: any[] = [];
+
+  for (const doc of updatedSnaps.docs) {
+      const data = doc.data();
+      if (data.status === 'STATUS_FINAL' || data.status === 'STATUS_POSTPONED') {
+          pickemMatchupsToGrade.push({ id: doc.id, ...data });
+      }
+  }
+
+  if (pickemMatchupsToGrade.length > 0) {
+      console.log(`Grading ${pickemMatchupsToGrade.length} pickem matchups...`);
+      await gradePickemMatchups(pickemMatchupsToGrade);
+      console.log("Grading complete.");
   }
 
   console.log("Done.");
