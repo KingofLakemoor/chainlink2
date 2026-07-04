@@ -1,6 +1,6 @@
 import { FirebaseImage } from '../../../components/ui/FirebaseImage';
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, doc, updateDoc, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, query, orderBy, setDoc } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 import { Button } from '../../../components/ui/button';
 import { Search, Link2 } from 'lucide-react';
@@ -37,6 +37,15 @@ export default function AddLinksAdminPage() {
       const userRef = doc(db, 'users', selectedUser.id);
       const newLinks = (selectedUser.links || 0) + amount;
       await updateDoc(userRef, { links: newLinks });
+      const logRef = doc(collection(db, 'linkTransactions'));
+      await setDoc(logRef, {
+        userId: selectedUser.id,
+        username: selectedUser.username || selectedUser.name || 'Unknown User',
+        type: 'ADMIN_MANUAL',
+        amount: amount,
+        description: `Admin explicitly added/removed links`,
+        createdAt: Date.now()
+      });
 
       // Update local state
       setUsers(prev => prev.map(u => u.id === selectedUser.id ? { ...u, links: newLinks } : u));

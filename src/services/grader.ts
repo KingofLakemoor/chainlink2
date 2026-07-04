@@ -221,7 +221,19 @@ export async function gradeSingleMatchup(matchup: any) {
               achievementId: ach.id,
               unlockedAt: Date.now()
             });
-            links += Number(ach.coins || ach.links || 0);
+            const achReward = Number(ach.coins || ach.links || 0);
+            links += achReward;
+            if (achReward > 0) {
+              const logRef = adminDb.collection('linkTransactions').doc();
+              transaction.set(logRef, {
+                userId: userId,
+                username: userData.username || userData.name || 'Unknown User',
+                type: 'ACHIEVEMENT_REWARD',
+                amount: achReward,
+                description: `Reward for achievement: ${ach.name}`,
+                createdAt: Date.now()
+              });
+            }
           }
         });
 
@@ -284,16 +296,37 @@ export async function gradeSingleMatchup(matchup: any) {
 
         let notifTitle = '';
         let notifBody = '';
+        let transactionType = '';
+        let transactionAmount = 0;
+        let transactionDesc = '';
 
         if (pickStatus === 'WIN') {
           notifTitle = 'Pick Won! 🎉';
           notifBody = `Your pick on ${pickedName} vs ${opponentName} won! You earned ${wager + (matchup.reward ?? 10)} links.`;
+          transactionType = 'PICK_WIN';
+          transactionAmount = wager + (matchup.reward ?? 10);
+          transactionDesc = `Won pick on ${pickedName} vs ${opponentName}`;
         } else if (pickStatus === 'LOSS') {
           notifTitle = 'Pick Lost 😢';
           notifBody = `Your pick on ${pickedName} vs ${opponentName} lost. Better luck next time!`;
         } else if (pickStatus === 'PUSH') {
           notifTitle = 'Pick Pushed 🤝';
           notifBody = `Your pick on ${pickedName} vs ${opponentName} was a push. Your wager of ${wager} links was refunded.`;
+          transactionType = 'PICK_PUSH';
+          transactionAmount = wager;
+          transactionDesc = `Push refund for ${pickedName} vs ${opponentName}`;
+        }
+
+        if (transactionAmount > 0) {
+          const logRef = adminDb.collection('linkTransactions').doc();
+          transaction.set(logRef, {
+            userId: userId,
+            username: userData.username || userData.name || 'Unknown User',
+            type: transactionType,
+            amount: transactionAmount,
+            description: transactionDesc,
+            createdAt: Date.now()
+          });
         }
 
         transaction.set(notificationsRef, {

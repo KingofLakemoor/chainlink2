@@ -41,6 +41,7 @@ const ADMIN_MENU_SECTIONS = [
           { id: 'users-premium', label: 'Premium Status', path: '/admin/premium' },
           { id: 'users-cosmetics', label: 'User Cosmetics', path: '/admin/users/cosmetics' },
           { id: 'users-links', label: 'Manage Links', path: '/admin/users/links' },
+          { id: 'logs-transactions', label: 'Link Transactions', path: '/admin/logs/transactions' },
           { id: 'users-referrals', label: 'Referrals', path: '/admin/referrals' },
         ]
       },

@@ -60,7 +60,8 @@ describe('apiRouter picks', () => {
       await cb({
          get: mockTransactionGet,
          update: vi.fn((ref, data) => { updates[ref.path || ref.id] = data; }),
-         delete: vi.fn((ref) => { deletes.push(ref.path || ref.id); })
+         delete: vi.fn((ref) => { deletes.push(ref.path || ref.id); }),
+         set: vi.fn((ref, data) => {})
       });
     });
 

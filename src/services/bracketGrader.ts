@@ -181,14 +181,24 @@ async function payoutBracket(bracketId: string, bracket: any, currentResults: an
               for (const winner of winners) {
                   const userRef = adminDb.collection('users').doc(winner.uid);
                   const userDoc = await transaction.get(userRef);
-                  userDocs.push({ ref: userRef, doc: userDoc });
+                  userDocs.push({ ref: userRef, doc: userDoc, winnerUid: winner.uid });
               }
 
               // 2. THEN ALL WRITES
-              for (const { ref, doc } of userDocs) {
+              for (const { ref, doc, winnerUid } of userDocs) {
                   if (doc.exists) {
                       const currentLinks = doc.data().links || 0;
                       transaction.update(ref, { links: currentLinks + payoutPerWinner });
+                      const userDocData = doc.data();
+                      const logRef = adminDb.collection('linkTransactions').doc();
+                      transaction.set(logRef, {
+                        userId: winnerUid,
+                        username: userDocData.username || userDocData.name || 'Unknown User',
+                        type: 'BRACKET_WIN',
+                        amount: payoutPerWinner,
+                        description: `Won bracket pot for ${bracket.name || bracketId}`,
+                        createdAt: Date.now()
+                      });
                   }
               }
               transaction.update(bracketRef, { payoutComplete: true });
