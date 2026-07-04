@@ -299,7 +299,13 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                     .where('status', '==', 'PENDING')
                     .get();
 
-                  if (pendingPicksSnap.empty) {
+                  const pendingPickemPicksSnap = await adminDb.collection('pickemPicks')
+                    .where('matchupId', '==', existingGameId)
+                    .where('status', '==', 'PENDING')
+                    .limit(1)
+                    .get();
+
+                  if (pendingPicksSnap.empty && pendingPickemPicksSnap.empty) {
                     updateData.abandoned = true;
                     updateData.active = false;
                     flattenedUpdate.abandoned = true;
@@ -427,7 +433,9 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
             // If it's already active, don't let defaultActive=false override it
             if (existingData.active && !scraperActive) {
               const picksSnap = await adminDb.collection('picks').where('matchupId', '==', gameId).limit(1).get();
-              if (!picksSnap.empty) {
+              const pickemPicksSnap = await adminDb.collection('pickemPicks').where('matchupId', '==', gameId).limit(1).get();
+
+              if (!picksSnap.empty || !pickemPicksSnap.empty) {
                 finalActive = true;
               } else {
                 finalActive = false;
@@ -548,7 +556,13 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                 .where('status', '==', 'PENDING')
                 .get();
 
-              let hasValidPicks = !pendingPicksSnap.empty;
+              const pendingPickemPicksSnap = await adminDb.collection('pickemPicks')
+                .where('matchupId', '==', gameId)
+                .where('status', '==', 'PENDING')
+                .limit(1)
+                .get();
+
+              let hasValidPicks = !pendingPicksSnap.empty || !pendingPickemPicksSnap.empty;
 
               if (!pendingPicksSnap.empty && (scrapedMatchup.status === 'STATUS_IN_PROGRESS' || scrapedMatchup.status === 'STATUS_FINAL')) {
                 hasValidPicks = false; // We will prove there is a valid pick below
@@ -582,6 +596,10 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                     } else {
                         hasValidPicks = true;
                     }
+                }
+
+                if (!pendingPickemPicksSnap.empty) {
+                  hasValidPicks = true;
                 }
               }
 
@@ -663,7 +681,13 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
               .limit(1)
               .get();
 
-            if (pendingPicksSnap.empty) {
+            const pendingPickemPicksSnap = await adminDb.collection('pickemPicks')
+              .where('matchupId', '==', gameId)
+              .where('status', '==', 'PENDING')
+              .limit(1)
+              .get();
+
+            if (pendingPicksSnap.empty && pendingPickemPicksSnap.empty) {
               // No picks, safe to hide and let cron purge
               batch.update(doc.ref, { abandoned: true, active: false, updatedAt: Date.now() });
               opCount++;
