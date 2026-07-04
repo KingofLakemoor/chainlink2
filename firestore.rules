@@ -182,7 +182,17 @@ service cloud.firestore {
     match /bracketGames/{gameId} { allow read: if isSignedIn(); allow write: if isAdmin(); }
     match /bracketGamePredictions/{predictionId} {
       allow read: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || isAdmin());
-      allow write: if isAdmin(); // Server managed ideally
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid && (!incoming().keys().hasAny(['paid']) || incoming().paid == false);
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (
+          request.auth.uid == existing().userId &&
+          incoming().userId == existing().userId &&
+          incoming().bracketId == existing().bracketId &&
+          (!incoming().keys().hasAny(['paid']) || incoming().paid == existing().paid)
+        )
+      );
+      allow delete: if isAdmin();
     }
 
     match /slotMachineSpins/{spinId} {
