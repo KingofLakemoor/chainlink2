@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { collection, getDocs, doc, getDoc, query, where, updateDoc, writeBatch, deleteDoc } from 'firebase/firestore';
-import { db } from '../../../lib/firebase';
+import { db, auth } from '../../../lib/firebase';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/button';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -285,7 +285,10 @@ export default function PickEmCampaignDetail() {
     try {
         const res = await fetch('/api/admin/grade-pickem-matchup', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
+            },
             body: JSON.stringify({ matchupId })
         });
         const data = await res.json();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { collection, getDocs, doc, setDoc, query, where, updateDoc, documentId } from "firebase/firestore";
-import { db } from "../../../lib/firebase";
+import { db, auth } from "../../../lib/firebase";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { Button } from "../../../components/ui/button";
 import { Edit } from "lucide-react";
@@ -161,7 +161,8 @@ export function AdminEditMatchup() {
           const res = await fetch('/api/admin/grade-matchup', {
               method: 'POST',
               headers: {
-                  'Content-Type': 'application/json'
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
               },
               body: JSON.stringify({ gameId: matchup.gameId })
           });
