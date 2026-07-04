@@ -30,6 +30,8 @@ export function BracketsPage() {
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
 
+  const isBracketLocked = new Date() > new Date('2026-07-04T17:00:00Z');
+
   useEffect(() => {
     async function fetchBracket() {
                 const defaultTeams = [
@@ -354,35 +356,39 @@ export function BracketsPage() {
                             </div>
                           </td>
                           <td className="px-6 py-4 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              {participant.finalFour?.map((team: string, i: number) => {
-                                const isEliminated = bracket?.eliminatedTeams?.includes(team);
-                                const isActualFinalFour = actualR1Winners.includes(team);
-                                const isChampion = team === participant.champion;
+                            {!isBracketLocked ? (
+                              <span className="text-xs font-bold text-zinc-500 italic">Picks are In</span>
+                            ) : (
+                              <div className="flex items-center justify-center gap-2">
+                                {participant.finalFour?.map((team: string, i: number) => {
+                                  const isEliminated = bracket?.eliminatedTeams?.includes(team);
+                                  const isActualFinalFour = actualR1Winners.includes(team);
+                                  const isChampion = team === participant.champion;
 
-                                let className = "text-[10px] font-bold px-1.5 py-0.5 rounded-sm ";
+                                  let className = "text-[10px] font-bold px-1.5 py-0.5 rounded-sm ";
 
-                                if (isChampion) {
-                                  className += "border border-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.3)] ";
-                                } else {
-                                  className += "border border-transparent ";
-                                }
+                                  if (isChampion) {
+                                    className += "border border-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.3)] ";
+                                  } else {
+                                    className += "border border-transparent ";
+                                  }
 
-                                if (isActualFinalFour) {
-                                  className += "text-green-500 ";
-                                } else if (isEliminated) {
-                                  className += "text-red-500 line-through opacity-80 ";
-                                } else {
-                                  className += "text-zinc-400 ";
-                                }
+                                  if (isActualFinalFour) {
+                                    className += "text-green-500 ";
+                                  } else if (isEliminated) {
+                                    className += "text-red-500 line-through opacity-80 ";
+                                  } else {
+                                    className += "text-zinc-400 ";
+                                  }
 
-                                return (
-                                  <span key={i} className={className} title={team}>
-                                    {getTeamAbbreviation(team)}
-                                  </span>
-                                );
-                              })}
-                            </div>
+                                  return (
+                                    <span key={i} className={className} title={team}>
+                                      {getTeamAbbreviation(team)}
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </td>
                           <td className="px-6 py-4 text-center font-bold text-white">
                             {participant.points}
