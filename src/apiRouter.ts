@@ -245,7 +245,7 @@ apiRouter.post('/stripe/create-checkout-session', async (req, res) => {
 
 apiRouter.post("/admin/grade-pickem-matchup", validateAdmin, async (req, res) => {
   try {
-    const { matchupId } = req.body;
+    const { matchupId, manualWinnerId } = req.body;
     if (!adminDb) return res.status(500).json({ success: false, error: "adminDb not initialized" });
 
     const doc = await adminDb.collection('pickemMatchups').doc(matchupId).get();
@@ -253,7 +253,10 @@ apiRouter.post("/admin/grade-pickem-matchup", validateAdmin, async (req, res) =>
        return res.status(404).json({ success: false, error: "Pick 'Em Matchup not found" });
     }
 
-    const matchup = { ...doc.data(), id: doc.id };
+    const matchup: any = { ...doc.data(), id: doc.id };
+    if (manualWinnerId !== undefined) {
+      matchup.manualWinnerId = manualWinnerId;
+    }
     await gradePickemMatchups([{ ...matchup, status: 'STATUS_FINAL' }]); // Force grade
     res.json({ success: true });
   } catch (e: any) {
