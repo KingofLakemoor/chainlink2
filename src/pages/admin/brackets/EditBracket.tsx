@@ -19,6 +19,8 @@ export default function EditBracket() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [pointValues, setPointValues] = useState<{ [key: string]: number }>({});
+  const [results, setResults] = useState<{ [key: string]: string }>({});
+  const [eliminatedTeams, setEliminatedTeams] = useState<string[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -50,6 +52,13 @@ export default function EditBracket() {
           if (data.pointValues) {
             setPointValues(data.pointValues);
           }
+
+          if (data.results) {
+            setResults(data.results);
+          }
+          if (data.eliminatedTeams) {
+            setEliminatedTeams(data.eliminatedTeams);
+          }
         }
       } catch (err) {
         console.error('Failed to fetch bracket:', err);
@@ -64,6 +73,81 @@ export default function EditBracket() {
     setPointValues(prev => ({ ...prev, [round]: value }));
   };
 
+  const handleResultChange = (matchId: string, winner: string) => {
+    setResults(prev => ({ ...prev, [matchId]: winner }));
+  };
+
+  const getMatchTeams = (round: number, matchIndex: number) => {
+    const teams = teamList.split(',').map(t => t.trim()).filter(t => t.length > 0);
+
+    if (round === 0) {
+      const team1 = teams[matchIndex * 2] || null;
+      const team2 = teams[matchIndex * 2 + 1] || null;
+      return [team1, team2];
+    } else {
+      const prevRound = round - 1;
+      const prevMatch1Index = matchIndex * 2;
+      const prevMatch2Index = matchIndex * 2 + 1;
+
+      const prevMatch1Id = `r${prevRound}-m${prevMatch1Index}`;
+      const prevMatch2Id = `r${prevRound}-m${prevMatch2Index}`;
+
+      const team1 = results[prevMatch1Id] || null;
+      const team2 = results[prevMatch2Id] || null;
+
+      return [team1, team2];
+    }
+  };
+
+  const renderManualProgression = () => {
+    const teams = teamList.split(',').map(t => t.trim()).filter(t => t.length > 0);
+    if (teams.length < 2) return null;
+
+    const totalRounds = Math.ceil(Math.log2(teams.length));
+
+    return (
+      <div className="mt-8 border-t border-zinc-800 pt-6">
+        <h3 className="text-lg font-bold text-white mb-4">Manual Bracket Progression</h3>
+        <p className="text-sm text-zinc-400 mb-6">Select the winner for each matchup to manually advance the bracket.</p>
+
+        <div className="space-y-8">
+          {Array.from({ length: totalRounds }).map((_, round) => {
+            const matchesInRound = Math.ceil(teams.length / Math.pow(2, round + 1));
+            return (
+              <div key={round} className="bg-zinc-800/30 p-4 rounded-lg">
+                <h4 className="font-bold text-zinc-300 mb-4 uppercase text-xs tracking-wider">Round {round + 1}</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {Array.from({ length: matchesInRound }).map((_, matchIndex) => {
+                    const matchId = `r${round}-m${matchIndex}`;
+                    const [team1, team2] = getMatchTeams(round, matchIndex);
+                    const hasBothTeams = team1 && team2;
+                    const currentValue = results[matchId] || '';
+
+                    return (
+                      <div key={matchId} className="bg-[#18181A] border border-zinc-800 p-3 rounded-md">
+                        <div className="text-xs text-zinc-500 mb-2 font-mono">{matchId}</div>
+                        <select
+                          value={currentValue}
+                          onChange={(e) => handleResultChange(matchId, e.target.value)}
+                          disabled={!hasBothTeams}
+                          className="w-full bg-zinc-900 border border-zinc-700 rounded p-2 text-sm text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <option value="">Select Winner...</option>
+                          {team1 && <option value={team1}>{team1}</option>}
+                          {team2 && <option value={team2}>{team2}</option>}
+                        </select>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !id) return;
@@ -71,6 +155,27 @@ export default function EditBracket() {
     setLoading(true);
     try {
       const teamsArray = teamList.split(',').map(t => t.trim()).filter(t => t.length > 0);
+
+      // Re-compute eliminated teams based on the finalized results
+      const newEliminatedTeams: string[] = [];
+      const totalRounds = Math.ceil(Math.log2(teamsArray.length));
+
+      for (let round = 0; round < totalRounds; round++) {
+        const matchesInRound = Math.ceil(teamsArray.length / Math.pow(2, round + 1));
+        for (let matchIndex = 0; matchIndex < matchesInRound; matchIndex++) {
+           const matchId = `r${round}-m${matchIndex}`;
+           const winner = results[matchId];
+           if (winner) {
+             const [team1, team2] = getMatchTeams(round, matchIndex);
+             if (team1 && team2) {
+               const loser = team1 === winner ? team2 : team1;
+               if (loser && !newEliminatedTeams.includes(loser)) {
+                 newEliminatedTeams.push(loser);
+               }
+             }
+           }
+        }
+      }
 
       await updateDoc(doc(db, 'brackets', id), {
         name: name.trim(),
@@ -82,6 +187,8 @@ export default function EditBracket() {
         lockDate: lockDate ? new Date(lockDate).getTime() : Date.now() + 86400000 * 7,
         teams: teamsArray,
         pointValues,
+        results,
+        eliminatedTeams: newEliminatedTeams,
         updatedAt: Date.now()
       });
       navigate('/admin/brackets');
@@ -220,6 +327,8 @@ export default function EditBracket() {
               ))}
             </div>
           </div>
+
+          {renderManualProgression()}
 
           <Button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3">
             {loading ? 'Saving...' : 'Save Changes'}
