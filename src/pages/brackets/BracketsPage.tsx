@@ -77,46 +77,24 @@ export function BracketsPage() {
         };
 
       try {
-        if (bracketId) {
-          const docRef = doc(db, 'brackets', bracketId);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            setBracket({
-              ...defaultBracket,
-              id: docSnap.id,
-              ...data,
-              // Fallback to default teams/matchTimes if missing in the db document
-              teams: data.teams && data.teams.length > 0 ? data.teams : defaultBracket.teams,
-              matchTimes: data.matchTimes && Object.keys(data.matchTimes).length > 0 ? data.matchTimes : defaultBracket.matchTimes,
-              matchIds: data.matchIds && Object.keys(data.matchIds).length > 0 ? data.matchIds : defaultBracket.matchIds,
-              pointValues: data.pointValues && Object.keys(data.pointValues).length > 0 ? data.pointValues : defaultBracket.pointValues,
-            });
-          } else {
-            setBracket(defaultBracket);
-          }
+        const targetBracketId = bracketId || 'world-cup-2026';
+        const docRef = doc(db, 'brackets', targetBracketId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setBracket({
+            ...defaultBracket,
+            id: docSnap.id,
+            ...data,
+            // Fallback to default teams/matchTimes if missing in the db document
+            teams: data.teams && data.teams.length > 0 ? data.teams : defaultBracket.teams,
+            matchTimes: data.matchTimes && Object.keys(data.matchTimes).length > 0 ? data.matchTimes : defaultBracket.matchTimes,
+            matchIds: data.matchIds && Object.keys(data.matchIds).length > 0 ? data.matchIds : defaultBracket.matchIds,
+            pointValues: data.pointValues && Object.keys(data.pointValues).length > 0 ? data.pointValues : defaultBracket.pointValues,
+          });
         } else {
-          const q = query(
-            collection(db, 'brackets'),
-            where('sport', '==', 'World Cup 2026'),
-            limit(1)
-          );
-          const snapshot = await getDocs(q);
-          if (!snapshot.empty) {
-            const data = snapshot.docs[0].data();
-            setBracket({
-              ...defaultBracket,
-              id: snapshot.docs[0].id,
-              ...data,
-              // Fallback to default teams/matchTimes if missing in the db document
-              teams: data.teams && data.teams.length > 0 ? data.teams : defaultBracket.teams,
-              matchTimes: data.matchTimes && Object.keys(data.matchTimes).length > 0 ? data.matchTimes : defaultBracket.matchTimes,
-              matchIds: data.matchIds && Object.keys(data.matchIds).length > 0 ? data.matchIds : defaultBracket.matchIds,
-              pointValues: data.pointValues && Object.keys(data.pointValues).length > 0 ? data.pointValues : defaultBracket.pointValues,
-            });
-          } else {
-            setBracket(defaultBracket);
-          }
+          setBracket({ ...defaultBracket, id: targetBracketId });
         }
       } catch (error) {
         setBracket(defaultBracket);
