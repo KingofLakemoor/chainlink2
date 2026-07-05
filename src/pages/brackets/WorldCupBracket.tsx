@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../lib/auth-context';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { cn } from '../../lib/utils';
 
@@ -9,11 +9,13 @@ interface WorldCupBracketProps {
 }
 
 import { Coins, Loader2, Check, X } from 'lucide-react';
+import { BracketMatchupCard } from '../../components/ui/BracketMatchupCard';
 
 export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [isPaid, setIsPaid] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
+  const [liveMatchups, setLiveMatchups] = useState<Record<string, any>>({});
 
   const { user } = useAuth();
 
@@ -36,6 +38,40 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
     }
     loadSelections();
   }, [user, bracket?.id]);
+
+  useEffect(() => {
+    if (!bracket?.matchIds || Object.keys(bracket.matchIds).length === 0) return;
+
+    // Subscribe to matchups mapped to this bracket
+    const gameIds = Object.values(bracket.matchIds).filter(Boolean) as string[];
+    if (gameIds.length === 0) return;
+
+    // chunk gameIds by 30 to comply with firestore 'in' limits
+    const unsubscribes: any[] = [];
+    const newLiveMatchups: Record<string, any> = {};
+
+    for (let i = 0; i < gameIds.length; i += 30) {
+       const chunk = gameIds.slice(i, i + 30);
+       const q = query(collection(db, 'matchups'), where('gameId', 'in', chunk));
+
+       const unsub = onSnapshot(q, (snap) => {
+          snap.docs.forEach(d => {
+             const mData = d.data();
+             // Find corresponding mId
+             const mId = Object.keys(bracket.matchIds).find(key => bracket.matchIds[key] === mData.gameId);
+             if (mId) {
+                newLiveMatchups[mId] = mData;
+             }
+          });
+          setLiveMatchups({ ...newLiveMatchups });
+       });
+       unsubscribes.push(unsub);
+    }
+
+    return () => {
+       unsubscribes.forEach(u => u());
+    };
+  }, [bracket?.matchIds]);
 
   const handlePayToEnter = async () => {
     if (!user || !bracket?.id || isPaying) return;
@@ -159,70 +195,25 @@ export function WorldCupBracket({ bracket }: WorldCupBracketProps) {
 
     const matchTime = bracket?.matchTimes?.[matchId];
     const formattedTime = matchTime ? new Date(matchTime).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : null;
-
-    const renderButton = (slot: { predicted: string | null; actual: string | null; predictedWrong: boolean; display: string | null }, isTop: boolean) => {
-      const { display, predicted, predictedWrong } = slot;
-
-      const teamName = display;
-      const isSelected = selectedTeam && selectedTeam === teamName;
-
-      const matchResult = bracket?.results?.[matchId];
-      // It is eliminated here if there is a result for THIS match, and it's not this team
-      const isEliminatedHere = matchResult && teamName && matchResult !== teamName;
-      const isPickWrongHere = isEliminatedHere && isSelected;
-      const isPickCorrectHere = matchResult && teamName && matchResult === teamName && isSelected;
-
-      return (
-        <button
-          onClick={() => teamName && handleSelect(matchId, teamName, locked)}
-          disabled={!teamName || locked}
-          className={cn(
-            "p-2 text-left hover:bg-zinc-800 transition-colors truncate relative flex flex-col justify-center min-h-[40px]",
-            isTop ? "border-b border-[#27272a]" : "",
-            isSelected ? "bg-zinc-800 font-bold" : "text-zinc-300",
-            (!teamName || locked) && "cursor-not-allowed"
-          )}
-          style={isSelected && !isPickWrongHere ? { color: primaryColor } : undefined}
-          title={teamName || 'TBD'}
-        >
-          {predictedWrong && predicted && (
-            <span className="text-[10px] text-red-500 line-through leading-none mb-0.5 opacity-80 truncate w-full">
-              {predicted}
-            </span>
-          )}
-          <span className="flex justify-between items-center w-full">
-            <span className={cn(
-              "truncate block",
-              !teamName ? "text-zinc-600" : "",
-              isPickWrongHere ? "line-through text-red-500 opacity-80" : isEliminatedHere ? "line-through text-zinc-500" : ""
-            )}>
-              {teamName || 'TBD'}
-            </span>
-            {isPickCorrectHere && <Check className="w-4 h-4 ml-2 flex-shrink-0 text-green-500" />}
-            {isPickWrongHere && <X className="w-4 h-4 ml-2 flex-shrink-0 text-red-500" />}
-          </span>
-        </button>
-      );
-    };
-
-    const matchResult = bracket?.results?.[matchId];
+    const matchResult = bracket?.results?.[matchId] || null;
+    const liveMatchup = liveMatchups[matchId];
 
     return (
-      <div key={matchId} className={cn("flex flex-col mb-4 bg-[#1a1a1a] border border-[#27272a] rounded-md overflow-hidden w-[160px] text-sm", locked && "opacity-75")}>
-        {formattedTime && (
-          <div className="text-[10px] text-zinc-500 text-center py-1 bg-zinc-900 border-b border-[#27272a] flex justify-center items-center gap-2">
-            {formattedTime}
-            {matchResult && <span className="font-bold text-zinc-300">FINAL</span>}
-          </div>
-        )}
-        {!formattedTime && matchResult && (
-          <div className="text-[10px] text-zinc-300 font-bold text-center py-1 bg-zinc-900 border-b border-[#27272a]">
-            FINAL
-          </div>
-        )}
-        {renderButton(team1Slot, true)}
-        {renderButton(team2Slot, false)}
-      </div>
+       <div key={matchId} className="mb-4 w-[180px]">
+          <BracketMatchupCard
+            matchId={matchId}
+            round={round}
+            team1Slot={team1Slot}
+            team2Slot={team2Slot}
+            matchResult={matchResult}
+            selectedTeam={selectedTeam || null}
+            formattedTime={formattedTime}
+            locked={locked}
+            primaryColor={primaryColor}
+            onSelect={handleSelect}
+            liveMatchup={liveMatchup}
+          />
+       </div>
     );
   };
 
