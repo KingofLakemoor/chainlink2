@@ -17,6 +17,7 @@ export async function gradeBrackets(matchups: any[]) {
     const bracket = bracketDoc.data();
     let updated = false;
     const results = bracket.results || {};
+      const matchIds = bracket.matchIds || {};
     const eliminatedTeams = bracket.eliminatedTeams || [];
 
     for (const matchup of finalMatchups) {
@@ -67,6 +68,10 @@ export async function gradeBrackets(matchups: any[]) {
                  const isMatchByTeams = t1 && t2 && ((t1 === winner && t2 === loser) || (t1 === loser && t2 === winner));
 
                  if (isMatchById || isMatchByTeams) {
+                     if (isMatchByTeams && matchIds[mId] !== matchup.gameId) {
+                         matchIds[mId] = matchup.gameId;
+                         updated = true;
+                     }
                      if (results[mId] !== winner) {
                          results[mId] = winner;
                          updated = true;
@@ -89,6 +94,7 @@ export async function gradeBrackets(matchups: any[]) {
     if (updated) {
         await adminDb.collection('brackets').doc(bracketDoc.id).update({
             results,
+            matchIds,
             eliminatedTeams
         });
     }

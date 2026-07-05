@@ -33,6 +33,22 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
         }
       }
 
+      // Gather bracket match IDs to force activity
+      const bracketMatchIds = new Set<string>();
+      try {
+        const bracketsSnap = await adminDb.collection('brackets').where('status', 'in', ['OPEN', 'LOCKED', 'ACTIVE']).get();
+        for (const doc of bracketsSnap.docs) {
+          const bData = doc.data();
+          if (bData.matchIds) {
+            Object.values(bData.matchIds).forEach(id => {
+               if (id) bracketMatchIds.add(String(id));
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching bracket match IDs", err);
+      }
+
       const existingMap = new Map<string, any>();
       const gameIds = response.data.map(m => m.gameId).filter(id => id);
 
@@ -613,12 +629,19 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
                 }
               }
 
-              if (!hasValidPicks) {
+              if (!hasValidPicks && !bracketMatchIds.has(gameId)) {
                 updateData.abandoned = true;
                 updateData.active = false;
                 flattenedUpdate.abandoned = true;
                 flattenedUpdate.active = false;
               }
+            }
+
+            if (bracketMatchIds.has(gameId)) {
+                updateData.active = true;
+                updateData.abandoned = false;
+                flattenedUpdate.active = true;
+                flattenedUpdate.abandoned = false;
             }
 
             if (existingDoc.id !== gameId) {
@@ -655,6 +678,11 @@ export async function syncLeagueSchedules(league: League, scoreboardOnly: boolea
             if (scrapedMatchup.league !== 'ATP' && scrapedMatchup.league !== 'WTA' && scrapedMatchup.league !== 'CRICKET') {
               abandoned = true;
             }
+          }
+
+          if (bracketMatchIds.has(gameId)) {
+            active = true;
+            abandoned = false;
           }
 
           const newMatchupData = {
