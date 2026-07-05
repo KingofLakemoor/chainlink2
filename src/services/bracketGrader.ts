@@ -3,6 +3,15 @@ import * as firebaseAdmin from '../lib/firebase-admin.js';
 let getAdminDb = () => firebaseAdmin.adminDb;
 export function setAdminDbMock(mock: any) { getAdminDb = () => mock; }
 
+const normalizeTeamName = (name: string): string => {
+  if (!name) return name;
+  const n = name.trim();
+  if (n === 'Ivory Coast') return "Côte d'Ivoire";
+  if (n === 'Congo DR') return "DR Congo";
+  if (n === 'Cape Verde') return "Cabo Verde";
+  return n;
+};
+
 export async function gradeBrackets(matchups: any[]) {
   const adminDb = getAdminDb();
   if (!adminDb || matchups.length === 0) return;
@@ -24,8 +33,8 @@ export async function gradeBrackets(matchups: any[]) {
          if (matchup.league !== 'FIFA') continue;
       }
 
-      const homeTeam = matchup.homeTeam?.name;
-      const awayTeam = matchup.awayTeam?.name;
+      const homeTeam = normalizeTeamName(matchup.homeTeam?.name);
+      const awayTeam = normalizeTeamName(matchup.awayTeam?.name);
 
       const homeScore = Number(matchup.homeTeam?.score || 0);
       const awayScore = Number(matchup.awayTeam?.score || 0);

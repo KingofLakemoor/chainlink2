@@ -35,6 +35,14 @@ const defaultMatchIds: Record<string, string> = {
   'r0-m7': '760508'
 };
 
+const normalizeTeamName = (name: string): string => {
+  if (!name) return name;
+  const n = name.trim();
+  if (n === 'Ivory Coast') return "Côte d'Ivoire";
+  if (n === 'Congo DR') return "DR Congo";
+  if (n === 'Cape Verde') return "Cabo Verde";
+  return n;
+};
 
 async function seed() {
   const bracketRef = adminDb.collection('brackets').doc('world-cup-2026');
@@ -43,7 +51,12 @@ async function seed() {
   const allFifaMatchups = res.data || [];
 
   // Only consider matchups on or after July 4th (Arizona time, UTC-7)
-  const fifaMatchups = allFifaMatchups.filter(m => new Date(m.startTime) >= new Date('2026-07-04T07:00:00.000Z'));
+  const fifaMatchups = allFifaMatchups.filter(m => {
+    if (new Date(m.startTime) < new Date('2026-07-04T07:00:00.000Z')) return false;
+    if (m.homeTeam && m.homeTeam.name) m.homeTeam.name = normalizeTeamName(m.homeTeam.name);
+    if (m.awayTeam && m.awayTeam.name) m.awayTeam.name = normalizeTeamName(m.awayTeam.name);
+    return true;
+  });
 
   const matchTimes: Record<string, string> = { ...defaultMatchTimes };
   const matchIds: Record<string, string> = { ...defaultMatchIds };
