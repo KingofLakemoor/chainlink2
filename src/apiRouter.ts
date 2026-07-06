@@ -1123,6 +1123,24 @@ apiRouter.post("/admin/grade-matchup", validateAdmin, async (req, res) => {
   }
 });
 
+apiRouter.get("/chainlink/matchups", async (req, res) => {
+  if (!adminDb) return res.status(500).json({ success: false, error: "adminDb not configured" });
+  try {
+    const providedApiKey = req.headers['x-api-key'];
+    if (!providedApiKey || providedApiKey !== process.env.SCRIPTLESS_API_KEY) {
+      return res.status(401).json({ success: false, error: "Unauthorized: Invalid or missing API key" });
+    }
+
+    const snap = await adminDb.collection('matchups').where('active', '==', true).get();
+    const matchups = snap.docs.map(doc => doc.data());
+
+    return res.json({ success: true, matchups });
+  } catch (e: any) {
+    console.error("External get matchups error:", e);
+    return res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 apiRouter.get("/external/check-premium", async (req, res) => {
   if (!adminDb) return res.status(500).json({ success: false, error: "adminDb not configured" });
   try {
