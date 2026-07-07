@@ -1,4 +1,6 @@
-export const SUPPORTED_LEAGUES = ["NFL", "NBA", "NHL", "MLB", "MLS", "EPL", "MBB", "WBB", "NWSL", "CFB", "CBASE", "ATP", "WTA", "WNBA", "PGA", "FIFA", "FRA", "TUR", "RPL", "CHN", "CRICKET"] as const;
+import { ScriptLessPayload } from '../types/scriptless.js';
+
+export const SUPPORTED_LEAGUES = ["NFL", "NBA", "NHL", "MLB", "MLS", "EPL", "MBB", "WBB", "NWSL", "CFB", "CBASE", "ATP", "WTA", "WNBA", "PGA", "FIFA", "FRA", "TUR", "RPL", "CHN", "CRICKET", "SCRIPTLESS"] as const;
 
 export type League = typeof SUPPORTED_LEAGUES[number] | string;
 
@@ -110,6 +112,10 @@ export function getScheduleEndpoints(league: League, scoreboardOnly: boolean = f
     return dates.map(date => `https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard?dates=${date}`);
   }
 
+  if (league === "SCRIPTLESS") {
+    return ['https://scriptless.club602.com/api/chainlink/matchups'];
+  }
+
   // If scoreboardOnly is true, use scoreboard endpoints to save bandwidth
   if (scoreboardOnly) {
     switch (league) {
@@ -162,6 +168,12 @@ export async function fetchScheduleData(endpoint: string, league: League, isScor
   const response = await fetch(endpoint);
   const data = await response.json();
   const scheduleData: Record<string, any> = {};
+
+  if (league === "SCRIPTLESS") {
+    const scriptlessData = data.matchups || [];
+    scheduleData["scriptless"] = { games: scriptlessData };
+    return scheduleData;
+  }
 
   if (league === "PGA") {
     // For PGA, we merge the scoreboard API data (which contains hole-by-hole stats) into the leaderboard data
@@ -266,7 +278,40 @@ export async function scrapeLeagueSchedules(league: League, scoreboardOnly: bool
         if (!games) continue;
 
         for (const game of games) {
-          const gameId = String(game.id);
+          const gameId = String(game.id || (game as ScriptLessPayload).eventId);
+
+          if (league === "SCRIPTLESS") {
+            const sm = game as ScriptLessPayload;
+
+            let finalStatus = sm.status || "STATUS_SCHEDULED";
+            let finalStatusDesc = finalStatus === "STATUS_SCHEDULED" ? "Upcoming" : (finalStatus === "STATUS_FINAL" ? "Final" : "In Progress");
+
+            parsedMatchups.push({
+               gameId: sm.eventId,
+               startTime: new Date(sm.startTime).getTime(),
+               active: finalStatus === "STATUS_SCHEDULED",
+               featured: false,
+               title: sm.name,
+               league: sm.league,
+               status: finalStatus,
+               statusDesc: finalStatusDesc,
+               type: "SCORE",
+               homeTeam: {
+                   id: sm.homeTeam.name,
+                   name: sm.homeTeam.name,
+                   image: sm.homeTeam.logo || "/images/scriptless.png",
+                   score: sm.homeTeam.score || 0
+               },
+               awayTeam: {
+                   id: sm.awayTeam.name,
+                   name: sm.awayTeam.name,
+                   image: sm.awayTeam.logo || "/images/scriptless.png",
+                   score: sm.awayTeam.score || 0
+               },
+               metadata: sm.metadata || {}
+            });
+            continue;
+          }
 
           if (league === "ATP" || league === "WTA") {
             const tournamentName = game.name;
