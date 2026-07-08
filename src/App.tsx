@@ -73,7 +73,6 @@ const Sidebar = React.memo(function Sidebar({ open, setOpen }: { open: boolean, 
         <NavItem icon={CheckCircle2} label="My Stats" path="/mypicks" />
         <NavItem icon={Trophy} label="Leaderboards" path="/leaderboards" />
         <NavItem icon={ShoppingCart} label="Link Shop" path="/shop" />
-        <NavItem icon={Trophy} label="Brackets" path="/brackets" />
         <NavItem icon={Grid} label="Link4" path="/link4" />
         <NavItem icon={HelpCircle} label="Help & Rules" path="/help" />
 
